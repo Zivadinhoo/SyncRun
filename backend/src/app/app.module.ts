@@ -2,10 +2,11 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
+import { TrainingPlan } from './entities/training-plan.entity';
+import { TrainingPlanModule } from './training-plan/training-plan.module';
 
 @Module({
   imports: [
@@ -37,14 +38,15 @@ import { User } from './entities/user.entity';
         username: config.get('DATABASE_USER'),
         password: config.get('DATABASE_PASSWORD'),
         database: config.get('DATABASE_NAME'),
-        entities: [User],
-        synchronize: true, // samo za dev
+        entities: [User, TrainingPlan],
+        synchronize: true,
         logging: true,
       }),
     }),
 
     UsersModule,
     AuthModule,
+    TrainingPlanModule,
   ],
 })
 export class AppModule {}

@@ -4,13 +4,14 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { TrainingPlan } from './training-plan.entity';
 
 export enum UserRole {
   COACH = 'coach',
   ATHLETE = 'athlete',
 }
-
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -30,6 +31,9 @@ export class User {
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.ATHLETE })
   role: UserRole;
+
+  @OneToMany(() => TrainingPlan, (plan) => plan.coach)
+  trainingPlans: TrainingPlan[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,36 +1,120 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(UsersService.name);
+  }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.userRepository.create(createUserDto);
-    return this.userRepository.save(user);
+    try {
+      const user = this.userRepository.create(createUserDto);
+      const saved = await this.userRepository.save(user);
+      this.logger.info({ userId: saved.id }, '✅ User created');
+      return saved;
+    } catch (error) {
+      this.logger.error(
+        { error, dto: createUserDto },
+        '🚨 Error while creating user',
+      );
+      throw new InternalServerErrorException('Failed to create user');
+    }
+  }
+
+  async checkIfUserWithEmailExists(email: string): Promise<boolean> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+      return !!user;
+    } catch (error) {
+      this.logger.error(
+        { email, error },
+        '🚨 Error while checking user by email',
+      );
+      throw new InternalServerErrorException('DB error during email check');
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    await this.userRepository.update(id, updateUserDto);
-    return this.userRepository.findOneByOrFail({ id });
+    try {
+      const updateResult = await this.userRepository.update(id, updateUserDto);
+
+      if (updateResult.affected === 0) {
+        this.logger.warn(`⚠️ User with ID ${id} not found for update`);
+        throw new NotFoundException('User not found');
+      }
+
+      const updated = await this.userRepository.findOneByOrFail({ id });
+      this.logger.info({ id }, '✅ User updated');
+      return updated;
+    } catch (error) {
+      this.logger.error(
+        { id, updateUserDto, error },
+        '🚨 Error while updating user',
+      );
+      throw new InternalServerErrorException('Failed to update user');
+    }
   }
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    try {
+      const users = await this.userRepository.find();
+      this.logger.info(`📦 Retrieved ${users.length} users`);
+      return users;
+    } catch (error) {
+      this.logger.error(error, '🚨 Error while fetching all users');
+      throw new InternalServerErrorException('Failed to fetch users');
+    }
+  }
+
+  async findOneBy(where: Partial<User>): Promise<User | null> {
+    try {
+      const user = await this.userRepository.findOne({ where });
+      if (!user) {
+        this.logger.warn({ where }, '⚠️ User not found by condition');
+      }
+      return user;
+    } catch (error) {
+      this.logger.error({ where, error }, '🚨 Error while finding user');
+      throw new InternalServerErrorException('Failed to find user');
+    }
   }
 
   async findOne(id: number): Promise<User> {
-    return this.userRepository.findOneByOrFail({ id });
+    try {
+      const user = await this.userRepository.findOneByOrFail({ id });
+      this.logger.info({ id }, '🔍 Found user by ID');
+      return user;
+    } catch (error) {
+      this.logger.error({ id, error }, '🚨 User not found by ID');
+      throw new NotFoundException('User not found');
+    }
   }
 
   async remove(id: number): Promise<void> {
-    await this.userRepository.delete(id);
+    try {
+      const result = await this.userRepository.delete(id);
+      if (result.affected === 0) {
+        this.logger.warn(`⚠️ No user found to delete with ID ${id}`);
+        throw new NotFoundException('User not found for deletion');
+      }
+      this.logger.info({ id }, '🗑️ User deleted');
+    } catch (error) {
+      this.logger.error({ id, error }, '🚨 Error while deleting user');
+      throw new InternalServerErrorException('Failed to delete user');
+    }
   }
 }

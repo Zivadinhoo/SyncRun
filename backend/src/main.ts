@@ -22,7 +22,7 @@ async function bootstrap() {
         name: 'Authorization',
         in: 'header',
       },
-      'access-token', // <== ovo mora da se poklapa sa @ApiBearerAuth('access-token')
+      'access-token',
     )
     .build();
 

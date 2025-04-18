@@ -7,8 +7,10 @@ import {
   ManyToOne,
   DeleteDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
+import { TrainingDay } from './training-day.entity';
 
 export enum TrainingLevel {
   BEGINNER = 'BEGINNER',
@@ -26,6 +28,11 @@ export class TrainingPlan {
 
   @Column({ type: 'text' })
   description: string;
+
+  @OneToMany(() => TrainingDay, (day) => day.trainingPlan, {
+    cascade: true,
+  })
+  trainingDays: TrainingDay[];
 
   @ManyToOne(() => User, (user) => user.trainingPlans, { eager: false })
   @JoinColumn({ name: 'coachId' })

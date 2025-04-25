@@ -8,6 +8,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { TrainingPlan } from './training-plan.entity';
+import { AssignedPlan } from './assigned-plan.entity';
 
 @Entity()
 export class TrainingDay {
@@ -27,6 +28,9 @@ export class TrainingDay {
     onDelete: 'CASCADE',
   })
   trainingPlan: TrainingPlan;
+
+  @ManyToOne(() => AssignedPlan, { nullable: true, onDelete: 'CASCADE' })
+  assignedPlan?: AssignedPlan;
 
   @CreateDateColumn()
   createdAt: Date;

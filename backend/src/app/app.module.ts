@@ -11,6 +11,8 @@ import { TrainingDay } from './entities/training-day.entity';
 import { TrainingDayModule } from './training-day/training-day.module';
 import { AssignedPlan } from './entities/assigned-plan.entity';
 import { AssignedPlanModule } from './assigned-plan/assigned-plan.module';
+import { TrainingDayFeedback } from './entities/training-day-feedback.entity';
+import { TrainingDayFeedbackModule } from './training-day-feedback/training-day-feedback.module';
 
 @Module({
   imports: [
@@ -42,7 +44,13 @@ import { AssignedPlanModule } from './assigned-plan/assigned-plan.module';
         username: config.get('DATABASE_USER'),
         password: config.get('DATABASE_PASSWORD'),
         database: config.get('DATABASE_NAME'),
-        entities: [User, TrainingPlan, TrainingDay, AssignedPlan],
+        entities: [
+          User,
+          TrainingPlan,
+          TrainingDay,
+          AssignedPlan,
+          TrainingDayFeedback,
+        ],
         synchronize: true,
         logging: true,
       }),
@@ -53,6 +61,7 @@ import { AssignedPlanModule } from './assigned-plan/assigned-plan.module';
     TrainingPlanModule,
     TrainingDayModule,
     AssignedPlanModule,
+    TrainingDayFeedbackModule,
   ],
 })
 export class AppModule {}

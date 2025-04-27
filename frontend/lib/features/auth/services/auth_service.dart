@@ -11,7 +11,7 @@ class AuthService {
   Future<void> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.x.x:3001/auth/login'), // zameni IP!
+        Uri.parse('http://192.168.x.x:3001/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );

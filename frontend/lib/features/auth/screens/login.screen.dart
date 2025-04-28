@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'package:frontend/features/home/screens/home_screen.dart';
+import 'package:frontend/features/auth/services/auth_service.dart';
+import 'package:frontend/features/home/screens/dashboard_screen.dart'; // ⬅️ OVO je ispravan import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -38,45 +38,21 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse('http://192.168.0.30:3001/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+      final authService = AuthService();
+      await authService.login(email, password);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login successful!')));
+
+      // ✅ Navigacija pravo na DashboardScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        final accessToken = data['accessToken'];
-        final refreshToken = data['refreshToken'];
-
-        if (accessToken == null || refreshToken == null) {
-          throw Exception('Access or refresh token missing in response');
-        }
-
-        // 🔥 Sačuvaj accessToken i refreshToken u secure storage
-        const storage = FlutterSecureStorage();
-        await storage.write(key: 'accessToken', value: accessToken);
-        await storage.write(key: 'refreshToken', value: refreshToken);
-
-        print('💾 Saved tokens successfully');
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Login successful!')));
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${response.body}')),
-        );
-      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     } finally {
       setState(() => _isLoading = false);
     }

@@ -5,9 +5,6 @@ class CoachDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Coach Dashboard')),
-      body: const Center(child: Text('Welcome Coach')),
-    );
+    return Scaffold(body: const Center(child: Text('Welcome Coach')));
   }
 }

@@ -4,21 +4,26 @@ import 'package:frontend/models/athlete_home_data.dart';
 class HomeContent extends StatelessWidget {
   final AthleteHomeData data;
 
-  const HomeContent({Key? key, required this.data}) : super(key: key);
+  const HomeContent({Key? key, required this.data})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 20,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profilna slika + Ime
             Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage(data.profileImagePath),
+                  backgroundImage: AssetImage(
+                    data.profileImagePath,
+                  ),
                   radius: 30,
                 ),
                 const SizedBox(width: 12),
@@ -39,7 +44,10 @@ class HomeContent extends StatelessWidget {
 
             const Text(
               'Your Current Plan:',
-              style: TextStyle(fontSize: 18, color: Colors.black54),
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black54,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -55,7 +63,10 @@ class HomeContent extends StatelessWidget {
 
             const Text(
               'Next Training:',
-              style: TextStyle(fontSize: 18, color: Colors.black54),
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black54,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -71,7 +82,10 @@ class HomeContent extends StatelessWidget {
 
             const Text(
               'Progress:',
-              style: TextStyle(fontSize: 18, color: Colors.black54),
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black54,
+              ),
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(

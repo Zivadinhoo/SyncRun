@@ -11,8 +11,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'uros@gmail.com');
-  final _passwordController = TextEditingController(text: 'koliko123');
+  final _emailController = TextEditingController(text: 'coach@example.com');
+  final _passwordController = TextEditingController(text: 'test123');
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -38,24 +38,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final authService = AuthService();
-      await authService.login(email, password);
+      final response = await authService.login(email, password);
 
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Login successful!')));
 
-      // ✅ dummy hardcoded role
-      const UserRole userRole = UserRole.athlete;
+      // 🔑 Extract role from response
+      final role =
+          response['role'] == 'coach' ? UserRole.coach : UserRole.athlete;
+
+      if (!mounted) return;
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => DashboardScreen(role: userRole)),
+        MaterialPageRoute(builder: (_) => DashboardScreen(role: role)),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+      debugPrint('❌ Login error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().contains('401') ||
+                    e.toString().contains('Unauthorized')
+                ? 'Invalid credentials. Please try again.'
+                : 'Login failed: $e',
+          ),
+        ),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -71,35 +82,20 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 80),
-
-                // Logo
                 Image.asset('assets/images/SyncRun.png', height: 150),
-
                 const SizedBox(height: 24),
-
-                // Welcome Title
                 const Text(
                   'Welcome to SyncRun!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 8),
-
-                // Subtitle
                 const Text(
                   'Your journey starts here.',
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 48),
-
-                // Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -111,10 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Password
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -134,10 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
-                // Login button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -159,10 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             : const Text('Login'),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Register link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/auth/screens/login.screen.dart';
+import 'package:frontend/features/auth/services/auth_service.dart';
 import 'package:frontend/features/home/screens/home_content.dart';
+import 'package:frontend/features/home/services/athlete_home_service.dart';
 import 'package:frontend/features/plans/screens/plans_screen.dart';
 import 'package:frontend/features/settings/screens/settings_screen.dart';
 import 'package:frontend/features/stats/screens/stats_screen.dart';
@@ -14,21 +17,13 @@ class AthleteDashboardScreen extends StatefulWidget {
 
 class _AthleteDashboardScreenState extends State<AthleteDashboardScreen> {
   int _selectedIndex = 0;
+  late Future<AthleteHomeData> _homeDataFuture;
 
-  final homeData = AthleteHomeData(
-    userName: 'Uros',
-    profileImagePath: 'assets/images/urosTrci.jpeg',
-    currentPlanName: 'Marathon 4 weeks',
-    nextTraining: 'Long run 20km',
-    progressPercent: 0.40,
-  );
-
-  late final List<Widget> _screens = [
-    HomeContent(data: homeData),
-    const StatsScreen(),
-    const PlansScreen(),
-    const SettingsScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _homeDataFuture = AthleteHomeService().fetchHomeData();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -36,11 +31,52 @@ class _AthleteDashboardScreenState extends State<AthleteDashboardScreen> {
     });
   }
 
+  List<Widget> _screensWith(AthleteHomeData data) {
+    return [
+      HomeContent(data: data),
+      const StatsScreen(),
+      const PlansScreen(),
+      const SettingsScreen(),
+    ];
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await AuthService().logout();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFDF6F1),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black87),
+            onPressed: () => _logout(context),
+          ),
+        ],
+      ),
       backgroundColor: const Color(0xFFFDF6F1),
-      body: _screens[_selectedIndex],
+      body: FutureBuilder<AthleteHomeData>(
+        future: _homeDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final screens = _screensWith(snapshot.data!);
+            return screens[_selectedIndex];
+          } else {
+            return const Center(child: Text('No data'));
+          }
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFFE67E22),

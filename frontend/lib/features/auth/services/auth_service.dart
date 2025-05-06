@@ -30,12 +30,12 @@ class AuthService {
     await _storage.deleteAll();
   }
 
-  Future<void> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       print('🚀 Trying to login with email: $email');
 
       final response = await http.post(
-        Uri.parse('http://192.168.0.30:3001/auth/login'),
+        Uri.parse('http://192.168.0.33:3001/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
@@ -51,9 +51,10 @@ class AuthService {
         throw Exception('Access token not found in response');
       }
 
-      print('💾 Saving accessToken: ${data['accessToken']}');
       await saveTokens(data['accessToken'], data['refreshToken']);
       print('✅ Tokens saved to storage');
+
+      return data; // <<⬅️⬅️⬅️⬅️ OVO DODAJ
     } catch (e) {
       print('🔥 CAUGHT ERROR IN LOGIN: $e');
       rethrow;

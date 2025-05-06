@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:frontend/models/user_role.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
-import 'package:frontend/features/home/screens/dashboard_screen.dart'; // ⬅️ OVO je ispravan import
+import 'package:frontend/features/home/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -45,9 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Login successful!')));
 
-      // ✅ Navigacija pravo na DashboardScreen
+      // ✅ dummy hardcoded role
+      const UserRole userRole = UserRole.athlete;
+
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => DashboardScreen(role: userRole)),
       );
     } catch (e) {
       ScaffoldMessenger.of(

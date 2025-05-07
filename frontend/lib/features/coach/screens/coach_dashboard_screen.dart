@@ -5,6 +5,13 @@ class CoachDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: const Center(child: Text('Welcome Coach')));
+    return Scaffold(
+      body: Center(
+        child: Text(
+          'Welcome Coach',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+      ),
+    );
   }
 }

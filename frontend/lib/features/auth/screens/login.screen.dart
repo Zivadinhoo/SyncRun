@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/user_role.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
-import 'package:frontend/features/home/screens/dashboard_screen.dart';
+import 'package:frontend/features/auth/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -11,8 +11,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'coach@example.com');
-  final _passwordController = TextEditingController(text: 'test123');
+  final _emailController = TextEditingController(
+    text: 'coach@example.com',
+  );
+  final _passwordController = TextEditingController(
+    text: 'test123',
+  );
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -29,7 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+        ),
       );
       return;
     }
@@ -38,20 +44,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final authService = AuthService();
-      final response = await authService.login(email, password);
+      final response = await authService.login(
+        email,
+        password,
+      );
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login successful!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login successful!')),
+      );
 
       // 🔑 Extract role from response
       final role =
-          response['role'] == 'coach' ? UserRole.coach : UserRole.athlete;
+          response['role'] == 'coach'
+              ? UserRole.coach
+              : UserRole.athlete;
 
       if (!mounted) return;
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => DashboardScreen(role: role)),
+        MaterialPageRoute(
+          builder: (_) => DashboardScreen(role: role),
+        ),
       );
     } catch (e) {
       debugPrint('❌ Login error: $e');
@@ -77,22 +90,33 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 80),
-                Image.asset('assets/images/SyncRun.png', height: 150),
+                Image.asset(
+                  'assets/images/SyncRun.png',
+                  height: 150,
+                ),
                 const SizedBox(height: 24),
                 const Text(
                   'Welcome to SyncRun!',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Your journey starts here.',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
@@ -101,9 +125,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                    ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ),
                     ),
                   ),
                 ),
@@ -113,7 +141,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -123,7 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _togglePasswordVisibility,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ),
                     ),
                   ),
                 ),
@@ -133,11 +165,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE67E22),
+                      backgroundColor: const Color(
+                        0xFFE67E22,
+                      ),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(
+                          20,
+                        ),
                       ),
                     ),
                     child:
@@ -151,7 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment:
+                      MainAxisAlignment.center,
                   children: [
                     const Text("Don’t have an account?"),
                     TextButton(
@@ -160,7 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       child: const Text(
                         "Register",
-                        style: TextStyle(color: Color(0xFFE67E22)),
+                        style: TextStyle(
+                          color: Color(0xFFE67E22),
+                        ),
                       ),
                     ),
                   ],

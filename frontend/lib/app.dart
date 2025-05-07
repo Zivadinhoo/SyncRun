@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/features/home/screens/dashboard_screen.dart';
+import 'package:frontend/features/auth/screens/dashboard_screen.dart';
 import 'package:frontend/models/user_role.dart';
 
 class RunWithCoachApp extends StatelessWidget {
@@ -7,13 +7,18 @@ class RunWithCoachApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Simulacija role za testiranje (ovo ćeš kasnije dobiti iz Auth servisa)
+    final UserRole userRole = UserRole.coach;
+
     return MaterialApp(
       title: 'RunWithCoach',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.orange,
+        ),
         useMaterial3: true,
       ),
-      home: const DashboardScreen(role: UserRole.athlete),
+      home: DashboardScreen(role: userRole),
     );
   }
 }

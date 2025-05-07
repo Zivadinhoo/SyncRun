@@ -10,12 +10,21 @@ class AuthService {
 
   bool get isLoggedInMemory => _accessToken != null;
 
-  Future<void> saveTokens(String accessToken, String refreshToken) async {
+  Future<void> saveTokens(
+    String accessToken,
+    String refreshToken,
+  ) async {
     _accessToken = accessToken;
     _refreshToken = refreshToken;
 
-    await _storage.write(key: 'accessToken', value: accessToken);
-    await _storage.write(key: 'refreshToken', value: refreshToken);
+    await _storage.write(
+      key: 'accessToken',
+      value: accessToken,
+    );
+    await _storage.write(
+      key: 'refreshToken',
+      value: refreshToken,
+    );
     print('✅ Tokens saved to storage');
   }
 
@@ -30,14 +39,20 @@ class AuthService {
     await _storage.deleteAll();
   }
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(
+    String email,
+    String password,
+  ) async {
     try {
       print('🚀 Trying to login with email: $email');
 
       final response = await http.post(
         Uri.parse('http://192.168.0.33:3001/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
       );
 
       print('Response status: ${response.statusCode}');
@@ -48,13 +63,18 @@ class AuthService {
 
       if (data['accessToken'] == null) {
         print('❗ AccessToken nije pronađen u odgovoru.');
-        throw Exception('Access token not found in response');
+        throw Exception(
+          'Access token not found in response',
+        );
       }
 
-      await saveTokens(data['accessToken'], data['refreshToken']);
+      await saveTokens(
+        data['accessToken'],
+        data['refreshToken'],
+      );
       print('✅ Tokens saved to storage');
 
-      return data; // <<⬅️⬅️⬅️⬅️ OVO DODAJ
+      return data;
     } catch (e) {
       print('🔥 CAUGHT ERROR IN LOGIN: $e');
       rethrow;
@@ -62,11 +82,15 @@ class AuthService {
   }
 
   Future<String?> getCurrentUser() async {
-    final token = _accessToken ?? await _storage.read(key: 'accessToken');
+    final token =
+        _accessToken ??
+        await _storage.read(key: 'accessToken');
     print('📦 AccessToken loaded: $token');
 
     if (token == null) {
-      print('❗ AccessToken je null. Vraćam null iz getCurrentUser().');
+      print(
+        '❗ AccessToken je null. Vraćam null iz getCurrentUser().',
+      );
       return null;
     }
 
@@ -92,8 +116,12 @@ class AuthService {
         print('✅ Full name parsed: $firstName $lastName');
         return '$firstName $lastName';
       } else {
-        print('❌ Failed to fetch user. Status code: ${response.statusCode}');
-        throw Exception('Failed to fetch current user: ${response.body}');
+        print(
+          '❌ Failed to fetch user. Status code: ${response.statusCode}',
+        );
+        throw Exception(
+          'Failed to fetch current user: ${response.body}',
+        );
       }
     } catch (e) {
       print('🔥 Exception during getCurrentUser: $e');

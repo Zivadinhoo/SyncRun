@@ -6,6 +6,7 @@ import 'package:frontend/models/athlete_home_data.dart';
 import 'package:http/http.dart' as http;
 
 class AthleteHomeService {
+  // ignore: unused_field
   final _storage = const FlutterSecureStorage();
   final _baseUrl = apiUrl;
 
@@ -22,7 +23,9 @@ class AthleteHomeService {
         final data = json.decode(response.body);
         return AthleteHomeData.fromJson(data);
       } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized. Please log in again.');
+        throw Exception(
+          'Unauthorized. Please log in again.',
+        );
       } else {
         throw Exception(
           'Failed to load home data: ${response.statusCode} ${response.body}',

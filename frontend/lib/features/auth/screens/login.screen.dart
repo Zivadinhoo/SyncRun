@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/models/user_role.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
 import 'package:frontend/features/auth/screens/dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -49,23 +50,33 @@ class _LoginScreenState extends State<LoginScreen> {
         password,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successful!')),
-      );
+      // ✅ Pravilno uzimanje access tokena
+      final accessToken = response['accessToken'];
+      final refreshToken = response['refreshToken'];
+      final role = response['role'];
 
-      // 🔑 Extract role from response
-      final role =
-          response['role'] == 'coach'
-              ? UserRole.coach
-              : UserRole.athlete;
+      if (accessToken != null && refreshToken != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("authToken", accessToken);
+        await prefs.setString("refreshToken", refreshToken);
+        await prefs.setString("userRole", role);
 
-      if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+          ),
+        );
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => DashboardScreen(role: role),
-        ),
-      );
+        if (!mounted) return;
+
+        Navigator.of(
+          context,
+        ).pushReplacementNamed('/coach-dashboard');
+      } else {
+        throw Exception(
+          "No access token found in response",
+        );
+      }
     } catch (e) {
       debugPrint('❌ Login error: $e');
       ScaffoldMessenger.of(context).showSnackBar(

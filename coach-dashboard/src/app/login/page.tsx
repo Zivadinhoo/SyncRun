@@ -20,13 +20,13 @@ export default function LoginPage() {
 
     try {
       const res = await axios.post(
-        "http://localhost:3001/auth/login", // prilagodi svoj backend URL
+        "http://localhost:3001/auth/login",
         { email, password },
-        { withCredentials: true } // šalje cookie od backenda
+        { withCredentials: true }
       );
 
       if (res.status === 200) {
-        router.push("/dashboard"); // preusmeri gde želiš nakon login-a
+        router.push("/dashboard");
       }
     } catch (err) {
       setError("Invalid credentials");

@@ -10,6 +10,8 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  // CORS enabled for local dev
+
   app.enableCors({
     origin: 'http://localhost:3000',
   });

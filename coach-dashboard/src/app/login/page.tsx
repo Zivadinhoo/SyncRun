@@ -10,12 +10,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLoign = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", { email, password });
+
+      const token = res.data.accessToken;
+      if (!token) {
+        throw new Error("No token returned");
+      }
+
+      // Postavi token globalno za sve naredne zahteve
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Preusmeri na dashboard
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
@@ -25,7 +35,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <form
-        onSubmit={handleLoign}
+        onSubmit={handleLogin}
         className="bg-white p-8 rounded shadow-md w-full max-w-sm"
       >
         <h1 className="text-2xl font-bold mb-6">Login</h1>

@@ -10,6 +10,10 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  app.enableCors({
+    origin: 'http://localhost:3000',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('RunWithCoach API')
     .setDescription('API docs for coaches and athletes')

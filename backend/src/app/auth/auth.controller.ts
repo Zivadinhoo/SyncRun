@@ -52,30 +52,59 @@ export class AuthController {
     return this.authService.authorize(user);
   }
 
-  @UseGuards(LocalAuthGuard)
+  // @UseGuards(LocalAuthGuard)
+  // @Post('login')
+  // @HttpCode(200)
+  // @ApiOperation({ summary: 'Login a user' })
+  // @ApiBody({ type: LoginUserDto })
+  // async login(@Body() loginDto: LoginUserDto) {
+  //   this.logger.info({ email: loginDto.email }, '🔐 Login request');
+
+  //   const user = await this.usersService.findOneBy({ email: loginDto.email });
+  //   if (!user) {
+  //     this.logger.warn({ email: loginDto.email }, '⚠️ User not found');
+  //     throw new UnauthorizedException('Invalid credentials');
+  //   }
+
+  //   const isValid = await this.authService.isPasswordValid(
+  //     loginDto.password,
+  //     user.password,
+  //   );
+  //   if (!isValid) {
+  //     this.logger.warn({ email: loginDto.email }, '❌ Invalid password');
+  //     throw new UnauthorizedException('Invalid credentials');
+  //   }
+
+  //   this.logger.info({ userId: user.id }, '✅ User logged in');
+  //   return this.authService.authorize(user);
+  // }
+
   @Post('login')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Login a user' })
-  @ApiBody({ type: LoginUserDto })
   async login(@Body() loginDto: LoginUserDto) {
-    this.logger.info({ email: loginDto.email }, '🔐 Login request');
-
     const user = await this.usersService.findOneBy({ email: loginDto.email });
+
     if (!user) {
-      this.logger.warn({ email: loginDto.email }, '⚠️ User not found');
       throw new UnauthorizedException('Invalid credentials');
     }
-
     const isValid = await this.authService.isPasswordValid(
       loginDto.password,
       user.password,
     );
+
     if (!isValid) {
-      this.logger.warn({ email: loginDto.email }, '❌ Invalid password');
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    this.logger.info({ userId: user.id }, '✅ User logged in');
-    return this.authService.authorize(user);
+    const { accessToken } = await this.authService.authorize(user);
+
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
 }

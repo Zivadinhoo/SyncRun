@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { TrainingPlan } from './training-plan.entity';
 
@@ -34,6 +35,12 @@ export class User {
 
   @OneToMany(() => TrainingPlan, (plan) => plan.coach)
   trainingPlans: TrainingPlan[];
+
+  @ManyToOne(() => User, (coach) => coach.athletes, { nullable: true })
+  coach: User;
+
+  @OneToMany(() => User, (athlete) => athlete.coach)
+  athletes: User[];
 
   @CreateDateColumn()
   createdAt: Date;

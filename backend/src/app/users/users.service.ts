@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PinoLogger } from 'nestjs-pino';
@@ -67,6 +67,16 @@ export class UsersService {
       );
       throw new InternalServerErrorException('Failed to update user');
     }
+  }
+
+  async getMyAthletes(coachId: number): Promise<User[]> {
+    return this.userRepository.find({
+      where: {
+        coach: { id: coachId },
+        role: UserRole.ATHLETE,
+      },
+      relations: ['coach'],
+    });
   }
 
   async findAll(): Promise<User[]> {

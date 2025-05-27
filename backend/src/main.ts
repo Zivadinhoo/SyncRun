@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { Logger } from 'nestjs-pino';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -9,11 +10,12 @@ async function bootstrap() {
   });
 
   app.useLogger(app.get(Logger));
-
+  app.use(cookieParser());
   // CORS enabled for local dev
 
   app.enableCors({
     origin: 'http://localhost:3000',
+    credentials: true,
   });
 
   const config = new DocumentBuilder()

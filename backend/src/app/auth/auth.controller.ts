@@ -4,6 +4,7 @@ import {
   Controller,
   HttpCode,
   Post,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { UsersService } from '../users/users.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { Response } from 'express';
 
 @ApiTags('Auth')
 @ApiBearerAuth('access-token')
@@ -81,25 +83,32 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() loginDto: LoginUserDto) {
+  async login(
+    @Body() loginDto: LoginUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const user = await this.usersService.findOneBy({ email: loginDto.email });
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    const isValid = await this.authService.isPasswordValid(
-      loginDto.password,
-      user.password,
-    );
-
-    if (!isValid) {
+    if (
+      !user ||
+      !(await this.authService.isPasswordValid(
+        loginDto.password,
+        user.password,
+      ))
+    ) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const { accessToken } = await this.authService.authorize(user);
 
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      maxAge: 3600000,
+    });
+
     return {
-      accessToken,
       user: {
         id: user.id,
         email: user.email,

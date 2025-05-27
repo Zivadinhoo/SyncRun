@@ -1,14 +1,17 @@
 import "./globals.css";
-import Sidebar from "../components/ui/Sidebar";
-import Header from "../components/ui/Header";
+import Sidebar from "./components/ui/Sidebar";
+import Header from "./components/ui/Header";
+import { ReactNode } from "react";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const metadata = {
+  title: "SyncRun Coach",
+  description: "Dashboard for running coaches",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
+      <head />
       <body className="flex">
         <Sidebar />
         <div className="flex-1 flex flex-col">

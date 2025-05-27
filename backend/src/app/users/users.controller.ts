@@ -7,6 +7,8 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,8 +21,11 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiOkResponse,
 } from '@nestjs/swagger';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -30,6 +35,16 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly logger: Logger,
   ) {}
+
+  @ApiOperation({ summary: 'Get all athletes assigned to the logged-in coach' })
+  @ApiOkResponse({ description: 'List of athletes returned successfully.' })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.COACH)
+  @Get('athletes/my')
+  GetMyAthletes(@Req() req: any) {
+    const coachId = req.user.id;
+    return this.usersService.getMyAthletes(coachId);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new user ' })

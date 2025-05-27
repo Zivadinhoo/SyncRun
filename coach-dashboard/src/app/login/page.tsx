@@ -1,5 +1,7 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -15,20 +17,16 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await api.post("/auth/login", { email, password });
+      await api.post("/auth/login", { email, password });
 
-      const token = res.data.accessToken;
-      if (!token) {
-        throw new Error("No token returned");
-      }
-
-      // Postavi token globalno za sve naredne zahteve
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      // Preusmeri na dashboard
+      // Cookie je već postavljen, ne proveravaš res.data
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Unknown error occurred.");
+      }
     }
   };
 

@@ -9,9 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "@/app/components/ui/dialog";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+
+console.log("✅ RunnersPage mounted");
 
 type Runner = {
   id: number;
@@ -40,10 +42,16 @@ export default function RunnersPage() {
   ]);
 
   useEffect(() => {
+    console.log("Fetching runners...");
     api
       .get("/users/athletes/my")
-      .then((res) => setRunners(res.data))
-      .catch((err) => console.error(err));
+      .then((res) => {
+        console.log("Fetched runners:", res.data);
+        setRunners(res.data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch runners:", err);
+      });
   }, []);
 
   const openPlanModal = (runner: Runner) => {

@@ -38,6 +38,9 @@ export class TrainingPlan {
   @JoinColumn({ name: 'coachId' })
   coach: User;
 
+  @Column({ nullable: true })
+  imageUrl?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -15,11 +15,11 @@ export class AssignedPlan {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'athleteId' })
   athlete: User;
 
-  @ManyToOne(() => TrainingPlan)
+  @ManyToOne(() => TrainingPlan, { eager: true })
   @JoinColumn({ name: 'trainingPlanId' })
   trainingPlan: TrainingPlan;
 

@@ -30,6 +30,18 @@ export class AssignedPlanService {
     return await this.assignedPlanRepo.save(assigned);
   }
 
+  async findByCoach(coachId: number): Promise<AssignedPlan[]> {
+    return this.assignedPlanRepo
+      .createQueryBuilder('assigned')
+      .leftJoinAndSelect('assigned.trainingPlan', 'trainingPlan')
+      .leftJoinAndSelect('assigned.athlete', 'athlete')
+      .leftJoin('trainingPlan.coach', 'coach')
+      .where('coach.id = :coachId', { coachId })
+      .andWhere('assigned.deletedAt IS NULL')
+      .orderBy('assigned.assignedAt', 'DESC')
+      .getMany();
+  }
+
   async findAll(): Promise<AssignedPlan[]> {
     return await this.assignedPlanRepo.find({
       relations: ['athlete', 'trainingPlan'],

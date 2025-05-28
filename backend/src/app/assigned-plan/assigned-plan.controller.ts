@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AssignedPlanService } from './assigned-plan.service';
@@ -55,19 +56,22 @@ export class AssignedPlanController {
     }
   }
 
-  @Get()
+  @Get('my')
   @Roles(UserRole.COACH)
-  @ApiOperation({ summary: 'Get all assigned plans (Coach only)' })
-  async findAll() {
+  @ApiOperation({
+    summary: 'Get all assigned plans created by me (Coach only)',
+  })
+  async getMyAssignedPlans(@Req() req: any) {
     try {
-      const result = await this.service.findAll();
-      this.logger.debug(`Fetched ${result.length} assigned plans`);
-
+      const result = await this.service.findByCoach(req.user.id);
+      this.logger.debug(
+        `Fetched ${result.length} plans for coach ${req.user.id}`,
+      );
       return result;
     } catch (error) {
-      this.logger.error({ err: error }, 'Failed to fetch assigned plans');
+      this.logger.error({ err: error }, 'Failed to fetch coach assigned plans');
+      throw error;
     }
-    throw error;
   }
 
   @Get()

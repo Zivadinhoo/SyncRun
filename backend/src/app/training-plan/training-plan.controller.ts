@@ -57,11 +57,11 @@ export class TrainingPlanController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all training plans' })
-  async findAll() {
+  @ApiOperation({ summary: 'Get all training plans for logged in coach' })
+  async finAll(@Req() req: RequestWithUser) {
     try {
-      this.logger.info('📄 Getting all training plans');
-      return await this.service.findAll();
+      this.logger.info({ userId: req.user.id }, 'Getting plans for coach');
+      return await this.service.findAllByCoach(req.user.id);
     } catch (error) {
       this.logger.error({ error }, '❌ Error fetching training plans');
       throw new HttpException(

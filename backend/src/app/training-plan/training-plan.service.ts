@@ -31,8 +31,16 @@ export class TrainingPlanService {
     return await this.trainingPlanRepo.save(plan);
   }
 
-  async findAll() {
-    return this.trainingPlanRepo.find({ relations: ['coach'] });
+  async findAllByCoach(coachId: number) {
+    return this.trainingPlanRepo.find({
+      where: {
+        coach: {
+          id: coachId,
+        },
+      },
+      relations: ['coach'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async findOne(id: number) {

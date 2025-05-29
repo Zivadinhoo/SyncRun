@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { CreatePlanModal } from "@/app/components/ui/CreatePlanModal";
 import { AssignPlanModal } from "@/app/components/ui/AssignPlanModal";
+import { EditPlanModal } from "@/app/components/ui/EditPlanModal";
 
 export default function PlansPage() {
   const [plans, setPlans] = useState([]);
@@ -70,6 +71,10 @@ export default function PlansPage() {
                       {new Date(ap.assignedAt).toLocaleDateString()})
                     </div>
                   ))}
+              </div>
+
+              <div className="flex justify-end gap-2 mt-3">
+                <EditPlanModal plan={plan} onUpdated={fetchData} />
               </div>
             </div>
           ))}

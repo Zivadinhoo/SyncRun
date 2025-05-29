@@ -56,9 +56,24 @@ export class TrainingPlanController {
     }
   }
 
+  @Get('my')
+  @ApiOperation({ summary: 'Get training plans created by logged in coach' })
+  async getMyPlans(@Req() req: RequestWithUser) {
+    try {
+      this.logger.info({ userId: req.user.id }, '📄 Fetching own plans');
+      return await this.service.findAllByCoach(req.user.id);
+    } catch (error) {
+      this.logger.error({ error }, '❌ Error fetching own plans');
+      throw new HttpException(
+        'Failed to fetch plans',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all training plans for logged in coach' })
-  async finAll(@Req() req: RequestWithUser) {
+  async findAll(@Req() req: RequestWithUser) {
     try {
       this.logger.info({ userId: req.user.id }, 'Getting plans for coach');
       return await this.service.findAllByCoach(req.user.id);

@@ -30,8 +30,15 @@ export class AssignedPlanService {
     return await this.assignedPlanRepo.save(assigned);
   }
 
-  async findAll(): Promise<AssignedPlan[]> {
-    return await this.assignedPlanRepo.find({
+  async findAllByCoach(coachId: number) {
+    return this.assignedPlanRepo.find({
+      where: {
+        trainingPlan: {
+          coach: {
+            id: coachId,
+          },
+        },
+      },
       relations: ['athlete', 'trainingPlan'],
     });
   }

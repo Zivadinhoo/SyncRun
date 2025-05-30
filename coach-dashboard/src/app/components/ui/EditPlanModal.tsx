@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 
 interface EditPlanModalProps {
   plan: {
-    id: number;
+    id: string;
     name: string;
     description: string;
   };

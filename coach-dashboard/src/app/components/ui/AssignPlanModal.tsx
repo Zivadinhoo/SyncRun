@@ -21,7 +21,7 @@ import { format } from "date-fns";
 
 interface Props {
   athletes: { id: number; email: string }[];
-  plans: { id: number; name: string }[];
+  plans: { id: string; name: string }[];
   onAssigned: () => void;
 }
 

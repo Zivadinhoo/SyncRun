@@ -10,6 +10,8 @@ class AuthService {
 
   bool get isLoggedInMemory => _accessToken != null;
 
+  final String baseUrl = 'http://192.168.0.35:3001';
+
   Future<void> saveTokens(
     String accessToken,
     String refreshToken,
@@ -47,7 +49,7 @@ class AuthService {
       print('🚀 Trying to login with email: $email');
 
       final response = await http.post(
-        Uri.parse('http://192.168.0.33:3001/auth/login'),
+        Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -55,14 +57,13 @@ class AuthService {
         }),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('RESPONSE BODY RAW: ${response.body}');
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 RESPONSE BODY RAW: ${response.body}');
 
       final data = jsonDecode(response.body);
       print('🔵 RESPONSE BODY DECODED: $data');
 
       if (data['accessToken'] == null) {
-        print('❗ AccessToken nije pronađen u odgovoru.');
         throw Exception(
           'Access token not found in response',
         );
@@ -72,8 +73,6 @@ class AuthService {
         data['accessToken'],
         data['refreshToken'],
       );
-      print('✅ Tokens saved to storage');
-
       return data;
     } catch (e) {
       print('🔥 CAUGHT ERROR IN LOGIN: $e');
@@ -95,11 +94,8 @@ class AuthService {
     }
 
     try {
-      final url = 'http://192.168.0.30:3001/auth/me';
-      print('🌍 Sending GET request to: $url');
-
       final response = await http.get(
-        Uri.parse(url),
+        Uri.parse('$baseUrl/auth/me'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -113,12 +109,8 @@ class AuthService {
         final data = jsonDecode(response.body);
         final firstName = data['firstName'] ?? '';
         final lastName = data['lastName'] ?? '';
-        print('✅ Full name parsed: $firstName $lastName');
         return '$firstName $lastName';
       } else {
-        print(
-          '❌ Failed to fetch user. Status code: ${response.statusCode}',
-        );
         throw Exception(
           'Failed to fetch current user: ${response.body}',
         );
@@ -127,6 +119,31 @@ class AuthService {
       print('🔥 Exception during getCurrentUser: $e');
       rethrow;
     }
+  }
+
+  /// ✅ Koristi za GET pozive koji zahtevaju token
+  Future<http.Response> authorizedGet(
+    String endpoint,
+  ) async {
+    final token =
+        _accessToken ??
+        await _storage.read(key: 'accessToken');
+    if (token == null)
+      throw Exception('❌ No access token found');
+
+    final url = Uri.parse('$baseUrl$endpoint');
+    print('🌍 Sending AUTHORIZED GET to: $url');
+
+    final res = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('📥 [${res.statusCode}] ${res.body}');
+    return res;
   }
 }
 

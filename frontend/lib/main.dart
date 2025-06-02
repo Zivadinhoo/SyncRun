@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/auth/screens/login.screen.dart';
 import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
 import 'package:frontend/features/plans/screens/create_plan_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(const RunWithCoachApp());
+  runApp(const ProviderScope(child: RunWithCoachApp()));
 }
 
 class RunWithCoachApp extends StatefulWidget {

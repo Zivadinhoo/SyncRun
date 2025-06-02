@@ -13,7 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController(
-    text: 'coach@example.com',
+    text: 'athlete@example.com',
   );
   final _passwordController = TextEditingController(
     text: 'test123',
@@ -69,9 +69,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (!mounted) return;
 
-        Navigator.of(
-          context,
-        ).pushReplacementNamed('/coach-dashboard');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (_) => DashboardScreen(
+                  role:
+                      role == 'coach'
+                          ? UserRole.coach
+                          : UserRole.athlete,
+                ),
+          ),
+        );
       } else {
         throw Exception(
           "No access token found in response",

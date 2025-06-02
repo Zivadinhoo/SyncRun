@@ -10,6 +10,7 @@ import { CreateTrainingDayFeedbackDto } from './dto/create-training-day-feedback
 import { UpdateTrainingDayFeedbackDto } from './dto/update-training-day-feedback.dto';
 import { TrainingDay } from '../entities/training-day.entity';
 import { User } from '../entities/user.entity';
+import { GetTrainingDayFeedbackDto } from './dto/get-training-day-feedback.query.dto';
 
 @Injectable()
 export class TrainingDayFeedbackService {
@@ -40,6 +41,26 @@ export class TrainingDayFeedbackService {
       rating: dto.rating,
     });
     return await this.feedbackRepo.save(feedback);
+  }
+
+  async findForCoach(query: GetTrainingDayFeedbackDto) {
+    const qb = this.feedbackRepo
+      .createQueryBuilder('feedback')
+      .leftJoinAndSelect('feedback.user', 'user')
+      .leftJoinAndSelect('feedback.trainingDay', 'trainingDay')
+      .leftJoinAndSelect('trainingDay.assignedPlan', 'plan');
+
+    if (query.planId) {
+      qb.andWhere('plan.id = :planId', { planId: query.planId });
+    }
+
+    if (query.athleteId) {
+      qb.andWhere('user.id = :athleteId', { athleteId: query.athleteId });
+    }
+
+    return qb
+      .orderBy('trainingDay.date', 'ASC') // ✅ ispravan alias
+      .getMany();
   }
 
   async findAll() {

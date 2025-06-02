@@ -22,6 +22,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { RequestWithUser } from '../common/types/request-with-user';
+import { Query } from '@nestjs/common';
+import { GetTrainingDayFeedbackDto } from './dto/get-training-day-feedback.query.dto';
 
 @ApiTags('TrainingDayFeedback')
 @ApiBearerAuth()
@@ -48,6 +50,18 @@ export class TrainingDayFeedbackController {
       return await this.feedbackService.create(req.user.id, dto);
     } catch (error) {
       this.logger.error('Error creating feedback', error);
+      throw error;
+    }
+  }
+
+  @Get('for-coach')
+  @ApiOperation({ summary: 'Get feedbacks for coach(filtered)' })
+  @ApiResponse({ status: 200, description: 'Returns feedback for coach' })
+  async getForCoach(@Query() query: GetTrainingDayFeedbackDto) {
+    try {
+      return await this.feedbackService.findForCoach(query);
+    } catch (error) {
+      this.logger.error('Error fetching coach feedbacks', error);
       throw error;
     }
   }

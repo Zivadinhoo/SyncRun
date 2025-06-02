@@ -24,6 +24,9 @@ export class TrainingDay {
   @Column({ nullable: true })
   description?: string;
 
+  @Column({ type: 'date' })
+  date: string;
+
   @ManyToOne(() => TrainingPlan, (plan) => plan.trainingDays, {
     onDelete: 'CASCADE',
   })

@@ -2,7 +2,7 @@ import { IsDateString, IsInt } from 'class-validator';
 
 export class CreateAssignedPlanDto {
   @IsInt()
-  atheleteId: number;
+  athleteId: number;
 
   @IsInt()
   trainingPlanId: number;

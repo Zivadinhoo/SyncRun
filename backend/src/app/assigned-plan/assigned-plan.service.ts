@@ -21,9 +21,18 @@ export class AssignedPlanService {
   ) {}
 
   async create(dto: CreateAssignedPlanDto): Promise<AssignedPlan> {
+    const plan = await this.trainingPlanRepo.findOne({
+      where: { id: dto.trainingPlanId },
+      relations: ['coach'],
+    });
+
+    if (!plan) {
+      throw new NotFoundException('Training plan is not fouund');
+    }
+
     const assigned = this.assignedPlanRepo.create({
-      athlete: { id: dto.atheleteId } as User,
-      trainingPlan: { id: dto.trainingPlanId } as TrainingPlan,
+      athlete: { id: dto.athleteId } as User,
+      trainingPlan: plan,
       assignedAt: new Date(dto.startDate),
     });
 
@@ -39,7 +48,7 @@ export class AssignedPlanService {
           },
         },
       },
-      relations: ['athlete', 'trainingPlan'],
+      relations: ['athlete', 'trainingPlan', 'trainingPlan.coach'],
     });
   }
 

@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { TrainingPlan } from './training-plan.entity';
 
@@ -37,6 +38,7 @@ export class User {
   trainingPlans: TrainingPlan[];
 
   @ManyToOne(() => User, (coach) => coach.athletes, { nullable: true })
+  @JoinColumn({ name: 'coachId' })
   coach: User;
 
   @OneToMany(() => User, (athlete) => athlete.coach)

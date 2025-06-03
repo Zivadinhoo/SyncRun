@@ -26,6 +26,7 @@ import {
 import { User, UserRole } from '../entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { RequestWithUser } from '../common/types/request-with-user';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -41,7 +42,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Roles(UserRole.COACH)
   @Get('athletes/my')
-  GetMyAthletes(@Req() req: any) {
+  GetMyAthletes(@Req() req: RequestWithUser) {
     const coachId = req.user.id;
     return this.usersService.getMyAthletes(coachId);
   }

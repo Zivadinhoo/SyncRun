@@ -17,10 +17,8 @@ export class AuthService {
   }
 
   async authorize(user: User): Promise<AuthResponse> {
-    const accessToken = this.generateAccessToken(user);
-    const refreshToken = this.generateRefreshToken(user);
-
-    const { password, ...safeUser } = user;
+    const accessToken = await this.generateAccessToken(user);
+    const refreshToken = await this.generateRefreshToken(user);
 
     return {
       accessToken,
@@ -43,27 +41,33 @@ export class AuthService {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  private generateAccessToken(user: User): string {
+  private async generateAccessToken(user: User): Promise<string> {
     const secret = this.configService.get<string>('JWT_SECRET') ?? '';
-    return this.jwtService.sign(
+    return await this.jwtService.signAsync(
       {
         email: user.email,
         role: user.role,
         sub: user.id,
       },
-      { secret, expiresIn: '1h' },
+      {
+        secret,
+        expiresIn: '1h',
+      },
     );
   }
 
-  private generateRefreshToken(user: User): string {
+  private async generateRefreshToken(user: User): Promise<string> {
     const secret = this.configService.get<string>('JWT_REFRESH_SECRET') ?? '';
-    return this.jwtService.sign(
+    return await this.jwtService.signAsync(
       {
         email: user.email,
         role: user.role,
         sub: user.id,
       },
-      { secret, expiresIn: '7d' },
+      {
+        secret,
+        expiresIn: '7d',
+      },
     );
   }
 }

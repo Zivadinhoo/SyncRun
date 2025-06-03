@@ -8,7 +8,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => req?.cookies?.access_token,
+        (req) => req?.cookies?.access_token, // for web
+        ExtractJwt.fromAuthHeaderAsBearerToken(), // mobile and api
       ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET'),

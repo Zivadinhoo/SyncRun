@@ -75,6 +75,20 @@ export class AssignedPlanController {
     }
   }
 
+  @UseGuards(JwtAuthGuard, RoleAuthGuard)
+  @Roles(UserRole.ATHLETE)
+  @Get('mine')
+  @ApiOperation({
+    summary: 'Get assigned plans for logged in athlete',
+  })
+  async getMyPlans(@Req() req: RequestWithUser) {
+    const plans = await this.service.findAllByAthlete(req.user.id);
+    this.logger.debug(
+      `Fetched ${plans.length} plans for athlete ${req.user.id}`,
+    );
+    return plans;
+  }
+
   @Get()
   @Roles(UserRole.COACH)
   @ApiOperation({ summary: 'Get assigned plan by ID' })

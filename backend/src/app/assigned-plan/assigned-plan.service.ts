@@ -27,7 +27,7 @@ export class AssignedPlanService {
     });
 
     if (!plan) {
-      throw new NotFoundException('Training plan is not fouund');
+      throw new NotFoundException('Training plan is not found');
     }
 
     const assigned = this.assignedPlanRepo.create({
@@ -49,6 +49,17 @@ export class AssignedPlanService {
         },
       },
       relations: ['athlete', 'trainingPlan', 'trainingPlan.coach'],
+    });
+  }
+
+  async findAllByAthlete(athleteId: number) {
+    return this.assignedPlanRepo.find({
+      where: {
+        athlete: {
+          id: athleteId,
+        },
+      },
+      relations: ['trainingPlan'],
     });
   }
 

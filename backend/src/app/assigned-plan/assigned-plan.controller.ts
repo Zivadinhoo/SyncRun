@@ -48,7 +48,7 @@ export class AssignedPlanController {
     try {
       const result = await this.service.create(dto);
       this.logger.info(
-        `Plan ${dto.trainingPlanId} assigned to athlete ${dto.atheleteId}`,
+        `Plan ${dto.trainingPlanId} assigned to athlete ${dto.athleteId}`,
       );
       return result;
     } catch (error) {

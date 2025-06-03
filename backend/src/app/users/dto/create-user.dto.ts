@@ -1,4 +1,11 @@
-import { IsEmail, IsEnum, IsNotEmpty, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail()
@@ -12,4 +19,8 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   lastName: string;
+
+  @IsOptional()
+  @IsNumber()
+  coachId?: number;
 }

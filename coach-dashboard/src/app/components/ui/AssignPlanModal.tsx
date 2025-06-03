@@ -36,7 +36,7 @@ export function AssignPlanModal({ athletes, plans, onAssigned }: Props) {
     setLoading(true);
     try {
       await api.post("/assigned-plans", {
-        atheleteId: Number(athleteId),
+        athleteId: Number(athleteId),
         trainingPlanId: Number(planId),
         startDate: format(new Date(), "yyyy-MM-dd"),
       });

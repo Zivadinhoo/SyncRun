@@ -12,8 +12,7 @@ import {
 } from "@/app/components/ui/dialog";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-
-console.log("✅ RunnersPage mounted");
+import { AddAthleteModal } from "../components/ui/AddAthleteModal";
 
 type Runner = {
   id: number;
@@ -41,22 +40,22 @@ export default function RunnersPage() {
     { day: "SUNDAY", activity: "" },
   ]);
 
+  const fetchRunners = async () => {
+    try {
+      const res = await api.get("/users/athletes/my");
+      setRunners(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch runners:", err);
+    }
+  };
+
   useEffect(() => {
-    console.log("Fetching runners...");
-    api
-      .get("/users/athletes/my")
-      .then((res) => {
-        console.log("Fetched runners:", res.data);
-        setRunners(res.data);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch runners:", err);
-      });
+    fetchRunners();
   }, []);
 
   const openPlanModal = (runner: Runner) => {
     setSelectedRunner(runner);
-    setWeekStart(""); // reset fields
+    setWeekStart("");
     setDays(days.map((d) => ({ ...d, activity: "" })));
   };
 
@@ -68,17 +67,21 @@ export default function RunnersPage() {
         weekStart,
         days,
       });
-      alert("Plan created!");
+      alert("✅ Plan created!");
       setSelectedRunner(null);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error creating plan", err);
       alert("Error creating plan");
     }
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">My Runners</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">My Runners</h1>
+        <AddAthleteModal onCreated={fetchRunners} />
+      </div>
+
       <ul className="space-y-2">
         {runners.map((runner) => (
           <li

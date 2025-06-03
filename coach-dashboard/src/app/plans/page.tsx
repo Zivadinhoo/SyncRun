@@ -8,6 +8,7 @@ import { EditPlanModal } from "@/app/components/ui/EditPlanModal";
 import { DeletePlanModal } from "../components/ui/DeletePlanModal";
 import { Button } from "@/app/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { AddAthleteModal } from "../components/ui/AddAthleteModal";
 
 interface Plan {
   id: string;
@@ -66,6 +67,7 @@ export default function PlansPage() {
         <h1 className="text-3xl font-bold">My Training Plans</h1>
         <div className="flex gap-2">
           <CreatePlanModal onPlanCreated={fetchData} />
+          <AddAthleteModal onCreated={fetchData} />
           {plans.length > 0 && athletes.length > 0 && (
             <AssignPlanModal
               plans={plans}

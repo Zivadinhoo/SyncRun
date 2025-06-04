@@ -75,8 +75,8 @@ export class AssignedPlanController {
     }
   }
 
-  @UseGuards(JwtAuthGuard, RoleAuthGuard)
-  @Roles(UserRole.ATHLETE)
+  // @UseGuards(JwtAuthGuard, RoleAuthGuard)
+  // @Roles(UserRole.ATHLETE)
   @Get('mine')
   @ApiOperation({
     summary: 'Get assigned plans for logged in athlete',

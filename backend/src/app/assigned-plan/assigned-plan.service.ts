@@ -53,14 +53,13 @@ export class AssignedPlanService {
   }
 
   async findAllByAthlete(athleteId: number) {
-    return this.assignedPlanRepo.find({
-      where: {
-        athlete: {
-          id: athleteId,
-        },
-      },
-      relations: ['trainingPlan'],
-    });
+    return this.assignedPlanRepo
+      .createQueryBuilder('assignedPlan')
+      .innerJoinAndSelect('assignedPlan.trainingPlan', 'trainingPlan')
+      .where('assignedPlan.athleteId = :athleteId', { athleteId })
+      .andWhere('assignedPlan.deletedAt IS NULL')
+      .andWhere('trainingPlan.deletedAt IS NULL')
+      .getMany();
   }
 
   async findOne(id: number): Promise<AssignedPlan> {

@@ -3,41 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/auth/screens/login.screen.dart';
 import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
 import 'package:frontend/features/plans/screens/create_plan_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/features/athelete/screens/athlete_main_screen.dart';
+import 'package:frontend/models/user_role.dart';
 
 void main() {
   runApp(const ProviderScope(child: RunWithCoachApp()));
 }
 
-class RunWithCoachApp extends StatefulWidget {
+class RunWithCoachApp extends StatelessWidget {
   const RunWithCoachApp({Key? key}) : super(key: key);
-
-  @override
-  State<RunWithCoachApp> createState() =>
-      _RunWithCoachAppState();
-}
-
-class _RunWithCoachAppState extends State<RunWithCoachApp> {
-  bool isAuthenticated = false;
-  String? token;
-
-  @override
-  void initState() {
-    super.initState();
-    checkAuthentication();
-  }
-
-  Future<void> checkAuthentication() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedToken = prefs.getString("authToken");
-
-    if (storedToken != null && storedToken.isNotEmpty) {
-      setState(() {
-        isAuthenticated = true;
-        token = storedToken;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,14 +31,15 @@ class _RunWithCoachAppState extends State<RunWithCoachApp> {
           iconTheme: IconThemeData(color: Colors.black),
         ),
       ),
-      initialRoute:
-          isAuthenticated ? '/coach-dashboard' : '/login',
+      home: const LoginScreen(), // 👈 uvek prvo LoginScreen
       routes: {
         '/login': (context) => const LoginScreen(),
         '/coach-dashboard':
             (context) => const CoachDashboardScreen(),
         '/create-plan':
             (context) => const CreatePlanScreen(),
+        '/athlete-dashboard':
+            (context) => const AthleteMainScreen(),
       },
     );
   }

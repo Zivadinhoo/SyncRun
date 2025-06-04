@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/assigned_plans_provider.dart';
-import 'package:frontend/models/assigned_plan.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class AthleteDashboardScreen extends ConsumerWidget {
+class AthleteDashboardScreen
+    extends ConsumerStatefulWidget {
   const AthleteDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AthleteDashboardScreen> createState() =>
+      _AthleteDashboardScreenState();
+}
+
+class _AthleteDashboardScreenState
+    extends ConsumerState<AthleteDashboardScreen> {
+  final _storage = const FlutterSecureStorage();
+  String fullName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadName();
+  }
+
+  Future<void> _loadName() async {
+    final name = await _storage.read(key: 'fullName');
+    setState(() {
+      fullName = name ?? '';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final assignedPlansAsync = ref.watch(
       assignedPlansFutureProvider,
     );
@@ -17,9 +41,11 @@ class AthleteDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDF6F1),
         elevation: 0,
-        title: const Text(
-          'Athlete Dashboard',
-          style: TextStyle(color: Colors.black87),
+        title: Text(
+          fullName.isNotEmpty
+              ? 'Welcome $fullName'
+              : 'Welcome',
+          style: const TextStyle(color: Colors.black87),
         ),
         iconTheme: const IconThemeData(
           color: Colors.black87,
@@ -28,7 +54,12 @@ class AthleteDashboardScreen extends ConsumerWidget {
       ),
       body: assignedPlansAsync.when(
         data: (plans) {
-          if (plans.isEmpty) {
+          final validPlans =
+              plans
+                  .where((p) => p.trainingPlan != null)
+                  .toList();
+
+          if (validPlans.isEmpty) {
             return const Center(
               child: Text(
                 'No assigned training plans yet.',
@@ -38,9 +69,9 @@ class AthleteDashboardScreen extends ConsumerWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: plans.length,
+            itemCount: validPlans.length,
             itemBuilder: (context, index) {
-              final plan = plans[index];
+              final plan = validPlans[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(
@@ -48,9 +79,12 @@ class AthleteDashboardScreen extends ConsumerWidget {
                 ),
                 elevation: 4,
                 child: ListTile(
-                  title: Text(plan.trainingPlan.name),
+                  title: Text(
+                    plan.trainingPlan.name ?? 'No title',
+                  ),
                   subtitle: Text(
-                    plan.trainingPlan.description,
+                    plan.trainingPlan.description ??
+                        'No description',
                   ),
                   trailing: Icon(
                     plan.isCompleted

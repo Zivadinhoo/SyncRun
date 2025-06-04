@@ -36,76 +36,93 @@ class _AthleteDashboardScreenState
       assignedPlansFutureProvider,
     );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFDF6F1),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFDF6F1),
-        elevation: 0,
-        title: Text(
-          fullName.isNotEmpty
-              ? 'Welcome $fullName'
-              : 'Welcome',
-          style: const TextStyle(color: Colors.black87),
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.black87,
-        ),
-        centerTitle: true,
-      ),
-      body: assignedPlansAsync.when(
-        data: (plans) {
-          final validPlans =
-              plans
-                  .where((p) => p.trainingPlan != null)
-                  .toList();
-
-          if (validPlans.isEmpty) {
-            return const Center(
-              child: Text(
-                'No assigned training plans yet.',
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: validPlans.length,
-            itemBuilder: (context, index) {
-              final plan = validPlans[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 4,
-                child: ListTile(
-                  title: Text(
-                    plan.trainingPlan.name ?? 'No title',
-                  ),
-                  subtitle: Text(
-                    plan.trainingPlan.description ??
-                        'No description',
-                  ),
-                  trailing: Icon(
-                    plan.isCompleted
-                        ? Icons.check_circle
-                        : Icons.schedule,
-                    color:
-                        plan.isCompleted
-                            ? Colors.green
-                            : Colors.orange,
-                  ),
-                ),
-              );
-            },
-          );
-        },
-        loading:
-            () => const Center(
-              child: CircularProgressIndicator(),
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            color: const Color(0xFFFDF6F1),
+            padding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 20,
             ),
-        error:
-            (err, _) => Center(child: Text('Error: $err')),
+            alignment: Alignment.center,
+            child: Text(
+              fullName.isNotEmpty
+                  ? 'Welcome $fullName'
+                  : 'Welcome',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: assignedPlansAsync.when(
+              data: (plans) {
+                final validPlans =
+                    plans
+                        .where(
+                          (p) => p.trainingPlan != null,
+                        )
+                        .toList();
+
+                if (validPlans.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No assigned training plans yet.',
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: validPlans.length,
+                  itemBuilder: (context, index) {
+                    final plan = validPlans[index];
+                    return Card(
+                      margin: const EdgeInsets.only(
+                        bottom: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          16,
+                        ),
+                      ),
+                      elevation: 4,
+                      child: ListTile(
+                        title: Text(
+                          plan.trainingPlan.name ??
+                              'No title',
+                        ),
+                        subtitle: Text(
+                          plan.trainingPlan.description ??
+                              'No description',
+                        ),
+                        trailing: Icon(
+                          plan.isCompleted
+                              ? Icons.check_circle
+                              : Icons.schedule,
+                          color:
+                              plan.isCompleted
+                                  ? Colors.green
+                                  : Colors.orange,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading:
+                  () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+              error:
+                  (err, _) =>
+                      Center(child: Text('Error: $err')),
+            ),
+          ),
+        ],
       ),
     );
   }

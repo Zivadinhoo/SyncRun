@@ -13,7 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController(
-    text: 'athlete@example.com',
+    text: 'elenakuckarka@gmail.com',
   );
   final _passwordController = TextEditingController(
     text: 'test123',
@@ -49,8 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email,
         password,
       );
+      print('🔍 LOGIN RESPONSE: $response');
 
-      // ✅ Pravilno uzimanje access tokena
       final accessToken = response['accessToken'];
       final refreshToken = response['refreshToken'];
       final role = response['role'];
@@ -68,17 +68,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (!mounted) return;
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder:
-                (_) => DashboardScreen(
-                  role:
-                      role == 'coach'
-                          ? UserRole.coach
-                          : UserRole.athlete,
-                ),
-          ),
+        Navigator.of(context).pushReplacementNamed(
+          role == 'coach'
+              ? '/coach-dashboard'
+              : '/athlete-dashboard',
         );
       } else {
         throw Exception(

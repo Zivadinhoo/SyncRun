@@ -19,7 +19,10 @@ export class AssignedPlan {
   @JoinColumn({ name: 'athleteId' })
   athlete: User;
 
-  @ManyToOne(() => TrainingPlan)
+  @Column()
+  trainingPlanId: number;
+
+  @ManyToOne(() => TrainingPlan, { eager: false })
   @JoinColumn({ name: 'trainingPlanId' })
   trainingPlan: TrainingPlan;
 

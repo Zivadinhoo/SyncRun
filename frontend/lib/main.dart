@@ -31,7 +31,7 @@ class RunWithCoachApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.black),
         ),
       ),
-      home: const LoginScreen(), // 👈 uvek prvo LoginScreen
+      home: const LoginScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/coach-dashboard':

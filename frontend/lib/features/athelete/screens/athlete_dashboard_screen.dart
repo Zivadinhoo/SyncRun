@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/assigned_plans_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-import 'training_day_screen.dart'; // 👈 dodato
+import 'training_day_screen.dart';
 
 class AthleteDashboardScreen
     extends ConsumerStatefulWidget {
@@ -96,22 +96,36 @@ class _AthleteDashboardScreenState
                             : 'N/A';
 
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push<
+                          bool
+                        >(
                           context,
                           MaterialPageRoute(
                             builder:
                                 (_) => TrainingDayScreen(
-                                  planName: planName,
+                                  planName:
+                                      plan
+                                          .trainingPlan
+                                          .name,
                                   planDescription:
-                                      planDescription,
+                                      plan
+                                          .trainingPlan
+                                          .description,
                                   assignedAt:
                                       plan.assignedAt,
                                   isCompleted:
                                       plan.isCompleted,
+                                  assignedPlanId: plan.id,
                                 ),
                           ),
                         );
+
+                        if (result == true) {
+                          ref.invalidate(
+                            assignedPlansFutureProvider,
+                          );
+                        }
                       },
                       child: Card(
                         margin: const EdgeInsets.only(

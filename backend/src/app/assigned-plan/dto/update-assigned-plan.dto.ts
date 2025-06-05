@@ -6,7 +6,7 @@ export class UpdateAssignedPlanDto {
 
   @IsOptional()
   @IsBoolean()
-  IsCompleted?: boolean;
+  isCompleted?: boolean;
 
   @IsOptional()
   @IsString()

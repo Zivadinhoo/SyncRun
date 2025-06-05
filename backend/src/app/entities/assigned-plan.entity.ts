@@ -15,6 +15,15 @@ export class AssignedPlan {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  feedback?: string;
+
+  @Column()
+  athleteId: number;
+
+  @Column({ type: 'float', nullable: true })
+  rpe?: number;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'athleteId' })
   athlete: User;

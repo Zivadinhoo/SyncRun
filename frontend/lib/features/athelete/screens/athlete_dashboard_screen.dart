@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/assigned_plans_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
 class AthleteDashboardScreen
     extends ConsumerStatefulWidget {
@@ -80,6 +81,19 @@ class _AthleteDashboardScreenState
                   itemCount: validPlans.length,
                   itemBuilder: (context, index) {
                     final plan = validPlans[index];
+                    final planName =
+                        plan.trainingPlan.name ??
+                        'No title';
+                    final planDescription =
+                        plan.trainingPlan.description ??
+                        'No description';
+
+                    final formattedDate =
+                        plan.assignedAt != null
+                            ? DateFormat(
+                              'd. MMM y',
+                            ).format(plan.assignedAt)
+                            : 'N/A';
                     return Card(
                       margin: const EdgeInsets.only(
                         bottom: 12,
@@ -89,24 +103,76 @@ class _AthleteDashboardScreenState
                           16,
                         ),
                       ),
-                      elevation: 4,
-                      child: ListTile(
-                        title: Text(
-                          plan.trainingPlan.name ??
-                              'No title',
-                        ),
-                        subtitle: Text(
-                          plan.trainingPlan.description ??
-                              'No description',
-                        ),
-                        trailing: Icon(
-                          plan.isCompleted
-                              ? Icons.check_circle
-                              : Icons.schedule,
-                          color:
-                              plan.isCompleted
-                                  ? Colors.green
-                                  : Colors.orange,
+                      elevation: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              planName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              planDescription,
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment
+                                      .spaceBetween,
+                              children: [
+                                Text(
+                                  'Assigned: $formattedDate',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      plan.isCompleted
+                                          ? Icons
+                                              .check_circle
+                                          : Icons.schedule,
+                                      color:
+                                          plan.isCompleted
+                                              ? Colors.green
+                                              : Colors
+                                                  .orange,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(
+                                      width: 4,
+                                    ),
+                                    Text(
+                                      plan.isCompleted
+                                          ? 'Completed'
+                                          : 'Not completed',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color:
+                                            plan.isCompleted
+                                                ? Colors
+                                                    .green
+                                                : Colors
+                                                    .orange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     );

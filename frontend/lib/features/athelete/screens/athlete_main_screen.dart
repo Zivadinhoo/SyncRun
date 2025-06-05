@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/athelete/providers/assigned_plans_provider.dart';
 import 'athlete_dashboard_screen.dart';
 
-class AthleteMainScreen extends StatefulWidget {
+class AthleteMainScreen extends ConsumerStatefulWidget {
   const AthleteMainScreen({super.key});
 
   @override
-  State<AthleteMainScreen> createState() =>
+  ConsumerState<AthleteMainScreen> createState() =>
       _AthleteMainScreenState();
 }
 
 class _AthleteMainScreenState
-    extends State<AthleteMainScreen> {
+    extends ConsumerState<AthleteMainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
@@ -23,6 +25,9 @@ class _AthleteMainScreenState
     setState(() {
       _selectedIndex = index;
     });
+    if (index == 0) {
+      ref.invalidate(assignedPlansFutureProvider);
+    }
   }
 
   @override

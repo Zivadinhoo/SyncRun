@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/assigned_plans_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'training_day_screen.dart'; // 👈 dodato
 
 class AthleteDashboardScreen
     extends ConsumerStatefulWidget {
@@ -87,92 +88,115 @@ class _AthleteDashboardScreenState
                     final planDescription =
                         plan.trainingPlan.description ??
                         'No description';
-
                     final formattedDate =
                         plan.assignedAt != null
                             ? DateFormat(
                               'd. MMM y',
                             ).format(plan.assignedAt)
                             : 'N/A';
-                    return Card(
-                      margin: const EdgeInsets.only(
-                        bottom: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          16,
-                        ),
-                      ),
-                      elevation: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              planName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              planDescription,
-                              style: const TextStyle(
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .spaceBetween,
-                              children: [
-                                Text(
-                                  'Assigned: $formattedDate',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => TrainingDayScreen(
+                                  planName: planName,
+                                  planDescription:
+                                      planDescription,
+                                  assignedAt:
+                                      plan.assignedAt,
+                                  isCompleted:
+                                      plan.isCompleted,
                                 ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      plan.isCompleted
-                                          ? Icons
-                                              .check_circle
-                                          : Icons.schedule,
-                                      color:
-                                          plan.isCompleted
-                                              ? Colors.green
-                                              : Colors
-                                                  .orange,
-                                      size: 16,
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.only(
+                          bottom: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(16),
+                        ),
+                        elevation: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                            16.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                planName,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight:
+                                      FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                planDescription,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment
+                                        .spaceBetween,
+                                children: [
+                                  Text(
+                                    'Assigned: $formattedDate',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
                                     ),
-                                    const SizedBox(
-                                      width: 4,
-                                    ),
-                                    Text(
-                                      plan.isCompleted
-                                          ? 'Completed'
-                                          : 'Not completed',
-                                      style: TextStyle(
-                                        fontSize: 12,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        plan.isCompleted
+                                            ? Icons
+                                                .check_circle
+                                            : Icons
+                                                .schedule,
                                         color:
                                             plan.isCompleted
                                                 ? Colors
                                                     .green
                                                 : Colors
                                                     .orange,
+                                        size: 16,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                                      const SizedBox(
+                                        width: 4,
+                                      ),
+                                      Text(
+                                        plan.isCompleted
+                                            ? 'Completed'
+                                            : 'Not completed',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color:
+                                              plan.isCompleted
+                                                  ? Colors
+                                                      .green
+                                                  : Colors
+                                                      .orange,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

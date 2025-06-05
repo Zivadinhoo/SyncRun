@@ -76,7 +76,7 @@ export class AssignedPlanService {
     const assigned = await this.findOne(id);
     const updates: Partial<AssignedPlan> = {
       ...(dto.startDate && { assignedAt: new Date(dto.startDate) }),
-      ...(dto.IsCompleted !== undefined && { isCompleted: dto.IsCompleted }),
+      ...(dto.isCompleted !== undefined && { isCompleted: dto.isCompleted }),
       ...(dto.feedback !== undefined && { feedback: dto.feedback }),
       ...(dto.rpe !== undefined && { rpe: dto.rpe }),
     };

@@ -74,9 +74,13 @@ export class AssignedPlanService {
 
   async update(id: number, dto: UpdateAssignedPlanDto): Promise<AssignedPlan> {
     const assigned = await this.findOne(id);
-
-    if (dto.startDate) assigned.assignedAt = new Date(dto.startDate);
-    if (dto.IsCompleted !== undefined) assigned.isCompleted = dto.IsCompleted;
+    const updates: Partial<AssignedPlan> = {
+      ...(dto.startDate && { assignedAt: new Date(dto.startDate) }),
+      ...(dto.IsCompleted !== undefined && { isCompleted: dto.IsCompleted }),
+      ...(dto.feedback !== undefined && { feedback: dto.feedback }),
+      ...(dto.rpe !== undefined && { rpe: dto.rpe }),
+    };
+    Object.assign(assigned, updates);
 
     return await this.assignedPlanRepo.save(assigned);
   }

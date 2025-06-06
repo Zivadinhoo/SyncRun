@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/assigned_plans_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+
+import '../providers/assigned_plans_provider.dart';
 import 'training_day_screen.dart';
 
 class AthleteDashboardScreen
@@ -82,21 +83,20 @@ class _AthleteDashboardScreenState
                   itemCount: validPlans.length,
                   itemBuilder: (context, index) {
                     final plan = validPlans[index];
-                    final planName =
-                        plan.trainingPlan.name ??
-                        'No title';
-                    final planDescription =
-                        plan.trainingPlan.description ??
-                        'No description';
-                    final formattedDate =
-                        plan.assignedAt != null
-                            ? DateFormat(
-                              'd. MMM y',
-                            ).format(plan.assignedAt)
-                            : 'N/A';
 
                     return GestureDetector(
                       onTap: () async {
+                        if (plan.trainingDayId == null ||
+                            plan.trainingDayId == 0) {
+                          print(
+                            "⚠️ No valid trainingDayId provided.",
+                          );
+                          return;
+                        }
+
+                        final trainingDayId =
+                            plan.trainingDayId!;
+
                         final result = await Navigator.push<
                           bool
                         >(
@@ -117,6 +117,8 @@ class _AthleteDashboardScreenState
                                   isCompleted:
                                       plan.isCompleted,
                                   assignedPlanId: plan.id,
+                                  trainingDayId:
+                                      trainingDayId,
                                 ),
                           ),
                         );
@@ -137,15 +139,13 @@ class _AthleteDashboardScreenState
                         ),
                         elevation: 3,
                         child: Padding(
-                          padding: const EdgeInsets.all(
-                            16.0,
-                          ),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment:
                                 CrossAxisAlignment.start,
                             children: [
                               Text(
-                                planName,
+                                plan.trainingPlan.name,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight:
@@ -154,7 +154,9 @@ class _AthleteDashboardScreenState
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                planDescription,
+                                plan
+                                    .trainingPlan
+                                    .description,
                                 style: const TextStyle(
                                   fontSize: 14,
                                 ),
@@ -166,7 +168,7 @@ class _AthleteDashboardScreenState
                                         .spaceBetween,
                                 children: [
                                   Text(
-                                    'Assigned: $formattedDate',
+                                    'Assigned: ${DateFormat('d. MMM y').format(plan.assignedAt)}',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,

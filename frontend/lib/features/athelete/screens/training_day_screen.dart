@@ -1,7 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/features/athelete/services/assigned_plans_service.dart';
+import 'package:frontend/features/athelete/services/athlete_feedback_service.dart';
+import 'package:frontend/models/training_day_feedback.dart';
 import 'package:intl/intl.dart';
 
 class TrainingDayScreen extends StatefulWidget {
@@ -10,6 +11,7 @@ class TrainingDayScreen extends StatefulWidget {
   final DateTime assignedAt;
   final bool isCompleted;
   final int assignedPlanId;
+  final int trainingDayId;
 
   const TrainingDayScreen({
     super.key,
@@ -18,6 +20,7 @@ class TrainingDayScreen extends StatefulWidget {
     required this.assignedAt,
     required this.isCompleted,
     required this.assignedPlanId,
+    required this.trainingDayId,
   });
 
   @override
@@ -36,11 +39,36 @@ class _TrainingDayScreenState
   void initState() {
     super.initState();
     isCompleted = widget.isCompleted;
+    _loadFeedback();
+  }
+
+  void _loadFeedback() async {
+    if (widget.trainingDayId == 0) {
+      print("⚠️ No trainingDayId, skipping feedback load.");
+      return;
+    }
+
+    try {
+      final TrainingDayFeedback? feedback =
+          await AthleteFeedbackService()
+              .fetchFeedbackForTrainingDay(
+                widget.trainingDayId,
+              );
+
+      print("💬 feedback: $feedback");
+
+      if (feedback != null) {
+        setState(() {
+          _feedbackController.text = feedback.comment ?? '';
+          rpe = (feedback.rating ?? 5).toDouble();
+        });
+      }
+    } catch (e) {
+      print("❌ Error loading feedback: $e");
+    }
   }
 
   void _markAsCompleted() async {
-    setState(() {});
-
     try {
       final response = await AssignedPlansService()
           .updateAssignedPlan(
@@ -58,6 +86,12 @@ class _TrainingDayScreenState
               updatedPlan['feedback'] ?? '';
           rpe = (updatedPlan['rpe'] ?? 5).toDouble();
         });
+
+        Navigator.pop(context, true);
+      } else {
+        print(
+          "⚠️ Failed to update training. Status: ${response.statusCode}",
+        );
       }
     } catch (e) {
       print("❌ Error updating training: $e");

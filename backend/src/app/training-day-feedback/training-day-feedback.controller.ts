@@ -9,6 +9,7 @@ import {
   Req,
   UseGuards,
   HttpCode,
+  NotFoundException,
 } from '@nestjs/common';
 import { TrainingDayFeedbackService } from './training-day-feedback.service';
 import { CreateTrainingDayFeedbackDto } from './dto/create-training-day-feedback.dto';
@@ -62,6 +63,41 @@ export class TrainingDayFeedbackController {
       return await this.feedbackService.findForCoach(query);
     } catch (error) {
       this.logger.error('Error fetching coach feedbacks', error);
+      throw error;
+    }
+  }
+
+  @Get('by-training-day/:trainingDayId')
+  @ApiOperation({
+    summary: 'Get feedback for a specific training day(athlete only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns feedback for this training day and athlete',
+  })
+  @Get('by-training-day/:trainingDayId')
+  async getByTrainingDay(
+    @Param('trainingDayId') trainingDayId: string,
+    @Req() req: RequestWithUser,
+  ) {
+    try {
+      const feedback = await this.feedbackService.findOneByTrainingDay(
+        +trainingDayId,
+        req.user.id,
+      );
+
+      if (!feedback) {
+        throw new NotFoundException(
+          `No feedback for training day ${trainingDayId} and user ${req.user.id}`,
+        );
+      }
+
+      return feedback;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching feedback for trainingDay ${trainingDayId}`,
+        error,
+      );
       throw error;
     }
   }

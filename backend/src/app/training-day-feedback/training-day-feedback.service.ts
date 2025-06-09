@@ -67,6 +67,16 @@ export class TrainingDayFeedbackService {
     return this.feedbackRepo.find({ relations: ['user', 'trainingday'] });
   }
 
+  async findOneByTrainingDay(trainingdayId: number, athleteId: number) {
+    return await this.feedbackRepo.findOne({
+      where: {
+        trainingDay: { id: trainingdayId },
+        user: { id: athleteId },
+      },
+      relations: ['trainingDay', 'user'],
+    });
+  }
+
   async findOne(id: number) {
     const result = await this.feedbackRepo.findOne({
       where: { id },

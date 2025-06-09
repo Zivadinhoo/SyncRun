@@ -10,14 +10,19 @@ import { TrainingPlan } from '../entities/training-plan.entity';
 import { CreateAssignedPlanDto } from './dto/create-assigned-plan-dto';
 import { UpdateAssignedPlanDto } from './dto/update-assigned-plan.dto';
 import { User } from '../entities/user.entity';
+import { TrainingDay } from '../entities/training-day.entity';
 
 @Injectable()
 export class AssignedPlanService {
   constructor(
     @InjectRepository(AssignedPlan)
     private assignedPlanRepo: Repository<AssignedPlan>,
+
     @InjectRepository(TrainingPlan)
     private readonly trainingPlanRepo: Repository<TrainingPlan>,
+
+    @InjectRepository(TrainingDay)
+    private readonly trainingDayRepo: Repository<TrainingDay>,
   ) {}
 
   async create(dto: CreateAssignedPlanDto): Promise<AssignedPlan> {
@@ -36,7 +41,16 @@ export class AssignedPlanService {
       assignedAt: new Date(dto.startDate),
     });
 
-    return await this.assignedPlanRepo.save(assigned);
+    const saveAssigned = await this.assignedPlanRepo.save(assigned);
+
+    await this.trainingDayRepo.save({
+      assignedPlan: { id: saveAssigned.id },
+      trainingPlan: { id: plan.id },
+      dayNumber: 1,
+      title: 'First Training Day',
+      date: dto.startDate, // možeš koristiti formatiranje ako treba
+    });
+    return saveAssigned;
   }
 
   async findAllByCoach(coachId: number) {
@@ -51,15 +65,38 @@ export class AssignedPlanService {
       relations: ['athlete', 'trainingPlan', 'trainingPlan.coach'],
     });
   }
-
   async findAllByAthlete(athleteId: number) {
-    return this.assignedPlanRepo
-      .createQueryBuilder('assignedPlan')
-      .innerJoinAndSelect('assignedPlan.trainingPlan', 'trainingPlan')
-      .where('assignedPlan.athleteId = :athleteId', { athleteId })
-      .andWhere('assignedPlan.deletedAt IS NULL')
-      .andWhere('trainingPlan.deletedAt IS NULL')
-      .getMany();
+    const rawPlans = await this.assignedPlanRepo
+      .createQueryBuilder('ap')
+      .leftJoin('ap.trainingPlan', 'tp')
+      .leftJoin('training_day', 'td', 'td."assignedPlanId" = ap.id')
+      .select([
+        'ap.id AS id',
+        'ap.assignedAt AS assignedat',
+        'ap.isCompleted AS iscompleted',
+        'tp.id AS planid',
+        'tp.name AS planname',
+        'tp.description AS plandesc',
+        'td.id AS trainingdayid',
+      ])
+      .where('ap.athleteId = :athleteId', { athleteId })
+      .andWhere('ap.deletedAt IS NULL')
+      .andWhere('tp.id IS NOT NULL')
+      .getRawMany();
+
+    return rawPlans.map((row) => ({
+      id: row.id,
+      assignedAt: row.assignedat,
+      isCompleted: row.iscompleted,
+      trainingPlan: row.planid
+        ? {
+            id: row.planid,
+            name: row.planname,
+            description: row.plandesc,
+          }
+        : null,
+      trainingDayId: row.trainingdayid ?? null,
+    }));
   }
 
   async findOne(id: number): Promise<AssignedPlan> {

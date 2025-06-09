@@ -6,14 +6,19 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { User } from './user.entity';
 import { TrainingPlan } from './training-plan.entity';
+import { TrainingDay } from './training-day.entity';
 
 @Entity()
 export class AssignedPlan {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @OneToOne(() => TrainingDay, (td) => td.assignedPlan)
+  trainingDay: TrainingDay;
 
   @Column({ nullable: true })
   feedback?: string;

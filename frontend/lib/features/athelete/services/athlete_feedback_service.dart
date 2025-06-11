@@ -39,4 +39,69 @@ class AthleteFeedbackService {
       throw Exception('Failed to load feedback');
     }
   }
+
+  Future<void> createFeedback({
+    required int trainingDayId,
+    required String comment,
+    required int rating,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken');
+
+    final url = Uri.parse('$baseUrl/training-day-feedback');
+    final body = jsonEncode({
+      'trainingDayId': trainingDayId,
+      'comment': comment,
+      'rating': rating,
+    });
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
+
+    print("📤 Sending feedback: $body");
+    print("📤 Status code: ${response.statusCode}");
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create feedback');
+    }
+  }
+
+  Future<void> updateFeedback({
+    required int feedbackId,
+    required String comment,
+    required int rating,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('authToken');
+
+    final url = Uri.parse(
+      '$baseUrl/training-day-feedback/$feedbackId',
+    );
+    final body = jsonEncode({
+      'comment': comment,
+      'rating': rating,
+    });
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
+
+    print("📝 Updating feedback: $body");
+    print("📝 Status code: ${response.statusCode}");
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update feedback');
+    }
+  }
 }

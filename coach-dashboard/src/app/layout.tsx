@@ -1,7 +1,6 @@
 import "./globals.css";
-import Sidebar from "./components/ui/Sidebar";
-import Header from "./components/ui/Header";
 import { ReactNode } from "react";
+import ClientLayout from "@/app/components/ui/ClientLayout";
 
 export const metadata = {
   title: "SyncRun Coach",
@@ -11,13 +10,8 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <head />
-      <body className="flex">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <main className="p-6">{children}</main>
-        </div>
+      <body>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

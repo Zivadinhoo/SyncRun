@@ -7,21 +7,32 @@ export default function Header() {
   const router = useRouter();
 
   const handleLogout = () => {
-    // 1. Ukloni token iz api instance
     delete api.defaults.headers.common["Authorization"];
-
-    // 2. (opciono) Ukloni iz localStorage ako si tamo čuvao
     localStorage.removeItem("accessToken");
-
-    // 3. Vrati na login
     router.push("/login");
   };
 
   return (
-    <div className="h-16 flex items-center justify-between px-6 border-b">
-      <h1 className="text-xl font-bold">SyncRun Coach</h1>
-      <button onClick={handleLogout} className="text-sm text-red-600 underline">
-        Logout
+    <div className="h-16 flex items-center justify-between px-6 border-b bg-white">
+      {/* Title + Search */}
+      <div className="flex items-center gap-4">
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <input
+          type="text"
+          placeholder="Search athletes"
+          className="px-3 py-1 border rounded-md text-sm focus:outline-none"
+        />
+        <button className="text-sm px-3 py-1 border rounded-md hover:bg-gray-100">
+          Filters
+        </button>
+      </div>
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="text-sm text-red-600 underline hover:text-red-800"
+      >
+        Log out
       </button>
     </div>
   );

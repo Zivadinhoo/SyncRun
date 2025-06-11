@@ -18,7 +18,7 @@ class AthleteDashboardScreen
 class _AthleteDashboardScreenState
     extends ConsumerState<AthleteDashboardScreen> {
   final _storage = const FlutterSecureStorage();
-  String fullName = '';
+  String fullName = 'Elena';
 
   @override
   void initState() {
@@ -51,8 +51,8 @@ class _AthleteDashboardScreenState
             alignment: Alignment.center,
             child: Text(
               fullName.isNotEmpty
-                  ? 'Welcome $fullName'
-                  : 'Welcome',
+                  ? 'Welcome Elena'
+                  : 'Welcome Elena',
               style: const TextStyle(
                 color: Colors.black87,
                 fontSize: 20,

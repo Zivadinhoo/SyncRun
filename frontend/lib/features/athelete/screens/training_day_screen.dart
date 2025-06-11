@@ -80,6 +80,19 @@ class _TrainingDayScreenState
 
       if (response.statusCode == 200) {
         final updatedPlan = jsonDecode(response.body);
+
+        // 👇 Kreiraj feedback zapis
+        try {
+          await AthleteFeedbackService().createFeedback(
+            trainingDayId: widget.trainingDayId,
+            comment: _feedbackController.text,
+            rating: rpe.toInt(),
+          );
+          print("✅ Feedback successfully created");
+        } catch (e) {
+          print("❌ Error creating feedback: $e");
+        }
+
         setState(() {
           isCompleted = updatedPlan['isCompleted'] ?? true;
           _feedbackController.text =

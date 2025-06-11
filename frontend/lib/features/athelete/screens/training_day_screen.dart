@@ -31,9 +31,12 @@ class TrainingDayScreen extends StatefulWidget {
 class _TrainingDayScreenState
     extends State<TrainingDayScreen> {
   bool isCompleted = false;
+  bool isEditing = false;
+
   final TextEditingController _feedbackController =
       TextEditingController();
   double rpe = 5;
+  int? feedbackId; // 👈 Sačuvaj feedbackId za update
 
   @override
   void initState() {
@@ -61,6 +64,7 @@ class _TrainingDayScreenState
         setState(() {
           _feedbackController.text = feedback.comment ?? '';
           rpe = (feedback.rating ?? 5).toDouble();
+          feedbackId = feedback.id; // 👈 Snimi ID
         });
       }
     } catch (e) {
@@ -81,7 +85,6 @@ class _TrainingDayScreenState
       if (response.statusCode == 200) {
         final updatedPlan = jsonDecode(response.body);
 
-        // 👇 Kreiraj feedback zapis
         try {
           await AthleteFeedbackService().createFeedback(
             trainingDayId: widget.trainingDayId,
@@ -108,6 +111,28 @@ class _TrainingDayScreenState
       }
     } catch (e) {
       print("❌ Error updating training: $e");
+    }
+  }
+
+  void _saveFeedbackChanges() async {
+    if (feedbackId == null) return;
+
+    try {
+      await AthleteFeedbackService().updateFeedback(
+        feedbackId: feedbackId!,
+        comment: _feedbackController.text,
+        rating: rpe.toInt(),
+      );
+
+      setState(() {
+        isEditing = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("✅ Feedback updated")),
+      );
+    } catch (e) {
+      print("❌ Failed to update feedback: $e");
     }
   }
 
@@ -178,14 +203,49 @@ class _TrainingDayScreenState
               Center(
                 child: ElevatedButton(
                   onPressed: _markAsCompleted,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
-                    ),
-                  ),
                   child: const Text("Mark as Completed"),
                 ),
+              ),
+            ] else if (isEditing) ...[
+              const Text("✏️ Edit your feedback:"),
+              TextField(
+                controller: _feedbackController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: "Update your feedback",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text("Update RPE:"),
+              Slider(
+                value: rpe,
+                min: 1,
+                max: 10,
+                divisions: 9,
+                label: rpe.toStringAsFixed(0),
+                onChanged: (value) {
+                  setState(() {
+                    rpe = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: _saveFeedbackChanges,
+                    child: const Text("💾 Save Changes"),
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    onPressed:
+                        () => setState(
+                          () => isEditing = false,
+                        ),
+                    child: const Text("Cancel"),
+                  ),
+                ],
               ),
             ] else ...[
               const Text("✅ Training completed!"),
@@ -194,6 +254,14 @@ class _TrainingDayScreenState
                 "Your Feedback: ${_feedbackController.text.isEmpty ? "No feedback provided." : _feedbackController.text}",
               ),
               Text("RPE: ${rpe.toStringAsFixed(0)}"),
+              const SizedBox(height: 12),
+              if (feedbackId != null)
+                TextButton(
+                  onPressed:
+                      () =>
+                          setState(() => isEditing = true),
+                  child: const Text("✏️ Edit Feedback"),
+                ),
             ],
           ],
         ),

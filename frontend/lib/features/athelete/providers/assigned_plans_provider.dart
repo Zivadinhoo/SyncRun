@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:frontend/models/assigned_plan.dart';
+import 'package:frontend/features/models/assigned_plan.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final assignedPlansFutureProvider =

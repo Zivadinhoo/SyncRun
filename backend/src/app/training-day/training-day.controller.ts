@@ -8,6 +8,7 @@ import {
   Body,
   ParseIntPipe,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { TrainingDayService } from './training-day.service';
 import { CreateTrainingDayDto } from './dto/create-training-day.dto';
@@ -17,14 +18,20 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { CreateTrainingDayBulkDto } from './dto/create-training-day-bulk.dto';
+import { GetWeeklySummaryDto } from './dto/get-weekly-summary.dto';
+import { Logger } from 'nestjs-pino';
 
 @ApiTags('Training Days')
 @ApiBearerAuth('access-token')
 @Controller('training-days')
 export class TrainingDayController {
-  constructor(private readonly trainingDayService: TrainingDayService) {}
+  constructor(
+    private readonly trainingDayService: TrainingDayService,
+    private readonly logger: Logger,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a training day' })
@@ -49,10 +56,45 @@ export class TrainingDayController {
     return await this.trainingDayService.createBulk(dto);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get all training days' })
-  findAll() {
-    return this.trainingDayService.findAll();
+  @Get('weekly-summary')
+  @ApiQuery({
+    name: 'startDate',
+    required: true,
+    type: String,
+    example: '2025-06-10',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: true,
+    type: String,
+    example: '2025-06-16',
+  })
+  @ApiQuery({ name: 'athleteId', required: false, type: Number, example: 4 })
+  @ApiOperation({ summary: 'Get weekly summary of training days for athlete' })
+  async getWeeklySummary(@Query() dto: GetWeeklySummaryDto): Promise<any> {
+    try {
+      if (new Date(dto.startDate) > new Date(dto.endDate)) {
+        throw new BadRequestException('startDate must be before endDate');
+      }
+
+      this.logger.log(
+        `Fetching weekly summary for athleteId=${dto.athleteId ?? 'N/A'} from ${dto.startDate} to ${dto.endDate}`,
+      );
+
+      const summary = await this.trainingDayService.getWeeklySummary(dto);
+
+      this.logger.debug(
+        `Weekly summary result: ${JSON.stringify(summary, null, 2)}`,
+      );
+
+      return summary;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get weekly summary: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   @Get(':id')

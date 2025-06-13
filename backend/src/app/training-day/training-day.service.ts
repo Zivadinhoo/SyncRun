@@ -4,12 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { TrainingDay } from '../entities/training-day.entity';
 import { CreateTrainingDayDto } from './dto/create-training-day.dto';
 import { UpdateTrainingDayDto } from './dto/update-training-day.dto';
 import { TrainingPlan } from '../entities/training-plan.entity';
 import { CreateTrainingDayBulkDto } from './dto/create-training-day-bulk.dto';
+import { GetWeeklySummaryDto } from './dto/get-weekly-summary.dto';
+import { TrainingDayFeedback } from '../entities/training-day-feedback.entity';
 
 @Injectable()
 export class TrainingDayService {
@@ -17,6 +19,8 @@ export class TrainingDayService {
     @InjectRepository(TrainingDay)
     private trainingDayRepo: Repository<TrainingDay>,
 
+    @InjectRepository(TrainingDayFeedback)
+    private feedbackRepo: Repository<TrainingDayFeedback>,
     @InjectRepository(TrainingPlan)
     private trainingPlanRepo: Repository<TrainingPlan>,
   ) {}
@@ -91,6 +95,77 @@ export class TrainingDayService {
     });
 
     return !!existing;
+  }
+  async getWeeklySummary(dto: GetWeeklySummaryDto) {
+    const where: any = {
+      date: Between(dto.startDate, dto.endDate),
+    };
+
+    if (dto.athleteId) {
+      where.assignedPlan = {
+        athlete: {
+          id: dto.athleteId,
+        },
+      };
+    }
+
+    const days = await this.trainingDayRepo.find({
+      where,
+      relations: ['assignedPlan', 'assignedPlan.athlete', 'trainingPlan'],
+      order: { date: 'ASC' },
+    });
+
+    const feedbacks = await this.feedbackRepo.find({
+      where: {
+        trainingDay: In(days.map((d) => d.id)),
+      },
+      relations: ['trainingDay'],
+    });
+
+    // Bezbedno pravljenje mape (da ne pukne ako trainingDay fali)
+    const feedbackMap = new Map<number, TrainingDayFeedback>();
+    for (const f of feedbacks) {
+      if (f.trainingDay?.id) {
+        feedbackMap.set(f.trainingDay.id, f);
+      }
+    }
+
+    const summary = days.map((day) => {
+      const feedback = feedbackMap.get(day.id);
+
+      const rpe = feedback?.rpe ?? feedback?.rating ?? 0;
+      const duration = feedback?.duration ?? day.duration ?? 0;
+      const tss = rpe * duration * 0.1;
+
+      return {
+        id: day.id,
+        date: day.date,
+        title: day.title,
+        description: day.description,
+        isCompleted: !!feedback || day.assignedPlan?.isCompleted || false,
+        duration,
+        rating: rpe,
+        comment: feedback?.comment ?? '',
+        tss,
+      };
+    });
+
+    const totalTSS = summary.reduce((acc, cur) => acc + cur.tss, 0);
+    const completedDuration = summary
+      .filter((d) => d.isCompleted)
+      .reduce((acc, d) => acc + d.duration, 0);
+    const avgRPE =
+      summary
+        .filter((d) => d.rating > 0)
+        .reduce((acc, d) => acc + d.rating, 0) /
+      (summary.filter((d) => d.rating > 0).length || 1);
+
+    return {
+      days: summary,
+      totalTSS,
+      completedDuration,
+      averageRPE: Math.round(avgRPE * 10) / 10,
+    };
   }
 
   findAll(): Promise<TrainingDay[]> {

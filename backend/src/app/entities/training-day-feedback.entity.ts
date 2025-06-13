@@ -11,6 +11,14 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum Mood {
+  GREAT = 'GREAT',
+  GOOD = 'GOOD',
+  NEUTRAL = 'NEUTRAL',
+  BAD = 'BAD',
+  TERRIBLE = 'TERRIBLE',
+}
+
 @Entity()
 export class TrainingDayFeedback {
   @PrimaryGeneratedColumn()
@@ -29,6 +37,24 @@ export class TrainingDayFeedback {
 
   @Column({ type: 'int', default: 0 })
   rating: number;
+
+  @Column({ type: 'int', nullable: true })
+  rpe?: number;
+
+  @Column({ type: 'int', nullable: true })
+  duration?: number;
+
+  @Column({ type: 'float', nullable: true })
+  distance?: number;
+
+  @Column({ type: 'float', nullable: true })
+  tss?: number;
+
+  @Column({ type: 'enum', enum: Mood, nullable: true })
+  mood?: Mood;
+
+  @Column({ type: 'float', nullable: true })
+  sleepHours?: number;
 
   @CreateDateColumn()
   createdAt: Date;

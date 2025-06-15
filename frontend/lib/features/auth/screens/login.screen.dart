@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/user_role.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
-import 'package:frontend/features/auth/screens/dashboard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {

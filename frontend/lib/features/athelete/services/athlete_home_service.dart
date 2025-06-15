@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/core/constants.dart';
+import 'package:frontend/features/models/athlete_home_data.dart';
 import 'package:frontend/utils/http_headers.dart';
-import 'package:frontend/models/athlete_home_data.dart';
+
 import 'package:http/http.dart' as http;
 
 class AthleteHomeService {

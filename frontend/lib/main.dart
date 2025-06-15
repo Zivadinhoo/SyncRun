@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/auth/screens/login.screen.dart';
 import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
 import 'package:frontend/features/plans/screens/create_plan_screen.dart';
+
 import 'package:frontend/features/athelete/screens/athlete_main_screen.dart';
-import 'package:frontend/models/user_role.dart';
 
 void main() {
   runApp(const ProviderScope(child: RunWithCoachApp()));

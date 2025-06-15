@@ -3,7 +3,7 @@ import 'package:frontend/features/athelete/screens/athlete_dashboard_screen.dart
 import 'package:frontend/features/auth/screens/login.screen.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
 import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
-import 'package:frontend/models/user_role.dart';
+import 'package:frontend/features/models/user_role.dart';
 
 class DashboardScreen extends StatelessWidget {
   final UserRole role;

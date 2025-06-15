@@ -9,7 +9,7 @@ class TssBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 180,
+      height: 110,
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,

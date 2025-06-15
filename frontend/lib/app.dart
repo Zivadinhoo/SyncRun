@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/auth/screens/dashboard_screen.dart';
-import 'package:frontend/models/user_role.dart';
+import 'package:frontend/features/models/user_role.dart';
 
 class RunWithCoachApp extends StatelessWidget {
   const RunWithCoachApp({super.key});

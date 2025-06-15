@@ -7,12 +7,18 @@ class AssignedPlan {
   final TrainingPlan trainingPlan;
   final int? trainingDayId;
 
+  // ✅ Dodato
+  final double? tss;
+  final int? rpe;
+
   AssignedPlan({
     required this.id,
     required this.isCompleted,
     required this.assignedAt,
     required this.trainingPlan,
     required this.trainingDayId,
+    this.tss,
+    this.rpe,
   });
 
   factory AssignedPlan.fromJson(Map<String, dynamic> json) {
@@ -30,7 +36,9 @@ class AssignedPlan {
       isCompleted: json['isCompleted'] ?? false,
       assignedAt: DateTime.parse(json['assignedAt']),
       trainingPlan: TrainingPlan.fromJson(trainingPlanJson),
-      trainingDayId: trainingDayId, // može biti null
+      trainingDayId: trainingDayId,
+      tss: (json['tss'] as num?)?.toDouble(),
+      rpe: json['rpe'] as int?,
     );
   }
 }

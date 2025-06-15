@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/features/athelete/services/assigned_plans_service.dart';
 import 'package:frontend/features/athelete/services/athlete_feedback_service.dart';
-import 'package:frontend/models/training_day_feedback.dart';
+import 'package:frontend/features/models/training_day_feedback.dart';
 import 'package:intl/intl.dart';
 
 class TrainingDayScreen extends StatefulWidget {
@@ -36,7 +36,7 @@ class _TrainingDayScreenState
   final TextEditingController _feedbackController =
       TextEditingController();
   double rpe = 5;
-  int? feedbackId; // 👈 Sačuvaj feedbackId za update
+  int? feedbackId;
 
   @override
   void initState() {
@@ -46,25 +46,18 @@ class _TrainingDayScreenState
   }
 
   void _loadFeedback() async {
-    if (widget.trainingDayId == 0) {
-      print("⚠️ No trainingDayId, skipping feedback load.");
-      return;
-    }
+    if (widget.trainingDayId == 0) return;
 
     try {
-      final TrainingDayFeedback? feedback =
-          await AthleteFeedbackService()
-              .fetchFeedbackForTrainingDay(
-                widget.trainingDayId,
-              );
-
-      print("💬 feedback: $feedback");
-
+      final feedback = await AthleteFeedbackService()
+          .fetchFeedbackForTrainingDay(
+            widget.trainingDayId,
+          );
       if (feedback != null) {
         setState(() {
           _feedbackController.text = feedback.comment ?? '';
           rpe = (feedback.rating ?? 5).toDouble();
-          feedbackId = feedback.id; // 👈 Snimi ID
+          feedbackId = feedback.id;
         });
       }
     } catch (e) {
@@ -83,31 +76,18 @@ class _TrainingDayScreenState
           );
 
       if (response.statusCode == 200) {
-        final updatedPlan = jsonDecode(response.body);
-
-        try {
-          await AthleteFeedbackService().createFeedback(
-            trainingDayId: widget.trainingDayId,
-            comment: _feedbackController.text,
-            rating: rpe.toInt(),
-          );
-          print("✅ Feedback successfully created");
-        } catch (e) {
-          print("❌ Error creating feedback: $e");
-        }
+        await AthleteFeedbackService().createFeedback(
+          trainingDayId: widget.trainingDayId,
+          comment: _feedbackController.text,
+          rating: rpe.toInt(),
+        );
 
         setState(() {
-          isCompleted = updatedPlan['isCompleted'] ?? true;
-          _feedbackController.text =
-              updatedPlan['feedback'] ?? '';
-          rpe = (updatedPlan['rpe'] ?? 5).toDouble();
+          isCompleted = true;
         });
 
+        if (!mounted) return;
         Navigator.pop(context, true);
-      } else {
-        print(
-          "⚠️ Failed to update training. Status: ${response.statusCode}",
-        );
       }
     } catch (e) {
       print("❌ Error updating training: $e");
@@ -124,10 +104,9 @@ class _TrainingDayScreenState
         rating: rpe.toInt(),
       );
 
-      setState(() {
-        isEditing = false;
-      });
+      setState(() => isEditing = false);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("✅ Feedback updated")),
       );
@@ -151,30 +130,60 @@ class _TrainingDayScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.planName,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.planName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(widget.planDescription),
+                  const SizedBox(height: 12),
+                  Text("📅 Assigned: $dateStr"),
+                  Row(
+                    children: [
+                      Icon(
+                        isCompleted
+                            ? Icons.check_circle
+                            : Icons.schedule,
+                        color:
+                            isCompleted
+                                ? Colors.green
+                                : Colors.orange,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isCompleted
+                            ? "Status: Completed"
+                            : "Status: Not completed",
+                        style: TextStyle(
+                          color:
+                              isCompleted
+                                  ? Colors.green
+                                  : Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 10),
-            Text(widget.planDescription),
-            const SizedBox(height: 20),
-            Text("Assigned: $dateStr"),
-            const SizedBox(height: 8),
-            Text(
-              "Status: ${isCompleted ? "✅ Completed" : "⏳ Not completed"}",
-              style: TextStyle(
-                color:
-                    isCompleted
-                        ? Colors.green
-                        : Colors.orange,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
 
+            // 👇 Ako nije završen
             if (!isCompleted) ...[
               const Text("Feedback (optional):"),
               TextField(
@@ -193,19 +202,20 @@ class _TrainingDayScreenState
                 max: 10,
                 divisions: 9,
                 label: rpe.toStringAsFixed(0),
-                onChanged: (value) {
-                  setState(() {
-                    rpe = value;
-                  });
-                },
+                onChanged:
+                    (value) => setState(() => rpe = value),
               ),
               const SizedBox(height: 24),
-              Center(
-                child: ElevatedButton(
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.check),
+                  label: const Text("Mark as Completed"),
                   onPressed: _markAsCompleted,
-                  child: const Text("Mark as Completed"),
                 ),
               ),
+
+              // 👇 Ako je završen i edituje feedback
             ] else if (isEditing) ...[
               const Text("✏️ Edit your feedback:"),
               TextField(
@@ -224,11 +234,8 @@ class _TrainingDayScreenState
                 max: 10,
                 divisions: 9,
                 label: rpe.toStringAsFixed(0),
-                onChanged: (value) {
-                  setState(() {
-                    rpe = value;
-                  });
-                },
+                onChanged:
+                    (value) => setState(() => rpe = value),
               ),
               const SizedBox(height: 16),
               Row(
@@ -247,21 +254,100 @@ class _TrainingDayScreenState
                   ),
                 ],
               ),
+
+              // 👇 Ako je završen i samo prikaz feedbacka
             ] else ...[
-              const Text("✅ Training completed!"),
-              const SizedBox(height: 12),
-              Text(
-                "Your Feedback: ${_feedbackController.text.isEmpty ? "No feedback provided." : _feedbackController.text}",
-              ),
-              Text("RPE: ${rpe.toStringAsFixed(0)}"),
-              const SizedBox(height: 12),
-              if (feedbackId != null)
-                TextButton(
-                  onPressed:
-                      () =>
-                          setState(() => isEditing = true),
-                  child: const Text("✏️ Edit Feedback"),
+              Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF7E9),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          "Training completed",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "📝 ",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _feedbackController
+                                    .text
+                                    .isNotEmpty
+                                ? _feedbackController.text
+                                : "No feedback provided.",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        const Text(
+                          "💪 ",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Text(
+                          "RPE: ${rpe.toStringAsFixed(0)}",
+                          style: const TextStyle(
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed:
+                            () => setState(
+                              () => isEditing = true,
+                            ),
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                        ),
+                        label: const Text("Edit Feedback"),
+                        style: TextButton.styleFrom(
+                          foregroundColor:
+                              Colors.deepPurple,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ],
         ),

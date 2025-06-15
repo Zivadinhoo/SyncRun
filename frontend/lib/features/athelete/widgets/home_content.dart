@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/athlete_home_data.dart';
+import 'package:frontend/features/models/athlete_home_data.dart';
 
 class HomeContent extends StatelessWidget {
   final AthleteHomeData data;

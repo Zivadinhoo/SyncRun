@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'package:frontend/features/models/training_day_feedback.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:frontend/models/training_day_feedback.dart';
 
 class AthleteFeedbackService {
   final String baseUrl = 'http://192.168.0.37:3001';

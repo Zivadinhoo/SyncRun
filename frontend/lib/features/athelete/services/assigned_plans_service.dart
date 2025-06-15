@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:frontend/features/models/assigned_plan.dart';
 import 'package:http/http.dart' as http;
-import 'package:frontend/models/assigned_plan.dart';
 
 class AssignedPlansService {
   final _storage = const FlutterSecureStorage();

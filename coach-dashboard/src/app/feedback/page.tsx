@@ -62,7 +62,7 @@ export default function FeedbackPage() {
                 {new Date(fb.trainingDay.date).toLocaleDateString()}
               </p>
               <p className="text-sm text-gray-500 mb-1">
-                <b>Rating:</b> {fb.rating}/5
+                <b>Rating:</b> {fb.rating}/10
               </p>
               <p className="text-base mt-2">{fb.comment}</p>
             </div>

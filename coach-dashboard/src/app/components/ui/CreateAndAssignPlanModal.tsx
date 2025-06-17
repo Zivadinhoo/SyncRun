@@ -12,27 +12,47 @@ import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
 import { Textarea } from "@/app/components/ui/textarea";
 import { api } from "@/lib/api";
+import { format } from "date-fns";
 
 interface Props {
-  onPlanCreated: () => void;
+  athleteId: number;
+  athleteEmail: string;
+  onAssigned: () => void;
 }
 
-export function CreatePlanModal({ onPlanCreated }: Props) {
+export function CreateAndAssignPlanModal({
+  athleteId,
+  athleteEmail,
+  onAssigned,
+}: Props) {
+  const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleCreate = async () => {
+  const handleCreateAndAssign = async () => {
+    if (!name.trim()) return;
     setLoading(true);
     try {
-      await api.post("/training-plans", { name, description });
+      const planRes = await api.post("/training-plans", {
+        name,
+        description,
+      });
+
+      const trainingPlanId = planRes.data.id;
+
+      await api.post("/assigned-plans", {
+        athleteId,
+        trainingPlanId,
+        startDate: format(new Date(), "yyyy-MM-dd"),
+      });
+
       setIsOpen(false);
       setName("");
       setDescription("");
-      onPlanCreated(); // trigger refetch in parent
+      onAssigned();
     } catch (err) {
-      console.error("Failed to create plan", err);
+      console.error("Failed to create and assign plan", err);
     } finally {
       setLoading(false);
     }
@@ -41,12 +61,12 @@ export function CreatePlanModal({ onPlanCreated }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="mb-4">+ Create New Plan</Button>
+        <Button variant="outline">Create Plan</Button>
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Training Plan</DialogTitle>
+          <DialogTitle>Create Plan for {athleteEmail}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -60,8 +80,8 @@ export function CreatePlanModal({ onPlanCreated }: Props) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
-          <Button onClick={handleCreate} disabled={loading}>
-            {loading ? "Creating..." : "Create"}
+          <Button onClick={handleCreateAndAssign} disabled={loading}>
+            {loading ? "Creating..." : "Create & Assign"}
           </Button>
         </div>
       </DialogContent>

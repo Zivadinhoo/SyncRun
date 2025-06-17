@@ -2,43 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { AddAthleteModal } from "../components/ui/AddAthleteModal";
+import { EditAthleteModal } from "../components/ui/EditAthleteModal";
+import { DeleteAthleteModal } from "../components/ui/DeleteAthleteModal";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
   DialogClose,
 } from "@/app/components/ui/dialog";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { AddAthleteModal } from "../components/ui/AddAthleteModal";
 
-type Runner = {
+interface Runner {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
-};
-
-type PlanDay = {
-  day: string;
-  activity: string;
-};
+}
 
 export default function RunnersPage() {
   const [runners, setRunners] = useState<Runner[]>([]);
   const [selectedRunner, setSelectedRunner] = useState<Runner | null>(null);
-  const [weekStart, setWeekStart] = useState("");
-  const [days, setDays] = useState<PlanDay[]>([
-    { day: "MONDAY", activity: "" },
-    { day: "TUESDAY", activity: "" },
-    { day: "WEDNESDAY", activity: "" },
-    { day: "THURSDAY", activity: "" },
-    { day: "FRIDAY", activity: "" },
-    { day: "SATURDAY", activity: "" },
-    { day: "SUNDAY", activity: "" },
-  ]);
+  const [planName, setPlanName] = useState("");
+  const [planDescription, setPlanDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
 
   const fetchRunners = async () => {
     try {
@@ -55,93 +45,110 @@ export default function RunnersPage() {
 
   const openPlanModal = (runner: Runner) => {
     setSelectedRunner(runner);
-    setWeekStart("");
-    setDays(days.map((d) => ({ ...d, activity: "" })));
+    setPlanName("");
+    setPlanDescription("");
+    setStartDate("");
   };
 
   const submitPlan = async () => {
     if (!selectedRunner) return;
     try {
-      await api.post("/plans", {
-        athleteId: selectedRunner.id,
-        weekStart,
-        days,
+      const planRes = await api.post("/training-plans", {
+        name: planName,
+        description: planDescription,
       });
-      alert("✅ Plan created!");
+
+      await api.post("/assigned-plans", {
+        athleteId: selectedRunner.id,
+        trainingPlanId: planRes.data.id,
+        startDate,
+      });
+
       setSelectedRunner(null);
+      await fetchRunners();
     } catch (err) {
-      console.error("❌ Error creating plan", err);
-      alert("Error creating plan");
+      console.error("❌ Error creating and assigning plan", err);
+      alert("Error");
     }
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">My Runners</h1>
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">My Runners</h1>
         <AddAthleteModal onCreated={fetchRunners} />
       </div>
 
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {runners.map((runner) => (
           <li
             key={runner.id}
-            className="border p-4 rounded flex justify-between items-center"
+            className="flex items-center justify-between border rounded-lg px-4 py-3 shadow-sm bg-white"
           >
             <div>
-              <p>
-                <strong>Name:</strong> {runner.firstName} {runner.lastName}
+              <p className="text-base font-semibold">
+                {runner.firstName} {runner.lastName}
               </p>
-              <p>
-                <strong>Email:</strong> {runner.email}
-              </p>
+              <p className="text-sm text-gray-600">{runner.email}</p>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button onClick={() => openPlanModal(runner)}>
-                  Create Plan
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>
-                    Create Weekly Plan for {runner.firstName}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-1">
-                      Week Start (YYYY-MM-DD):
-                    </label>
-                    <Input
-                      type="date"
-                      value={weekStart}
-                      onChange={(e) => setWeekStart(e.target.value)}
-                    />
-                  </div>
-                  {days.map((d, idx) => (
-                    <div key={d.day}>
-                      <label className="block mb-1">{d.day}:</label>
+
+            <div className="flex items-center gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button onClick={() => openPlanModal(runner)}>
+                    Create Plan
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Create Plan for {runner.firstName}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block mb-1">Plan Name:</label>
                       <Input
-                        placeholder="Activity e.g. 10km easy run"
-                        value={d.activity}
-                        onChange={(e) => {
-                          const newDays = [...days];
-                          newDays[idx].activity = e.target.value;
-                          setDays(newDays);
-                        }}
+                        placeholder="e.g. 5k progression"
+                        value={planName}
+                        onChange={(e) => setPlanName(e.target.value)}
                       />
                     </div>
-                  ))}
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button onClick={submitPlan}>Submit</Button>
+                    <div>
+                      <label className="block mb-1">Description:</label>
+                      <Input
+                        placeholder="e.g. Build up to consistent 5k pace"
+                        value={planDescription}
+                        onChange={(e) => setPlanDescription(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1">Start Date:</label>
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button onClick={submitPlan}>Create & Assign</Button>
+                      </DialogClose>
+                    </div>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+
+              <EditAthleteModal athlete={runner} onUpdated={fetchRunners} />
+              <DeleteAthleteModal
+                athleteId={runner.id}
+                athleteName={`${runner.firstName} ${runner.lastName}`}
+                onDeleted={fetchRunners}
+              />
+            </div>
           </li>
         ))}
       </ul>

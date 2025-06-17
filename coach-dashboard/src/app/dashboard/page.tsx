@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardCard from "@/app/components/ui/DashboardCard";
 import { fetchDashboardData } from "@/app/services/dashboard.service";
+import AthleteCompliancePanel from "@/app/components/ui/AthleteCompliancePanel";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null);
@@ -36,6 +37,8 @@ export default function DashboardPage() {
           ))}
         </ul>
       </div>
+
+      <AthleteCompliancePanel data={stats.athleteCompliance} />
 
       <div className="bg-white border rounded-lg p-4">
         <h2 className="text-xl font-semibold mb-2">📅 Upcoming Workouts</h2>

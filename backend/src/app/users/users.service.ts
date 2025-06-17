@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -77,18 +77,27 @@ export class UsersService {
   }
 
   async getMyAthletes(coachId: number): Promise<User[]> {
-    return this.userRepository.find({
-      where: {
-        coach: { id: coachId },
-        role: UserRole.ATHLETE,
-      },
-      relations: ['coach'],
-    });
+    try {
+      const athletes = await this.userRepository.find({
+        where: {
+          coach: { id: coachId },
+          role: UserRole.ATHLETE,
+          isDeleted: false,
+        },
+        relations: ['coach'],
+      });
+      return athletes;
+    } catch (error) {
+      this.logger.error({ coachId, error }, '🚨 Error while fetching athletes');
+      throw new InternalServerErrorException('Failed to fetch athletes');
+    }
   }
 
   async findAll(): Promise<User[]> {
     try {
-      const users = await this.userRepository.find();
+      const users = await this.userRepository.find({
+        where: { isDeleted: false },
+      });
       this.logger.info(`📦 Retrieved ${users.length} users`);
       return users;
     } catch (error) {
@@ -99,7 +108,9 @@ export class UsersService {
 
   async findOneBy(where: Partial<User>): Promise<User | null> {
     try {
-      const user = await this.userRepository.findOne({ where });
+      const user = await this.userRepository.findOne({
+        where: { ...where, isDeleted: false },
+      });
       if (!user) {
         this.logger.warn({ where }, '⚠️ User not found by condition');
       }
@@ -112,7 +123,9 @@ export class UsersService {
 
   async findOne(id: number): Promise<User> {
     try {
-      const user = await this.userRepository.findOneByOrFail({ id });
+      const user = await this.userRepository.findOneOrFail({
+        where: { id, isDeleted: false },
+      });
       this.logger.info({ id }, '🔍 Found user by ID');
       return user;
     } catch (error) {
@@ -123,12 +136,12 @@ export class UsersService {
 
   async remove(id: number): Promise<void> {
     try {
-      const result = await this.userRepository.delete(id);
+      const result = await this.userRepository.update(id, { isDeleted: true });
       if (result.affected === 0) {
-        this.logger.warn(`⚠️ No user found to delete with ID ${id}`);
+        this.logger.warn(`⚠️ No user found to soft delete with ID ${id}`);
         throw new NotFoundException('User not found for deletion');
       }
-      this.logger.info({ id }, '🗑️ User deleted');
+      this.logger.info({ id }, '🗑️ User soft deleted');
     } catch (error) {
       this.logger.error({ id, error }, '🚨 Error while deleting user');
       throw new InternalServerErrorException('Failed to delete user');

@@ -14,6 +14,7 @@ export enum UserRole {
   COACH = 'coach',
   ATHLETE = 'athlete',
 }
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -49,4 +50,7 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 }

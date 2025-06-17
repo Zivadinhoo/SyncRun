@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { CreatePlanModal } from "@/app/components/ui/CreatePlanModal";
-import { AssignPlanModal } from "@/app/components/ui/AssignPlanModal";
 import { EditPlanModal } from "@/app/components/ui/EditPlanModal";
 import { DeletePlanModal } from "../components/ui/DeletePlanModal";
 import { Button } from "@/app/components/ui/button";
@@ -31,9 +29,7 @@ interface AssignedPlan {
 }
 
 export default function PlansPage() {
-  const [plans, setPlans] = useState<Plan[]>([]);
   const [assignedPlans, setAssignedPlans] = useState<AssignedPlan[]>([]);
-  const [athletes, setAthletes] = useState<any[]>([]);
   const [selectedPlanToDelete, setSelectedPlanToDelete] = useState<Plan | null>(
     null
   );
@@ -41,14 +37,8 @@ export default function PlansPage() {
 
   const fetchData = async () => {
     try {
-      const plansRes = await api.get("/training-plans/my");
-      setPlans(plansRes.data);
-
       const assignedRes = await api.get("/assigned-plans/my");
       setAssignedPlans(assignedRes.data);
-
-      const athletesRes = await api.get("/users/athletes/my");
-      setAthletes(athletesRes.data);
     } catch (err) {
       console.error("❌ Failed to fetch data:", err);
     }
@@ -64,18 +54,18 @@ export default function PlansPage() {
   };
 
   const handlePlanDeleted = (deletedId: string) => {
-    setPlans((prev) => prev.filter((p) => p.id !== deletedId));
+    setAssignedPlans((prev) =>
+      prev.filter((ap) => ap.trainingPlan.id !== deletedId)
+    );
   };
 
   const groupByAthlete = () => {
     const grouped: Record<string, AssignedPlan[]> = {};
-
     assignedPlans.forEach((ap) => {
       const email = ap.athlete.email;
       if (!grouped[email]) grouped[email] = [];
       grouped[email].push(ap);
     });
-
     return grouped;
   };
 
@@ -83,20 +73,7 @@ export default function PlansPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold">My Training Plans</h1>
-        <div className="flex gap-2">
-          <CreatePlanModal onPlanCreated={fetchData} />
-          {/* Removed AddAthleteModal to avoid duplication */}
-          {plans.length > 0 && athletes.length > 0 && (
-            <AssignPlanModal
-              plans={plans}
-              athletes={athletes}
-              onAssigned={fetchData}
-            />
-          )}
-        </div>
-      </div>
+      <h1 className="text-3xl font-bold mb-4">My Training Plans</h1>
 
       {Object.keys(groupedByAthlete).length === 0 ? (
         <p className="text-gray-500">No assigned plans yet.</p>

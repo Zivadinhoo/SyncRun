@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../entities/user.entity';
+import { AssignedPlan } from '../entities/assigned-plan.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PinoLogger } from 'nestjs-pino';
@@ -15,6 +16,10 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(AssignedPlan)
+    private readonly assignedPlanRepository: Repository<AssignedPlan>,
+
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(UsersService.name);
@@ -30,7 +35,6 @@ export class UsersService {
       });
 
       const saved = await this.userRepository.save(user);
-
       this.logger.info({ userId: saved.id }, '✅ User created');
       return saved;
     } catch (error) {
@@ -82,9 +86,9 @@ export class UsersService {
         where: {
           coach: { id: coachId },
           role: UserRole.ATHLETE,
-          isDeleted: false,
         },
         relations: ['coach'],
+        withDeleted: false,
       });
       return athletes;
     } catch (error) {
@@ -95,9 +99,7 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     try {
-      const users = await this.userRepository.find({
-        where: { isDeleted: false },
-      });
+      const users = await this.userRepository.find({ withDeleted: false });
       this.logger.info(`📦 Retrieved ${users.length} users`);
       return users;
     } catch (error) {
@@ -108,9 +110,7 @@ export class UsersService {
 
   async findOneBy(where: Partial<User>): Promise<User | null> {
     try {
-      const user = await this.userRepository.findOne({
-        where: { ...where, isDeleted: false },
-      });
+      const user = await this.userRepository.findOne({ where });
       if (!user) {
         this.logger.warn({ where }, '⚠️ User not found by condition');
       }
@@ -123,9 +123,7 @@ export class UsersService {
 
   async findOne(id: number): Promise<User> {
     try {
-      const user = await this.userRepository.findOneOrFail({
-        where: { id, isDeleted: false },
-      });
+      const user = await this.userRepository.findOneOrFail({ where: { id } });
       this.logger.info({ id }, '🔍 Found user by ID');
       return user;
     } catch (error) {
@@ -136,14 +134,28 @@ export class UsersService {
 
   async remove(id: number): Promise<void> {
     try {
-      const result = await this.userRepository.update(id, { isDeleted: true });
+      const user = await this.userRepository.findOneOrFail({ where: { id } });
+
+      if (user.role === UserRole.ATHLETE) {
+        await this.assignedPlanRepository
+          .createQueryBuilder()
+          .softDelete()
+          .where('athleteId = :id', { id })
+          .execute();
+      }
+
+      // Soft delete korisnika
+      const result = await this.userRepository.softDelete(id);
+
       if (result.affected === 0) {
         this.logger.warn(`⚠️ No user found to soft delete with ID ${id}`);
         throw new NotFoundException('User not found for deletion');
       }
-      this.logger.info({ id }, '🗑️ User soft deleted');
+
+      this.logger.info({ id }, '🗑️ User and related data soft deleted');
     } catch (error) {
       this.logger.error({ id, error }, '🚨 Error while deleting user');
+      console.error('🔥 DELETE USER CRASH:', error); // <-- OVO DODAJ
       throw new InternalServerErrorException('Failed to delete user');
     }
   }

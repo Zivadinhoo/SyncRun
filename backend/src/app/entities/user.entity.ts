@@ -7,6 +7,7 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { TrainingPlan } from './training-plan.entity';
 
@@ -50,6 +51,9 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   @Column({ default: false })
   isDeleted: boolean;

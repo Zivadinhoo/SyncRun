@@ -26,7 +26,10 @@ export class AssignedPlan {
   @Column()
   athleteId: number;
 
-  @ManyToOne(() => User)
+  @Column({ type: 'float', nullable: true })
+  rpe?: number;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'athleteId' })
   athlete: User;
 
@@ -36,9 +39,6 @@ export class AssignedPlan {
   @ManyToOne(() => TrainingPlan, { eager: false })
   @JoinColumn({ name: 'trainingPlanId' })
   trainingPlan: TrainingPlan;
-
-  @Column({ type: 'float', nullable: true })
-  rpe?: number;
 
   @Column({ default: false })
   isCompleted: boolean;

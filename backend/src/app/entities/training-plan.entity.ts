@@ -34,7 +34,10 @@ export class TrainingPlan {
   })
   trainingDays: TrainingDay[];
 
-  @ManyToOne(() => User, (user) => user.trainingPlans, { eager: false })
+  @ManyToOne(() => User, (user) => user.trainingPlans, {
+    eager: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'coachId' })
   coach: User;
 

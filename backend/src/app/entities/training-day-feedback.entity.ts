@@ -24,11 +24,11 @@ export class TrainingDayFeedback {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => TrainingDay)
+  @ManyToOne(() => TrainingDay, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'trainingDayId' })
   trainingDay: TrainingDay;
 

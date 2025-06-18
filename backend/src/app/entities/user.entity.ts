@@ -39,7 +39,10 @@ export class User {
   @OneToMany(() => TrainingPlan, (plan) => plan.coach)
   trainingPlans: TrainingPlan[];
 
-  @ManyToOne(() => User, (coach) => coach.athletes, { nullable: true })
+  @ManyToOne(() => User, (coach) => coach.athletes, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'coachId' })
   coach: User;
 

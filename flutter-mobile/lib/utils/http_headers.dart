@@ -8,5 +8,8 @@ Future<Map<String, String>> getAuthorizedHeaders() async {
     throw Exception('Access token not found');
   }
 
-  return {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'};
+  return {
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+  };
 }

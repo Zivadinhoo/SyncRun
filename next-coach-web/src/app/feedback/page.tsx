@@ -68,29 +68,29 @@ export default function FeedbackPage() {
   const athleteSummaries = summarizeByAthlete();
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Training Feedback by Athlete</h1>
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen w-full space-y-6">
+      <h1 className="text-2xl font-bold">Training Feedbacks by Athlete</h1>
 
       {loading ? (
         <p>Loading...</p>
       ) : athleteSummaries.length === 0 ? (
-        <p>No feedback available yet.</p>
+        <p className="text-gray-500">No feedback available yet.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {athleteSummaries.map((athlete) => (
             <Link
               key={athlete.athleteId}
-              href={`/feedback/${athlete.athleteId.toString()}`}
-              className="border rounded-xl p-4 shadow-sm hover:shadow-md transition block"
+              href={`/feedback/${athlete.athleteId}`}
+              className="border rounded-xl p-4 shadow-sm hover:shadow-md transition bg-white"
             >
-              <p className="text-sm text-gray-500 mb-1">
-                <b>Email:</b> {athlete.email}
-              </p>
-              <p className="text-sm text-gray-500 mb-1">
-                <b>Feedback count:</b> {athlete.totalFeedbacks}
+              <p className="text-sm text-gray-500">
+                <strong>Email:</strong> {athlete.email}
               </p>
               <p className="text-sm text-gray-500">
-                <b>Avg rating:</b> {athlete.averageRating}/10
+                <strong>Feedback count:</strong> {athlete.totalFeedbacks}
+              </p>
+              <p className="text-sm text-gray-500">
+                <strong>Avg rating:</strong> {athlete.averageRating}/10
               </p>
             </Link>
           ))}

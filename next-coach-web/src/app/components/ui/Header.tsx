@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { LogOut } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
@@ -27,11 +28,12 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Logout */}
+      {/* Logout with icon */}
       <button
         onClick={handleLogout}
-        className="text-sm text-red-600 underline hover:text-red-800"
+        className="flex items-center gap-1 text-sm text-red-600 hover:text-red-800 font-medium"
       >
+        <LogOut className="w-4 h-4" />
         Log out
       </button>
     </div>

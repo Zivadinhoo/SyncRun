@@ -102,6 +102,26 @@ export class TrainingDayFeedbackController {
     }
   }
 
+  @Get('by-athlete/:athleteId')
+  @ApiOperation({
+    summary: 'Get all feedbacks left by specific athlete (for coach)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all feedbacks left by the given athlete',
+  })
+  async getByAthlete(@Param('athleteId') athleteId: string) {
+    try {
+      return await this.feedbackService.findForCoach({ athleteId: +athleteId });
+    } catch (error) {
+      this.logger.error(
+        `Error fetching feedbacks by athlete ${athleteId}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all training day feedbacks' })
   @ApiResponse({

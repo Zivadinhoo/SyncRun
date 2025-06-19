@@ -72,7 +72,7 @@ export default function PlansPage() {
   const groupedByAthlete = groupByAthlete();
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
       <h1 className="text-3xl font-bold mb-4">My Training Plans</h1>
 
       {Object.keys(groupedByAthlete).length === 0 ? (
@@ -107,7 +107,7 @@ export default function PlansPage() {
                         return (
                           <div
                             key={ap.id}
-                            className="border rounded-lg p-4 shadow bg-white hover:shadow-lg transition-shadow"
+                            className="border rounded-lg p-4 shadow bg-white hover:shadow-md transition"
                           >
                             <h3 className="font-semibold text-lg">
                               {ap.trainingPlan.name}
@@ -115,7 +115,7 @@ export default function PlansPage() {
                             <p className="text-sm text-gray-600">
                               {ap.trainingPlan.description}
                             </p>
-                            <div className="mt-2 text-xs text-black-600 flex items-center gap-1">
+                            <div className="mt-2 text-xs text-gray-600 flex items-center gap-1">
                               <CalendarDays className="w-4 h-4" />
                               {new Date(ap.assignedAt).toLocaleDateString()}
                               {isToday && (

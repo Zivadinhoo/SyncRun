@@ -73,9 +73,9 @@ export default function RunnersPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">My Runners</h1>
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen w-full space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-800">My Runners</h1>
         <AddAthleteModal onCreated={fetchRunners} />
       </div>
 
@@ -83,13 +83,13 @@ export default function RunnersPage() {
         {runners.map((runner) => (
           <li
             key={runner.id}
-            className="flex items-center justify-between border rounded-lg px-4 py-3 shadow-sm bg-white"
+            className="flex items-center justify-between border rounded-xl px-4 py-3 shadow-sm bg-white hover:shadow transition"
           >
             <div>
-              <p className="text-base font-semibold">
+              <p className="text-base font-semibold text-gray-900">
                 {runner.firstName} {runner.lastName}
               </p>
-              <p className="text-sm text-gray-600">{runner.email}</p>
+              <p className="text-sm text-gray-500">{runner.email}</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -107,7 +107,9 @@ export default function RunnersPage() {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <label className="block mb-1">Plan Name:</label>
+                      <label className="block mb-1 text-sm font-medium text-gray-700">
+                        Plan Name:
+                      </label>
                       <Input
                         placeholder="e.g. 5k progression"
                         value={planName}
@@ -115,7 +117,9 @@ export default function RunnersPage() {
                       />
                     </div>
                     <div>
-                      <label className="block mb-1">Description:</label>
+                      <label className="block mb-1 text-sm font-medium text-gray-700">
+                        Description:
+                      </label>
                       <Input
                         placeholder="e.g. Build up to consistent 5k pace"
                         value={planDescription}
@@ -123,7 +127,9 @@ export default function RunnersPage() {
                       />
                     </div>
                     <div>
-                      <label className="block mb-1">Start Date:</label>
+                      <label className="block mb-1 text-sm font-medium text-gray-700">
+                        Start Date:
+                      </label>
                       <Input
                         type="date"
                         value={startDate}

@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { PlanTemplate } from './plan-template.entity';
+import { PlanTemplateDay } from './plan-template-day.entity';
 
 @Entity()
 export class PlanTemplateWeek {
@@ -11,14 +18,9 @@ export class PlanTemplateWeek {
   })
   template: PlanTemplate;
 
+  @OneToMany(() => PlanTemplateDay, (day) => day.week, { cascade: true })
+  days: PlanTemplateDay[];
+
   @Column()
   weekNumber: number;
-
-  @Column('jsonb')
-  days: {
-    day: string;
-    sessionType: string; // "Easy", "Tempo", "Long Run"
-    description: string;
-    tss?: number;
-  }[];
 }

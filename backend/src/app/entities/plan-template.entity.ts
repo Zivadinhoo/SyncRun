@@ -7,13 +7,10 @@ export class PlanTemplate {
   id: string;
 
   @Column()
-  name: string; // "Half marathon sub 2h"
+  name: string;
 
   @Column()
   durationInWeeks: number;
-
-  @Column()
-  daysPerWeek: number;
 
   @Column({ type: 'text' })
   description: string;

@@ -57,6 +57,35 @@ export class AssignedPlanController {
     }
   }
 
+  @Post('from-template/:templateId')
+  @Roles(UserRole.COACH)
+  @ApiOperation({ summary: 'Assign training plan from template to athlete' })
+  @ApiResponse({
+    status: 201,
+    description: 'Assigned plan created from template',
+  })
+  async assignFromTemplate(
+    @Param('templateId') templateId: string,
+    @Body() body: { athleteId: string; startDate: string },
+    @Req() req: RequestWithUser,
+  ) {
+    try {
+      const result = await this.service.assignFromTemplate(
+        Number(templateId),
+        Number(body.athleteId),
+        new Date(body.startDate),
+        req.user.id,
+      );
+      this.logger.info(
+        `Template ${templateId} assigned to athlete ${body.athleteId}`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error({ err: error }, '❌ Failed to assign template');
+      throw error;
+    }
+  }
+
   @Get('my')
   @Roles(UserRole.COACH)
   @ApiOperation({

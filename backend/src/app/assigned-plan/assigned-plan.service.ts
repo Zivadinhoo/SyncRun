@@ -1,16 +1,16 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+// assigned-plan.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssignedPlan } from '../entities/assigned-plan.entity';
 import { TrainingPlan } from '../entities/training-plan.entity';
+import { TrainingDay } from '../entities/training-day.entity';
 import { CreateAssignedPlanDto } from './dto/create-assigned-plan-dto';
 import { UpdateAssignedPlanDto } from './dto/update-assigned-plan.dto';
 import { User } from '../entities/user.entity';
-import { TrainingDay } from '../entities/training-day.entity';
+import { PlanTemplate } from '../entities/plan-template.entity';
+import { PlanTemplateWeek } from '../entities/plan-template-week.entity';
+import { PlanTemplateDay } from '../entities/plan-template-day.entity';
 
 @Injectable()
 export class AssignedPlanService {
@@ -19,10 +19,19 @@ export class AssignedPlanService {
     private assignedPlanRepo: Repository<AssignedPlan>,
 
     @InjectRepository(TrainingPlan)
-    private readonly trainingPlanRepo: Repository<TrainingPlan>,
+    private trainingPlanRepo: Repository<TrainingPlan>,
 
     @InjectRepository(TrainingDay)
-    private readonly trainingDayRepo: Repository<TrainingDay>,
+    private trainingDayRepo: Repository<TrainingDay>,
+
+    @InjectRepository(PlanTemplate)
+    private templateRepo: Repository<PlanTemplate>,
+
+    @InjectRepository(PlanTemplateWeek)
+    private weekRepo: Repository<PlanTemplateWeek>,
+
+    @InjectRepository(PlanTemplateDay)
+    private dayRepo: Repository<PlanTemplateDay>,
   ) {}
 
   async create(dto: CreateAssignedPlanDto): Promise<AssignedPlan> {
@@ -48,9 +57,70 @@ export class AssignedPlanService {
       trainingPlan: { id: plan.id },
       dayNumber: 1,
       title: 'First Training Day',
-      date: dto.startDate, // možeš koristiti formatiranje ako treba
+      date: dto.startDate,
     });
+
     return saveAssigned;
+  }
+
+  async assignFromTemplate(
+    templateId: number,
+    athleteId: number,
+    startDate: Date,
+    coachId: number,
+  ): Promise<AssignedPlan> {
+    const template = await this.templateRepo.findOne({
+      where: { id: templateId.toString() },
+      relations: ['weeks', 'weeks.days'],
+    });
+
+    if (!template) {
+      throw new NotFoundException('Template not found');
+    }
+
+    const trainingPlan = await this.trainingPlanRepo.save(
+      this.trainingPlanRepo.create({
+        name: template.name,
+        description: template.description,
+        coach: { id: coachId },
+      }),
+    );
+
+    const assigned = await this.assignedPlanRepo.save(
+      this.assignedPlanRepo.create({
+        athlete: { id: athleteId },
+        trainingPlan,
+        assignedAt: startDate,
+      }),
+    );
+
+    const trainingDays: TrainingDay[] = [];
+
+    for (const week of template.weeks) {
+      for (const day of week.days) {
+        const date = new Date(startDate);
+        const offset = (week.weekNumber - 1) * 7 + (day.dayOfWeek - 1);
+        date.setDate(date.getDate() + offset);
+
+        trainingDays.push(
+          this.trainingDayRepo.create({
+            title: day.title,
+            description: day.description,
+            date: date.toISOString().split('T')[0],
+            duration: day.duration,
+            tss: day.tss,
+            rpe: day.rpe,
+            dayNumber: offset + 1,
+            assignedPlan: assigned,
+            trainingPlan: trainingPlan,
+          }),
+        );
+      }
+    }
+
+    await this.trainingDayRepo.save(trainingDays);
+
+    return assigned;
   }
 
   async findAllByCoach(coachId: number) {
@@ -65,6 +135,7 @@ export class AssignedPlanService {
       relations: ['athlete', 'trainingPlan', 'trainingPlan.coach'],
     });
   }
+
   async findAllByAthlete(athleteId: number) {
     const rawPlans = await this.assignedPlanRepo
       .createQueryBuilder('ap')

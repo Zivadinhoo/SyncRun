@@ -13,6 +13,10 @@ import { AssignedPlan } from './entities/assigned-plan.entity';
 import { AssignedPlanModule } from './assigned-plan/assigned-plan.module';
 import { TrainingDayFeedback } from './entities/training-day-feedback.entity';
 import { TrainingDayFeedbackModule } from './training-day-feedback/training-day-feedback.module';
+import { PlanTemplateModule } from './plan-template/plan-template.module';
+import { PlanTemplate } from './entities/plan-template.entity';
+import { PlanTemplateWeek } from './entities/plan-template-week.entity';
+import { PlanTemplateDay } from './entities/plan-template-day.entity';
 
 @Module({
   imports: [
@@ -50,6 +54,9 @@ import { TrainingDayFeedbackModule } from './training-day-feedback/training-day-
           TrainingDay,
           AssignedPlan,
           TrainingDayFeedback,
+          PlanTemplate,
+          PlanTemplateWeek,
+          PlanTemplateDay,
         ],
         synchronize: true,
         logging: true,
@@ -62,6 +69,7 @@ import { TrainingDayFeedbackModule } from './training-day-feedback/training-day-
     TrainingDayModule,
     AssignedPlanModule,
     TrainingDayFeedbackModule,
+    PlanTemplateModule,
   ],
 })
 export class AppModule {}

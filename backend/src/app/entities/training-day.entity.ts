@@ -24,6 +24,12 @@ export class TrainingDay {
   @Column({ type: 'float', nullable: true })
   distance?: number; // distaince in kilometer
 
+  @Column({ type: 'int', nullable: true })
+  tss?: number;
+
+  @Column({ type: 'int', nullable: true })
+  rpe?: number;
+
   @Column()
   title: string;
 

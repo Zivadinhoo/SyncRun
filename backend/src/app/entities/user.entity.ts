@@ -10,6 +10,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { TrainingPlan } from './training-plan.entity';
+import { AssignedPlan } from './assigned-plan.entity';
 
 export enum UserRole {
   COACH = 'coach',
@@ -48,6 +49,13 @@ export class User {
 
   @OneToMany(() => User, (athlete) => athlete.coach)
   athletes: User[];
+
+  @Column({ nullable: true })
+  activeAssignedPlanId?: number;
+
+  @ManyToOne(() => AssignedPlan, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'activeAssignedPlanId' })
+  activeAssignedPlan?: AssignedPlan;
 
   @CreateDateColumn()
   createdAt: Date;

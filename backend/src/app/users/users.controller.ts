@@ -27,6 +27,7 @@ import { User, UserRole } from '../entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RequestWithUser } from '../common/types/request-with-user';
+import { SetActiveAssignedPlanDto } from './dto/set-active-assigned-plan.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -114,6 +115,29 @@ export class UsersController {
       return user;
     } catch (error) {
       this.logger.error(`Failed to get user ID ${id}`, error);
+      throw error;
+    }
+  }
+
+  @Patch(':id/active-plan')
+  @ApiOperation({ summary: 'Set active assigned plan for user' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: SetActiveAssignedPlanDto })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserRole.COACH)
+  async setActivePlan(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: SetActiveAssignedPlanDto,
+  ) {
+    try {
+      const updatedUser = await this.usersService.setActiveAssignedPlan(
+        id,
+        body.assignedPlanId,
+      );
+      this.logger.log(`✅ Active assigned plan set for user ${id}`);
+      return updatedUser;
+    } catch (error) {
+      this.logger.error({ id, error }, '🚨 Failed to set active assigned plan');
       throw error;
     }
   }

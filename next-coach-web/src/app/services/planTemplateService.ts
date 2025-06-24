@@ -1,7 +1,7 @@
 import { serverApi } from "@/lib/api";
 
 export const getPlanTemplates = async () => {
-  const res = await serverApi.get("/plan-template"); // poziva NestJS backend
+  const res = await serverApi.get("/plan-templates");
 
   return res.data;
 };
@@ -12,7 +12,7 @@ export const assignPlanTemplate = async ({
   startDate,
 }: {
   templateId: string;
-  athleteId: string;
+  athleteId: number;
   startDate: string;
 }) => {
   const res = await serverApi.post(
@@ -22,6 +22,5 @@ export const assignPlanTemplate = async ({
       startDate,
     }
   );
-
   return res.data;
 };

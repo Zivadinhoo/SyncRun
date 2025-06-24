@@ -23,12 +23,16 @@ import {
 } from "@/app/services/planTemplateService";
 
 interface Props {
-  athletes: { id: number; email: string }[];
+  athleteId: number;
+  athleteEmail: string;
   onAssigned: () => void;
 }
 
-export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
-  const [athleteId, setAthleteId] = useState<string>("");
+export function AssignPlanFromTemplateModal({
+  athleteId,
+  athleteEmail,
+  onAssigned,
+}: Props) {
   const [templateId, setTemplateId] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd")
@@ -46,7 +50,7 @@ export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
   }, []);
 
   const handleAssign = async () => {
-    if (!athleteId || !templateId || !startDate) return;
+    if (!templateId || !startDate) return;
     setLoading(true);
     try {
       await assignPlanTemplate({
@@ -55,7 +59,6 @@ export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
         startDate,
       });
       setIsOpen(false);
-      setAthleteId("");
       setTemplateId("");
       onAssigned();
     } catch (err) {
@@ -68,7 +71,7 @@ export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Assign Plan from Template</Button>
+        <Button variant="default">Assign Plan</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -76,18 +79,9 @@ export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
-          <Select onValueChange={setAthleteId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Athlete" />
-            </SelectTrigger>
-            <SelectContent>
-              {athletes.map((a) => (
-                <SelectItem key={a.id} value={a.id.toString()}>
-                  {a.email}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="text-sm text-gray-500">
+            Assigning to: <strong>{athleteEmail}</strong>
+          </div>
 
           <Select onValueChange={setTemplateId}>
             <SelectTrigger>
@@ -102,7 +96,6 @@ export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
             </SelectContent>
           </Select>
 
-          {/* Date input – za sada samo plain text */}
           <input
             type="date"
             value={startDate}
@@ -110,7 +103,7 @@ export function AssignPlanFromTemplateModal({ athletes, onAssigned }: Props) {
             className="border rounded px-3 py-1 w-full text-sm"
           />
 
-          <Button onClick={handleAssign} disabled={loading}>
+          <Button onClick={handleAssign} disabled={loading || !templateId}>
             {loading ? "Assigning..." : "Assign Plan"}
           </Button>
         </div>

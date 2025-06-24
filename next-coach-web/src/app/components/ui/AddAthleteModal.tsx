@@ -59,7 +59,7 @@ export function AddAthleteModal({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Add Athlete</Button>
+        <Button variant="default">Add Runner</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

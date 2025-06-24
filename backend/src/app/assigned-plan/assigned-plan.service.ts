@@ -64,7 +64,7 @@ export class AssignedPlanService {
   }
 
   async assignFromTemplate(
-    templateId: number,
+    templateId: string,
     athleteId: number,
     startDate: Date,
     coachId: number,

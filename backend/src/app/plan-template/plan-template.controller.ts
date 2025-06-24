@@ -14,7 +14,7 @@ import { CreatePlanTemplateDto } from './dto/create-plan-template.dto';
 import { UpdatePlanTemplateDto } from './dto/update-plan-template.dto';
 import { Logger } from 'nestjs-pino';
 
-@Controller('plan templates')
+@Controller('plan-templates')
 export class PlanTemplateController {
   constructor(
     private readonly service: PlanTemplateService,

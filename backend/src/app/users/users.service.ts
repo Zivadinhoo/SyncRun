@@ -132,6 +132,25 @@ export class UsersService {
     }
   }
 
+  async setActiveAssignedPlan(
+    userId: number,
+    assignedPlanId: number,
+  ): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    const assignedPlan = await this.assignedPlanRepository.findOneBy({
+      id: assignedPlanId,
+    });
+    if (!assignedPlan) throw new NotFoundException('Assigned plan not found');
+
+    user.activeAssignedPlan = assignedPlan;
+    const saved = await this.userRepository.save(user);
+    this.logger.info({ userId, assignedPlan }, '✅ Active plan set for user');
+
+    return saved;
+  }
+
   async remove(id: number): Promise<void> {
     try {
       const user = await this.userRepository.findOneOrFail({ where: { id } });
@@ -144,7 +163,7 @@ export class UsersService {
           .execute();
       }
 
-      // Soft delete korisnika
+      // Soft delete user
       const result = await this.userRepository.softDelete(id);
 
       if (result.affected === 0) {
@@ -155,7 +174,7 @@ export class UsersService {
       this.logger.info({ id }, '🗑️ User and related data soft deleted');
     } catch (error) {
       this.logger.error({ id, error }, '🚨 Error while deleting user');
-      console.error('🔥 DELETE USER CRASH:', error); // <-- OVO DODAJ
+      console.error('🔥 DELETE USER CRASH:', error); //
       throw new InternalServerErrorException('Failed to delete user');
     }
   }

@@ -20,7 +20,9 @@ final weeklyReviewProvider = FutureProvider.family.autoDispose<
     'http://192.168.0.45:3001/training-days/weekly-summary',
   ).replace(
     queryParameters: {
-      'athleteId': params.athleteId.toString(),
+      'planId':
+          params.assignedPlanId
+              .toString(), // ⬅️ OVO je ključno
       'startDate': params.startDate
           .toIso8601String()
           .substring(0, 10),
@@ -51,12 +53,12 @@ final weeklyReviewProvider = FutureProvider.family.autoDispose<
 });
 
 class WeeklyReviewParams {
-  final int athleteId;
+  final int assignedPlanId; // ⬅️ PROMENA ovde
   final DateTime startDate;
   final DateTime endDate;
 
   const WeeklyReviewParams({
-    required this.athleteId,
+    required this.assignedPlanId,
     required this.startDate,
     required this.endDate,
   });

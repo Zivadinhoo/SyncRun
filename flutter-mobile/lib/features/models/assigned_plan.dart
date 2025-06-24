@@ -7,7 +7,6 @@ class AssignedPlan {
   final TrainingPlan trainingPlan;
   final int? trainingDayId;
 
-  // ✅ Dodato
   final double? tss;
   final int? rpe;
 

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { EditPlanModal } from "@/app/components/ui/EditPlanModal";
-import { DeletePlanModal } from "../components/ui/DeletePlanModal";
+import { DeletePlanModal } from "@/app/components/ui/DeletePlanModal";
+import { ViewPlanModal } from "@/app/components/ui/ViewPlanModal"; // ✅ NOVO
 import { Button } from "@/app/components/ui/button";
 import { Trash2, User, CalendarDays } from "lucide-react";
 import {
@@ -37,7 +38,7 @@ export default function PlansPage() {
 
   const fetchData = async () => {
     try {
-      const assignedRes = await api.get("/assigned-plans/my");
+      const assignedRes = await api.get("/assigned-plan/my");
       setAssignedPlans(assignedRes.data);
     } catch (err) {
       console.error("❌ Failed to fetch data:", err);
@@ -124,7 +125,9 @@ export default function PlansPage() {
                                 </span>
                               )}
                             </div>
-                            <div className="flex justify-end gap-2 mt-3">
+                            <div className="flex justify-end gap-2 mt-3 flex-wrap">
+                              <ViewPlanModal planId={ap.trainingPlan.id} />{" "}
+                              {/* 👈 */}
                               <EditPlanModal
                                 plan={ap.trainingPlan}
                                 onUpdated={fetchData}

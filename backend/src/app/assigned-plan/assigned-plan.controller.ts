@@ -31,7 +31,7 @@ import { RequestWithUser } from '../common/types/request-with-user';
 @ApiTags()
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RoleAuthGuard)
-@Controller('assigned-plans')
+@Controller('assigned-plan')
 export class AssignedPlanController {
   constructor(
     private readonly service: AssignedPlanService,
@@ -66,13 +66,13 @@ export class AssignedPlanController {
   })
   async assignFromTemplate(
     @Param('templateId') templateId: string,
-    @Body() body: { athleteId: string; startDate: string },
+    @Body() body: { athleteId: number; startDate: string },
     @Req() req: RequestWithUser,
   ) {
     try {
       const result = await this.service.assignFromTemplate(
-        Number(templateId),
-        Number(body.athleteId),
+        templateId,
+        body.athleteId,
         new Date(body.startDate),
         req.user.id,
       );

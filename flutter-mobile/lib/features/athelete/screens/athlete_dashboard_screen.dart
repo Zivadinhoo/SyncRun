@@ -1,15 +1,21 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:frontend/features/models/assigned_plan.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/features/athelete/providers/weekly_review_provider.dart';
 import 'package:frontend/features/athelete/widgets/weekly_tss_bar_chart.dart';
 import 'package:frontend/features/athelete/widgets/training_plan_card.dart';
-import 'package:frontend/features/athelete/providers/assigned_plans_provider.dart';
+import 'package:frontend/features/athelete/providers/assigned_plans_provider.dart'
+    as assigned;
+import 'package:frontend/features/athelete/providers/active_plan_provider.dart'
+    as active;
 import 'package:frontend/features/athelete/providers/training_days_providert.dart';
 import 'package:intl/intl.dart';
 import 'training_day_screen.dart';
+import '../widgets/active_plan_card.dart';
 
 class AthleteDashboardScreen
     extends ConsumerStatefulWidget {
@@ -29,7 +35,7 @@ class _AthleteDashboardScreenState
   DateTime currentStartDate = _getStartOfWeek(
     DateTime.now(),
   );
-  WeeklyReviewParams? _weeklyParams; // ✅ FIX
+  WeeklyReviewParams? _weeklyParams;
 
   static DateTime _getStartOfWeek(DateTime date) {
     return date.subtract(Duration(days: date.weekday - 1));
@@ -55,10 +61,18 @@ class _AthleteDashboardScreenState
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        athleteId = data['id'];
-      });
+      try {
+        final data = jsonDecode(response.body);
+        final planId = data['activeAssignedPlanId'];
+        if (planId != null) {
+          ref.read(active.setActivePlanProvider)(planId);
+        }
+        setState(() {
+          athleteId = data['id'];
+        });
+      } catch (e) {
+        print('❌ JSON PARSE FAIL: $e');
+      }
     } else {
       print('❌ Failed to fetch user');
     }
@@ -110,19 +124,17 @@ class _AthleteDashboardScreenState
   @override
   Widget build(BuildContext context) {
     final assignedPlansAsync = ref.watch(
-      assignedPlansFutureProvider,
+      assigned.assignedPlansFutureProvider,
     );
-    final activePlanIdAsync = ref.watch(
-      activePlanIdProvider,
+    final activePlanId = ref.watch(
+      active.activePlanIdProvider,
     );
 
-    activePlanIdAsync.whenData((activePlanId) {
-      if (_activePlanId != activePlanId &&
-          activePlanId != null) {
-        _activePlanId = activePlanId;
-        _updateWeeklyParams(activePlanId);
-      }
-    });
+    if (_activePlanId != activePlanId &&
+        activePlanId != null) {
+      _activePlanId = activePlanId;
+      _updateWeeklyParams(activePlanId);
+    }
 
     final weeklyReviewAsync =
         (_weeklyParams != null)
@@ -137,69 +149,116 @@ class _AthleteDashboardScreenState
           SliverToBoxAdapter(
             child: _buildWeeklySummary(weeklyReviewAsync),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 8)),
-          activePlanIdAsync.when(
-            loading:
-                () => const SliverToBoxAdapter(
-                  child: SizedBox(),
-                ),
-            error:
-                (err, _) => const SliverToBoxAdapter(
-                  child: SizedBox(),
-                ),
-            data: (activePlanId) {
-              return SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    _buildActivePlanNotice(
-                      assignedPlansAsync,
-                      activePlanId,
-                    ),
-                    if (activePlanId != null)
-                      _buildTrainingDays(activePlanId),
-                  ],
-                ),
-              );
-            },
+          SliverToBoxAdapter(
+            child: const SizedBox(height: 8),
           ),
-          activePlanIdAsync.when(
-            loading:
-                () => const SliverToBoxAdapter(
-                  child: SizedBox(),
+          if (activePlanId != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
                 ),
-            error:
-                (err, _) => const SliverToBoxAdapter(
-                  child: SizedBox(),
-                ),
-            data: (activePlanId) {
-              if (activePlanId == null) {
-                return _buildAssignedPlans(
-                  assignedPlansAsync,
-                );
-              } else {
-                return const SliverToBoxAdapter(
-                  child: SizedBox(),
-                );
-              }
-            },
-          ),
+                child: _buildTrainingDays(activePlanId),
+              ),
+            )
+          else
+            _buildAssignedPlans(assignedPlansAsync),
         ],
       ),
     );
   }
 
+  Widget _buildTrainingDays(int activePlanId) {
+    final trainingDaysAsync = ref.watch(
+      trainingDaysProvider(activePlanId),
+    );
+
+    return trainingDaysAsync.when(
+      loading:
+          () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+      error:
+          (err, _) =>
+              Text('Failed to load training days: $err'),
+      data: (days) {
+        if (days.isEmpty) {
+          return const Text('No training days found.');
+        }
+
+        days.sort((a, b) => a.date.compareTo(b.date));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 12),
+            const Text(
+              '🏃 Training Days',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...days.map((day) {
+              return Card(
+                child: ListTile(
+                  title: Text(
+                    DateFormat(
+                      'EEEE, d MMM',
+                    ).format(day.date),
+                  ),
+                  subtitle: Text(
+                    day.description.isNotEmpty
+                        ? day.description
+                        : 'No description',
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+                    children: [
+                      Text('⏱ ${day.duration} min'),
+                      if (day.tss != null)
+                        Text(
+                          'TSS: ${day.tss!.toStringAsFixed(1)}',
+                        ),
+                    ],
+                  ),
+                  leading: const Icon(Icons.directions_run),
+                ),
+              );
+            }).toList(),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildWeeklySummary(AsyncValue weeklyReviewAsync) {
+    final activePlanId = ref.watch(
+      active.activePlanIdProvider,
+    );
+    final assignedPlansAsync = ref.watch(
+      assigned.assignedPlansFutureProvider,
+    );
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "📊 Weekly Summary",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          const Row(
+            children: [
+              Icon(Icons.bar_chart, size: 20),
+              SizedBox(width: 6),
+              Text(
+                "Weekly Summary",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Row(
@@ -224,7 +283,7 @@ class _AthleteDashboardScreenState
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           weeklyReviewAsync.when(
             loading:
                 () => const CircularProgressIndicator(),
@@ -252,116 +311,74 @@ class _AthleteDashboardScreenState
                   ],
                 ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActivePlanNotice(
-    AsyncValue assignedPlansAsync,
-    int? activePlanId,
-  ) {
-    return assignedPlansAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (err, _) => const SizedBox.shrink(),
-      data: (plans) {
-        if (activePlanId == null)
-          return const SizedBox.shrink();
-        final activePlan = plans.firstWhere(
-          (plan) => plan.id == activePlanId,
-          orElse: () => plans.first,
-        );
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-            vertical: 4,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '🔥 Active Plan: ${activePlan.trainingPlan.name}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '🗓 Assigned at: ${DateFormat.yMMMEd().format(activePlan.assignedAt)}',
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTrainingDays(int activePlanId) {
-    final trainingDaysAsync = ref.watch(
-      trainingDaysProvider(activePlanId),
-    );
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-        ),
-        child: trainingDaysAsync.when(
-          loading:
-              () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-          error:
-              (err, _) => Text(
-                'Failed to load training days: $err',
-              ),
-          data: (days) {
-            if (days.isEmpty)
-              return const Text('No training days found.');
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                const Text(
-                  '🏃 Training Days',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+          const SizedBox(height: 12),
+          if (activePlanId != null)
+            assignedPlansAsync.when(
+              loading:
+                  () => const CircularProgressIndicator(),
+              error:
+                  (err, _) =>
+                      Text('Error loading plan: $err'),
+              data: (rawPlans) {
+                final List<AssignedPlan> plans =
+                    List<AssignedPlan>.from(rawPlans);
+                final activePlan = plans.firstWhere(
+                  (p) => p.id == activePlanId,
+                  orElse: () => plans.first,
+                );
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                const SizedBox(height: 8),
-                ...days.map((day) {
-                  final formatted = DateFormat(
-                    'EEEE, d MMM',
-                  ).format(day.date);
-                  return Card(
-                    child: ListTile(
-                      title: Text(formatted),
-                      subtitle: Text(
-                        day.description.isNotEmpty
-                            ? day.description
-                            : 'No description',
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center,
-                        children: [
-                          Text('⏱ ${day.duration} min'),
-                          if (day.tss != null)
-                            Text(
-                              'TSS: ${day.tss!.toStringAsFixed(1)}',
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.flag,
+                              color: Colors.red,
                             ),
-                        ],
-                      ),
-                      leading: const Icon(
-                        Icons.directions_run,
-                      ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Active Plan",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(activePlan.trainingPlan.name),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Assigned: ${DateFormat.yMMMEd().format(activePlan.assignedAt)}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                }),
-              ],
-            );
-          },
-        ),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
     );
   }
@@ -381,10 +398,16 @@ class _AthleteDashboardScreenState
             child: Center(child: Text('Error: $err')),
           ),
       data: (plans) {
-        final validPlans =
-            plans
-                .where((p) => p.trainingPlan != null)
-                .toList();
+        final Map<int, dynamic> uniquePlansMap = {};
+
+        for (var plan in plans) {
+          if (plan.trainingPlan != null) {
+            uniquePlansMap[plan.id] = plan;
+          }
+        }
+
+        final validPlans = uniquePlansMap.values.toList();
+
         if (validPlans.isEmpty) {
           return const SliverToBoxAdapter(
             child: Center(
@@ -404,12 +427,13 @@ class _AthleteDashboardScreenState
             return TrainingPlanCard(
               plan: plan,
               onTap: () async {
-                await ref.read(setActivePlanProvider)(
+                ref.read(active.setActivePlanProvider)(
                   plan.id,
                 );
                 if (plan.trainingDayId == null ||
-                    plan.trainingDayId == 0)
+                    plan.trainingDayId == 0) {
                   return;
+                }
                 final result = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
@@ -428,7 +452,7 @@ class _AthleteDashboardScreenState
                 );
                 if (result == true) {
                   ref.invalidate(
-                    assignedPlansFutureProvider,
+                    assigned.assignedPlansFutureProvider,
                   );
                 }
               },

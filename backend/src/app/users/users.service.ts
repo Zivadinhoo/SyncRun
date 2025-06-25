@@ -79,6 +79,17 @@ export class UsersService {
       throw new InternalServerErrorException('Failed to update user');
     }
   }
+  async getMe(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+
+    return user;
+  }
 
   async getMyAthletes(coachId: number): Promise<User[]> {
     try {

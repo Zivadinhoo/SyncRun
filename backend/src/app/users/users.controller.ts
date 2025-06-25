@@ -47,6 +47,13 @@ export class UsersController {
     const coachId = req.user.id;
     return this.usersService.getMyAthletes(coachId);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({ summary: 'Get currently authenticated user' })
+  @ApiOkResponse({ type: User })
+  getCurrentUser(@Req() req: RequestWithUser) {
+    return this.usersService.getMe(req.user.id);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new user ' })

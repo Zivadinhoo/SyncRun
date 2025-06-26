@@ -17,7 +17,7 @@ import { TrainingDayFeedback } from '../entities/training-day-feedback.entity';
 export class TrainingDayService {
   constructor(
     @InjectRepository(TrainingDay)
-    private trainingDayRepo: Repository<TrainingDay>,
+    private trainingDayRepository: Repository<TrainingDay>,
 
     @InjectRepository(TrainingDayFeedback)
     private feedbackRepo: Repository<TrainingDayFeedback>,
@@ -34,12 +34,12 @@ export class TrainingDayService {
       throw new NotFoundException('Training Plan not found');
     }
 
-    const trainingDay = this.trainingDayRepo.create({
+    const trainingDay = this.trainingDayRepository.create({
       ...dto,
       trainingPlan,
     });
 
-    return this.trainingDayRepo.save(trainingDay);
+    return this.trainingDayRepository.save(trainingDay);
   }
 
   async createBulk(dto: CreateTrainingDayBulkDto): Promise<TrainingDay[]> {
@@ -56,7 +56,7 @@ export class TrainingDayService {
       throw new NotFoundException('Training Plan not found');
     }
 
-    const existingDays = await this.trainingDayRepo.find({
+    const existingDays = await this.trainingDayRepository.find({
       where: { trainingPlan: { id: planId } },
     });
 
@@ -80,14 +80,14 @@ export class TrainingDayService {
       return day;
     });
 
-    return this.trainingDayRepo.save(entities);
+    return this.trainingDayRepository.save(entities);
   }
 
   async existsByDayNumber(
     trainingPlanId: number,
     dayNumber: number,
   ): Promise<boolean> {
-    const existing = await this.trainingDayRepo.findOne({
+    const existing = await this.trainingDayRepository.findOne({
       where: {
         trainingPlan: { id: trainingPlanId },
         dayNumber,
@@ -109,7 +109,7 @@ export class TrainingDayService {
       };
     }
 
-    const days = await this.trainingDayRepo.find({
+    const days = await this.trainingDayRepository.find({
       where,
       relations: ['assignedPlan', 'assignedPlan.athlete', 'trainingPlan'],
       order: { date: 'ASC' },
@@ -169,14 +169,26 @@ export class TrainingDayService {
   }
 
   findAll(): Promise<TrainingDay[]> {
-    return this.trainingDayRepo.find({
+    return this.trainingDayRepository.find({
       relations: ['trainingPlan'],
       order: { dayNumber: 'ASC' },
     });
   }
 
+  async findByAssignedPlanId(assignedPlanId: number) {
+    return this.trainingDayRepository.find({
+      where: {
+        assignedPlan: { id: assignedPlanId },
+      },
+      order: {
+        date: 'ASC',
+      },
+      relations: ['assignedPlan'],
+    });
+  }
+
   async findByTrainingPlanId(planId: number): Promise<TrainingDay[]> {
-    return this.trainingDayRepo.find({
+    return this.trainingDayRepository.find({
       where: { trainingPlan: { id: planId } },
       relations: ['trainingPlan'],
       order: { dayNumber: 'ASC' },
@@ -184,7 +196,7 @@ export class TrainingDayService {
   }
 
   async findOne(id: number): Promise<TrainingDay> {
-    const trainingDay = await this.trainingDayRepo.findOne({
+    const trainingDay = await this.trainingDayRepository.findOne({
       where: { id },
       relations: ['trainingPlan'],
     });
@@ -199,15 +211,15 @@ export class TrainingDayService {
   async update(id: number, dto: UpdateTrainingDayDto): Promise<TrainingDay> {
     const trainingDay = await this.findOne(id);
 
-    const updated = this.trainingDayRepo.merge(trainingDay, {
+    const updated = this.trainingDayRepository.merge(trainingDay, {
       ...dto,
     });
 
-    return this.trainingDayRepo.save(updated);
+    return this.trainingDayRepository.save(updated);
   }
 
   async softDelete(id: number): Promise<void> {
-    const result = await this.trainingDayRepo.softDelete(id);
+    const result = await this.trainingDayRepository.softDelete(id);
 
     if (result.affected === 0) {
       throw new NotFoundException('Training Day not found');

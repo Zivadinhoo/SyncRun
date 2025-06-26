@@ -19,10 +19,10 @@ export class TrainingDay {
   dayNumber: number;
 
   @Column({ type: 'int', nullable: true })
-  duration?: number;
+  duration?: number; // in minutes
 
   @Column({ type: 'float', nullable: true })
-  distance?: number; // distaince in kilometer
+  distance?: number; // in kilometers
 
   @Column({ type: 'int', nullable: true })
   tss?: number;
@@ -33,7 +33,7 @@ export class TrainingDay {
   @Column()
   title: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description?: string;
 
   @Column({ type: 'date' })
@@ -44,7 +44,10 @@ export class TrainingDay {
   })
   trainingPlan: TrainingPlan;
 
-  @ManyToOne(() => AssignedPlan, { nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => AssignedPlan, (assignedPlan) => assignedPlan.trainingDays, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   assignedPlan?: AssignedPlan;
 
   @CreateDateColumn()

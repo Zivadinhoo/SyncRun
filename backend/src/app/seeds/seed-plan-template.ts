@@ -5,7 +5,6 @@ import { PlanTemplateDay } from '../entities/plan-template-day.entity';
 import { AppDataSource } from '../data-source';
 
 async function seed() {
-  // ✅ Prvo inicijalizuj konekciju
   await AppDataSource.initialize();
 
   const templateRepo = AppDataSource.getRepository(PlanTemplate);
@@ -62,11 +61,9 @@ async function seed() {
 
   console.log('✅ Seeded 5K plan template');
 
-  // ✅ Uništi konekciju kad završiš
   await AppDataSource.destroy();
 }
 
-// Pokreni seed funkciju
 seed().catch((e) => {
   console.error('❌ Error while seeding:', e);
   AppDataSource.destroy();

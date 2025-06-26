@@ -104,6 +104,29 @@ export class TrainingDayController {
     return await this.trainingDayService.findOne(id);
   }
 
+  @Get('/by-assigned-plan/:assignedPlanId')
+  @ApiOperation({ summary: 'Get all training days for an assigned plan' })
+  @ApiParam({ name: 'assignedPlanId', type: Number })
+  async findByAssignedPlan(
+    @Param('assignedPlanId', ParseIntPipe) assignedPlanId: number,
+  ) {
+    try {
+      this.logger.log(
+        `Fetching training days for assignedPlanId=${assignedPlanId}`,
+      );
+      const result =
+        await this.trainingDayService.findByAssignedPlanId(assignedPlanId);
+      this.logger.debug(`Fetched ${result.length} training days`);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch training days for assignedPlanId=${assignedPlanId}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
   @Get('/by-plan/:planId')
   @ApiOperation({ summary: 'Get all training days for a plan' })
   @ApiParam({ name: 'planId', type: Number })

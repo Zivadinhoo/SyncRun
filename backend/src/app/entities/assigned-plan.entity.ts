@@ -7,6 +7,7 @@ import {
   DeleteDateColumn,
   JoinColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
 import { TrainingPlan } from './training-plan.entity';
@@ -17,8 +18,8 @@ export class AssignedPlan {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => TrainingDay, (td) => td.assignedPlan)
-  trainingDay: TrainingDay;
+  @OneToMany(() => TrainingDay, (td) => td.assignedPlan)
+  trainingDays: TrainingDay[];
 
   @Column({ nullable: true })
   feedback?: string;

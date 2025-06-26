@@ -1,7 +1,7 @@
 // assigned-plan.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AssignedPlan } from '../entities/assigned-plan.entity';
 import { TrainingPlan } from '../entities/training-plan.entity';
 import { TrainingDay } from '../entities/training-day.entity';
@@ -17,6 +17,9 @@ export class AssignedPlanService {
   constructor(
     @InjectRepository(AssignedPlan)
     private assignedPlanRepo: Repository<AssignedPlan>,
+
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
 
     @InjectRepository(TrainingPlan)
     private trainingPlanRepo: Repository<TrainingPlan>,
@@ -50,17 +53,23 @@ export class AssignedPlanService {
       assignedAt: new Date(dto.startDate),
     });
 
-    const saveAssigned = await this.assignedPlanRepo.save(assigned);
+    const savedAssigned = await this.assignedPlanRepo.save(assigned);
 
+    // Postavi kao aktivan plan za korisnika
+    await this.userRepo.update(dto.athleteId, {
+      activeAssignedPlanId: savedAssigned.id,
+    });
+
+    // Prvi trening dan kao placeholder
     await this.trainingDayRepo.save({
-      assignedPlan: { id: saveAssigned.id },
+      assignedPlan: { id: savedAssigned.id },
       trainingPlan: { id: plan.id },
       dayNumber: 1,
       title: 'First Training Day',
       date: dto.startDate,
     });
 
-    return saveAssigned;
+    return savedAssigned;
   }
 
   async assignFromTemplate(
@@ -93,6 +102,11 @@ export class AssignedPlanService {
         assignedAt: startDate,
       }),
     );
+
+    // ✅ Postavi aktivni plan
+    await this.userRepo.update(athleteId, {
+      activeAssignedPlanId: assigned.id,
+    });
 
     const trainingDays: TrainingDay[] = [];
 

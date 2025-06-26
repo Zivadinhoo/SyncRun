@@ -8,6 +8,7 @@ import { TrainingDay } from '../entities/training-day.entity';
 import { PlanTemplate } from '../entities/plan-template.entity';
 import { PlanTemplateWeek } from '../entities/plan-template-week.entity';
 import { PlanTemplateDay } from '../entities/plan-template-day.entity';
+import { User } from '../entities/user.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PlanTemplateDay } from '../entities/plan-template-day.entity';
       PlanTemplate,
       PlanTemplateWeek,
       PlanTemplateDay,
+      User,
     ]),
   ],
   controllers: [AssignedPlanController],

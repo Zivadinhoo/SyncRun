@@ -1,4 +1,5 @@
 import 'training_plan.dart';
+import 'training_day.dart';
 
 class AssignedPlan {
   final int id;
@@ -6,9 +7,9 @@ class AssignedPlan {
   final DateTime assignedAt;
   final TrainingPlan trainingPlan;
   final int? trainingDayId;
-
   final double? tss;
   final int? rpe;
+  final List<TrainingDay> trainingDays;
 
   AssignedPlan({
     required this.id,
@@ -18,6 +19,7 @@ class AssignedPlan {
     required this.trainingDayId,
     this.tss,
     this.rpe,
+    required this.trainingDays,
   });
 
   factory AssignedPlan.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,12 @@ class AssignedPlan {
       );
     }
 
+    final List<TrainingDay> parsedDays =
+        (json['trainingDays'] as List<dynamic>?)
+            ?.map((e) => TrainingDay.fromJson(e))
+            .toList() ??
+        [];
+
     return AssignedPlan(
       id: json['id'],
       isCompleted: json['isCompleted'] ?? false,
@@ -38,6 +46,7 @@ class AssignedPlan {
       trainingDayId: trainingDayId,
       tss: (json['tss'] as num?)?.toDouble(),
       rpe: json['rpe'] as int?,
+      trainingDays: parsedDays,
     );
   }
 }

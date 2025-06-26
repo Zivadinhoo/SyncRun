@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/models/training_day_feedback.dart';
-import 'package:frontend/features/athelete/services/athlete_feedback_service.dart';
+import 'package:frontend/features/athlete/services/athlete_feedback_service.dart';
 
 final feedbackForTrainingDayProvider = FutureProvider.family
     .autoDispose<TrainingDayFeedback?, int>((

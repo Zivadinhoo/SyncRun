@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/auth/screens/login.screen.dart';
 import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
-import 'package:frontend/features/plans/screens/create_plan_screen.dart';
-
-import 'package:frontend/features/athelete/screens/athlete_main_screen.dart';
+import 'package:frontend/features/athlete/screens/athlete_main_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: RunWithCoachApp()));
@@ -36,8 +34,6 @@ class RunWithCoachApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/coach-dashboard':
             (context) => const CoachDashboardScreen(),
-        '/create-plan':
-            (context) => const CreatePlanScreen(),
         '/athlete-dashboard':
             (context) => const AthleteMainScreen(),
       },

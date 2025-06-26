@@ -20,9 +20,7 @@ final weeklyReviewProvider = FutureProvider.family.autoDispose<
     'http://192.168.0.45:3001/training-days/weekly-summary',
   ).replace(
     queryParameters: {
-      'planId':
-          params.assignedPlanId
-              .toString(), // ⬅️ OVO je ključno
+      'planId': params.assignedPlanId.toString(),
       'startDate': params.startDate
           .toIso8601String()
           .substring(0, 10),

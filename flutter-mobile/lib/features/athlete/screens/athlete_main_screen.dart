@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/features/athelete/providers/assigned_plans_provider.dart';
+import 'package:frontend/features/athlete/providers/assigned_plans_provider.dart';
 import 'athlete_dashboard_screen.dart';
 
 class AthleteMainScreen extends ConsumerStatefulWidget {

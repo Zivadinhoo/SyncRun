@@ -6,31 +6,48 @@ import 'package:frontend/features/models/training_day.dart';
 
 final _secureStorage = FlutterSecureStorage();
 
-final trainingDaysProvider = FutureProvider.family<
+final trainingDaysProviderFamily = FutureProvider.family<
   List<TrainingDay>,
   int
 >((ref, assignedPlanId) async {
+  print(
+    "📡 Starting fetch for training days (planId: $assignedPlanId)",
+  );
+
   final token = await _secureStorage.read(
     key: 'accessToken',
   );
-  if (token == null) throw Exception("No token found");
+  if (token == null) {
+    print("❌ No access token found.");
+    throw Exception("No token found");
+  }
+
+  final url =
+      'http://192.168.0.45:3001/training-days/by-assigned-plan/$assignedPlanId';
 
   final response = await http.get(
-    Uri.parse(
-      'http://192.168.0.45:3001/training-days/by-plan/$assignedPlanId',
-    ),
+    Uri.parse(url),
     headers: {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
     },
   );
 
+  print("📥 Status: ${response.statusCode}");
+  print("📦 Body: ${response.body}");
+
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return data
-        .map((json) => TrainingDay.fromJson(json))
-        .toList();
+    final days =
+        data
+            .map((json) => TrainingDay.fromJson(json))
+            .toList();
+    print("✅ Parsed ${days.length} training days");
+    return days;
   } else {
+    print(
+      "❌ Failed to load training days. Status: ${response.statusCode}",
+    );
     throw Exception('Failed to load training days');
   }
 });

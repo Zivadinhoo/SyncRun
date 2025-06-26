@@ -7,49 +7,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // Secure storage
 final _secureStorage = FlutterSecureStorage();
 
-/// Provider koji vraća listu dodeljenih planova
-final assignedPlansFutureProvider =
-    FutureProvider.autoDispose<List<AssignedPlan>>((
-      ref,
-    ) async {
-      final token = await _secureStorage.read(
-        key: 'accessToken',
-      );
-
-      if (token == null) {
-        print("❌ No token found in secure storage");
-        throw Exception("No token found");
-      }
-
-      print(
-        "📡 Fetching assigned plans with token: $token",
-      );
-
-      final response = await http.get(
-        Uri.parse(
-          'http://192.168.0.45:3001/assigned-plan/mine',
-        ),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      print("📥 Status: ${response.statusCode}");
-      print("📦 Body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(
-          response.body,
-        );
-        return data
-            .map((e) => AssignedPlan.fromJson(e))
-            .toList();
-      } else {
-        throw Exception('Failed to fetch assigned plans');
-      }
-    });
-
 /// Provider koji vraća ID aktivnog plana sa backenda
 final activePlanIdProvider = FutureProvider<int?>((
   ref,
@@ -75,7 +32,7 @@ final activePlanIdProvider = FutureProvider<int?>((
   }
 });
 
-/// Provider koji postavlja aktivni plan i osvežava activePlanIdProvider
+/// Provider koji postavlja aktivni plan i invalidira cache
 final setActivePlanProvider = Provider<
   Future<void> Function(int)
 >((ref) {
@@ -100,7 +57,7 @@ final setActivePlanProvider = Provider<
       throw Exception('Failed to set active plan');
     }
 
-    // 🔄 Refreshuj activePlanId
+    // 🔁 Osvetli provider da se učita novi aktivni plan
     ref.invalidate(activePlanIdProvider);
   };
 });

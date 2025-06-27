@@ -43,7 +43,7 @@ class AssignedPlansService {
     final token = await _storage.read(key: 'accessToken');
 
     final response = await http.patch(
-      Uri.parse('$_baseUrl/assigned-plans/$id'),
+      Uri.parse('$_baseUrl/assigned-plan/$id'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

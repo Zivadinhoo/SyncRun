@@ -10,6 +10,7 @@ class TrainingPlanCard extends StatelessWidget {
     super.key,
     required this.plan,
     required this.onTap,
+    required bool isActive,
   });
 
   @override

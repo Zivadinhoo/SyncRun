@@ -18,6 +18,13 @@ export class TrainingDay {
   @Column()
   dayNumber: number;
 
+  @Column({
+    type: 'enum',
+    enum: ['upcoming', 'completed', 'missed'],
+    default: 'upcoming',
+  })
+  status: 'upcoming' | 'completed' | 'missed';
+
   @Column({ type: 'int', nullable: true })
   duration?: number; // in minutes
 

@@ -6,28 +6,23 @@ import 'package:http/http.dart' as http;
 class AthleteFeedbackService {
   final String baseUrl = 'http://192.168.0.45:3001';
 
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('authToken');
+  }
+
   Future<TrainingDayFeedback?> fetchFeedbackForTrainingDay(
     int trainingDayId,
   ) async {
+    final token = await _getToken();
     final url = Uri.parse(
-      "$baseUrl/training-day-feedback/by-training-day/$trainingDayId",
+      '$baseUrl/training-day-feedback/by-training-day/$trainingDayId',
     );
-
-    print(
-      "🌐 Fetching feedback for trainingDayId: $trainingDayId",
-    );
-
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('authToken');
-    print("🔐 Using token: $token");
 
     final response = await http.get(
       url,
       headers: {'Authorization': 'Bearer $token'},
     );
-
-    print("📥 Feedback status: ${response.statusCode}");
-    print("📦 Feedback body: ${response.body}");
 
     if (response.statusCode == 200 &&
         response.body.isNotEmpty) {
@@ -36,18 +31,18 @@ class AthleteFeedbackService {
     } else if (response.statusCode == 404) {
       return null;
     } else {
-      throw Exception('Failed to load feedback');
+      throw Exception(
+        'Failed to fetch feedback: ${response.body}',
+      );
     }
   }
 
-  Future<void> createFeedback({
+  Future<TrainingDayFeedback> createFeedback({
     required int trainingDayId,
     required String comment,
     required int rating,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('authToken');
-
+    final token = await _getToken();
     final url = Uri.parse('$baseUrl/training-day-feedback');
     final body = jsonEncode({
       'trainingDayId': trainingDayId,
@@ -64,11 +59,14 @@ class AthleteFeedbackService {
       body: body,
     );
 
-    print("📤 Sending feedback: $body");
-    print("📤 Status code: ${response.statusCode}");
-
-    if (response.statusCode != 201) {
-      throw Exception('Failed to create feedback');
+    if (response.statusCode == 201) {
+      return TrainingDayFeedback.fromJson(
+        jsonDecode(response.body),
+      );
+    } else {
+      throw Exception(
+        'Failed to create feedback: ${response.body}',
+      );
     }
   }
 
@@ -77,9 +75,7 @@ class AthleteFeedbackService {
     required String comment,
     required int rating,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('authToken');
-
+    final token = await _getToken();
     final url = Uri.parse(
       '$baseUrl/training-day-feedback/$feedbackId',
     );
@@ -97,11 +93,10 @@ class AthleteFeedbackService {
       body: body,
     );
 
-    print("📝 Updating feedback: $body");
-    print("📝 Status code: ${response.statusCode}");
-
     if (response.statusCode != 200) {
-      throw Exception('Failed to update feedback');
+      throw Exception(
+        'Failed to update feedback: ${response.body}',
+      );
     }
   }
 }

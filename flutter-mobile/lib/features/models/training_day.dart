@@ -6,6 +6,7 @@ class TrainingDay {
   final int duration;
   final double? tss;
   final bool isCompleted;
+  final String status;
 
   TrainingDay({
     required this.id,
@@ -15,6 +16,7 @@ class TrainingDay {
     required this.duration,
     this.tss,
     required this.isCompleted,
+    required this.status,
   });
 
   factory TrainingDay.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class TrainingDay {
       duration: json['duration'],
       tss: json['tss']?.toDouble(),
       isCompleted: json['isCompleted'] ?? false,
+      status: json['status'],
     );
   }
 }

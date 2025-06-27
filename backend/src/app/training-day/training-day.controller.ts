@@ -50,6 +50,24 @@ export class TrainingDayController {
     return this.trainingDayService.create(dto);
   }
 
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Mark training day as completed' })
+  @ApiParam({ name: 'id', type: Number })
+  async complete(@Param('id', ParseIntPipe) id: number) {
+    try {
+      this.logger.log(`Marking training day ${id} as completed`);
+      const result = await this.trainingDayService.markAsCompleted(id);
+      this.logger.debug(`Training day ${id} marked as completed`);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Failed to mark training day ${id} as completed: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
   @Post('bulk')
   @ApiOperation({ summary: 'Create multiple training days in bulk' })
   async createBulk(@Body() dto: CreateTrainingDayBulkDto) {

@@ -42,6 +42,19 @@ export class TrainingDayService {
     return this.trainingDayRepository.save(trainingDay);
   }
 
+  async markAsCompleted(id: number) {
+    const trainingDay = await this.trainingDayRepository.findOneBy({ id });
+
+    if (!trainingDay) {
+      throw new NotFoundException(`Training day with id ${id} not found`);
+    }
+
+    trainingDay.status = 'completed';
+    trainingDay.updatedAt = new Date();
+
+    return await this.trainingDayRepository.save(trainingDay);
+  }
+
   async createBulk(dto: CreateTrainingDayBulkDto): Promise<TrainingDay[]> {
     const { items } = dto;
 

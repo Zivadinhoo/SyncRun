@@ -13,6 +13,8 @@ class TrainingDayScreen extends StatefulWidget {
   final bool isCompleted;
   final int assignedPlanId;
   final int trainingDayId;
+  final String trainingTitle;
+  final String trainingDescription;
 
   const TrainingDayScreen({
     super.key,
@@ -22,6 +24,8 @@ class TrainingDayScreen extends StatefulWidget {
     required this.isCompleted,
     required this.assignedPlanId,
     required this.trainingDayId,
+    required this.trainingTitle,
+    required this.trainingDescription,
   });
 
   @override
@@ -64,22 +68,16 @@ class _TrainingDayScreenState
   }
 
   void _markAsCompleted() async {
-    print("👉 CLICKED: _markAsCompleted");
-
     try {
       final feedbackService = AthleteFeedbackService();
 
       if (feedbackId != null) {
-        print(
-          "🛠️ Updating existing feedback ID: $feedbackId",
-        );
         await feedbackService.updateFeedback(
           feedbackId: feedbackId!,
           comment: _feedbackController.text,
           rating: rpe.toInt(),
         );
       } else {
-        print("➕ Creating new feedback...");
         final feedback = await feedbackService
             .createFeedback(
               trainingDayId: widget.trainingDayId,
@@ -87,16 +85,11 @@ class _TrainingDayScreenState
               rating: rpe.toInt(),
             );
         feedbackId = feedback.id;
-        print("✅ Created feedback with ID: ${feedback.id}");
       }
 
-      print(
-        "📤 Sending PATCH to mark training day as completed...",
-      );
       await TrainingDaysService().markAsCompleted(
         widget.trainingDayId,
       );
-      print("✅ Training day marked as completed");
 
       if (!mounted) return;
 
@@ -134,7 +127,7 @@ class _TrainingDayScreenState
     final dateStr = DateFormat(
       'd.M.y',
     ).format(widget.assignedAt);
-    final themeColor = Colors.orange.shade300;
+    final themeColor = Colors.orange.shade200;
 
     return Scaffold(
       appBar: AppBar(
@@ -149,11 +142,13 @@ class _TrainingDayScreenState
             children: [
               _buildPlanInfo(dateStr, themeColor),
               const SizedBox(height: 20),
+              _buildTrainingCard(),
+              const SizedBox(height: 20),
               if (!isCompleted)
-                _buildFeedbackForm(themeColor),
-              if (isCompleted && isEditing)
-                _buildEditFeedback(themeColor),
-              if (isCompleted && !isEditing)
+                _buildFeedbackForm(themeColor)
+              else if (isEditing)
+                _buildEditFeedback(themeColor)
+              else
                 _buildReadOnlyFeedback(themeColor),
             ],
           ),
@@ -164,49 +159,98 @@ class _TrainingDayScreenState
 
   Widget _buildPlanInfo(String dateStr, Color themeColor) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Text("🏃 ", style: TextStyle(fontSize: 20)),
+              Text(
+                "5K Beginner Plan",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "🧾 4-week plan for beginner runners aiming to complete a 5K race.",
+          ),
+          const SizedBox(height: 12),
+          Text("🗓️ Assigned: $dateStr"),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green.shade600,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                "Completed",
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrainingCard() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade100,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.shade100,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.planName,
-            style: TextStyle(
-              fontSize: 20,
+            widget.trainingTitle,
+            style: const TextStyle(
+              fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: themeColor,
+              color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(widget.planDescription),
-          const SizedBox(height: 12),
-          Text("📅 Assigned: $dateStr"),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(
-                isCompleted
-                    ? Icons.check_circle
-                    : Icons.schedule,
-                color:
-                    isCompleted ? Colors.green : themeColor,
-                size: 18,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                isCompleted ? "Completed" : "Not completed",
-                style: TextStyle(
-                  color:
-                      isCompleted
-                          ? Colors.green
-                          : themeColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          const SizedBox(height: 10),
+          Text(
+            widget.trainingDescription,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -311,10 +355,18 @@ class _TrainingDayScreenState
 
   Widget _buildReadOnlyFeedback(Color themeColor) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,9 +376,8 @@ class _TrainingDayScreenState
               Icon(
                 Icons.check_circle_outline,
                 color: Colors.green,
-                size: 20,
               ),
-              SizedBox(width: 6),
+              SizedBox(width: 8),
               Text(
                 "Training completed",
                 style: TextStyle(
@@ -335,12 +386,12 @@ class _TrainingDayScreenState
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "📝 ",
+                "✏️ ",
                 style: TextStyle(fontSize: 18),
               ),
               Expanded(
@@ -348,38 +399,21 @@ class _TrainingDayScreenState
                   _feedbackController.text.isNotEmpty
                       ? _feedbackController.text
                       : "No feedback provided.",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Text(
-                "💪 ",
-                style: TextStyle(fontSize: 18),
-              ),
-              Text("RPE: ${rpe.toStringAsFixed(0)}"),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed:
-                  () => setState(() => isEditing = true),
-              icon: const Icon(
-                Icons.edit_outlined,
-                size: 18,
-              ),
-              label: const Text("Edit Feedback"),
-              style: TextButton.styleFrom(
-                foregroundColor: themeColor,
-              ),
+          const SizedBox(height: 10),
+          Text("💪 RPE: ${rpe.toStringAsFixed(0)}"),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed:
+                () => setState(() => isEditing = true),
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text("Edit Feedback"),
+            style: TextButton.styleFrom(
+              foregroundColor: themeColor,
             ),
           ),
         ],

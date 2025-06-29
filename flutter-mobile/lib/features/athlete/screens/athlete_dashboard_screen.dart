@@ -151,6 +151,10 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                     assignedPlanId:
                                         assignedPlan.id,
                                     trainingDayId: day.id,
+                                    trainingTitle:
+                                        day.title,
+                                    trainingDescription:
+                                        day.description,
                                   ),
                             ),
                           );

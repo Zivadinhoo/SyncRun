@@ -30,7 +30,7 @@ class TrainingDayCard extends StatelessWidget {
       case 'missed':
         return Colors.red;
       default:
-        return Colors.orange;
+        return Colors.grey;
     }
   }
 
@@ -48,13 +48,14 @@ class TrainingDayCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F5FF), // light lavender
+        color: Colors.white, // minimalna bela pozadina
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -72,7 +73,7 @@ class TrainingDayCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Training: ${trainingDay.title}",
+                  trainingDay.title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -80,7 +81,7 @@ class TrainingDayCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Date: $formattedDate",
+                  formattedDate,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,

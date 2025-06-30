@@ -174,67 +174,57 @@ class _TrainingDayScreenState
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.shade200,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.directions_run, size: 20),
+              const Icon(
+                Icons.directions_run,
+                size: 18,
+                color: Colors.deepOrange,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   widget.planName,
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
                 ),
               ),
-              if (widget.isCompleted)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    "Completed",
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             widget.planDescription,
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(
+              fontSize: 13.5,
+              height: 1.4,
+              color: Colors.black54,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.calendar_today, size: 16),
+              const Icon(
+                Icons.calendar_today,
+                size: 14,
+                color: Colors.grey,
+              ),
               const SizedBox(width: 6),
               Text(
                 "Assigned: $dateStr",
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black45,
+                ),
               ),
             ],
           ),
@@ -249,11 +239,11 @@ class _TrainingDayScreenState
       margin: const EdgeInsets.symmetric(horizontal: 2),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.orange[200], // pojačana narandžasta
+        color: Colors.grey.shade100, // neutralna podloga
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.shade200.withOpacity(0.6),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -266,8 +256,7 @@ class _TrainingDayScreenState
             widget.trainingTitle,
             style: const TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 10),
@@ -275,7 +264,6 @@ class _TrainingDayScreenState
             widget.trainingDescription,
             style: const TextStyle(
               fontSize: 15,
-              color: Colors.black87,
               height: 1.5,
             ),
           ),
@@ -295,9 +283,7 @@ class _TrainingDayScreenState
                           size: 16,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          "Duration: ${widget.duration} min",
-                        ),
+                        Text("${widget.duration} min"),
                       ],
                     ),
                   if (widget.tss != null)

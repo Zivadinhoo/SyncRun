@@ -74,54 +74,66 @@ class AthleteDashboardScreen extends ConsumerWidget {
               return ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(
-                      bottom: 16,
+                  // ✨ Active Plan Card
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 12,
                     ),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(
-                        12,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(
+                          16,
+                        ),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(
-                            0.1,
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(
+                                Icons.directions_run,
+                                color: Colors.orange,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Your Active Plan",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight:
+                                      FontWeight.w500,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            ],
                           ),
-                          spreadRadius: 1,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '🏃 ${assignedPlan.trainingPlan.name}',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade300,
+                          const SizedBox(height: 8),
+                          Text(
+                            assignedPlan.trainingPlan.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          assignedPlan
-                              .trainingPlan
-                              .description,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade800,
-                            height: 1.4,
+                          const SizedBox(height: 4),
+                          Text(
+                            assignedPlan
+                                .trainingPlan
+                                .description,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.black54,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 12),
                   if (days.isEmpty)
                     const Center(
                       child: Text("No training days yet."),
@@ -189,6 +201,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
                               }
                             },
                             child: Card(
+                              color: Colors.grey.shade100,
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius:
@@ -206,14 +219,31 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                     ),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      _getStatusIcon(
-                                        day.status,
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color:
+                                            _getStatusColor(
+                                              day.status,
+                                            ).withOpacity(
+                                              0.15,
+                                            ),
+                                        shape:
+                                            BoxShape.circle,
                                       ),
-                                      color:
-                                          _getStatusColor(
-                                            day.status,
+                                      padding:
+                                          const EdgeInsets.all(
+                                            8,
                                           ),
+                                      child: Icon(
+                                        _getStatusIcon(
+                                          day.status,
+                                        ),
+                                        color:
+                                            _getStatusColor(
+                                              day.status,
+                                            ),
+                                        size: 20,
+                                      ),
                                     ),
                                     const SizedBox(
                                       width: 12,
@@ -226,12 +256,15 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                         children: [
                                           Row(
                                             children: [
-                                              Text(
-                                                "Training: ${day.title}",
-                                                style: const TextStyle(
-                                                  fontWeight:
-                                                      FontWeight
-                                                          .bold,
+                                              Flexible(
+                                                child: Text(
+                                                  day.title,
+                                                  style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                    fontSize:
+                                                        16,
+                                                  ),
                                                 ),
                                               ),
                                               if (isToday)
@@ -255,14 +288,29 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                                           20,
                                                         ),
                                                   ),
-                                                  child: const Text(
-                                                    "Today",
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          12,
-                                                      color:
-                                                          Colors.orange,
-                                                    ),
+                                                  child: Row(
+                                                    children: const [
+                                                      Icon(
+                                                        Icons.today,
+                                                        size:
+                                                            14,
+                                                        color:
+                                                            Colors.orange,
+                                                      ),
+                                                      SizedBox(
+                                                        width:
+                                                            4,
+                                                      ),
+                                                      Text(
+                                                        "Today",
+                                                        style: TextStyle(
+                                                          fontSize:
+                                                              12,
+                                                          color:
+                                                              Colors.orange,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               if (day
@@ -280,15 +328,24 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                                     Icons
                                                         .comment,
                                                     size:
-                                                        16,
+                                                        18,
                                                     color:
-                                                        Colors.grey,
+                                                        Colors.blueGrey,
                                                   ),
                                                 ),
                                             ],
                                           ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
                                           Text(
                                             "Date: ${day.date.toIso8601String().split("T").first}",
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color:
+                                                  Colors
+                                                      .black54,
+                                            ),
                                           ),
                                         ],
                                       ),

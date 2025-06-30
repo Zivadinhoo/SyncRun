@@ -3,15 +3,19 @@ import { AppModule } from './app/app.module';
 import { Logger } from 'nestjs-pino';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { seed as seedHalfMarathonNoRest } from './app/seeds/half-marathon-2.seed'; //
 
 async function bootstrap() {
+  if (process.argv.includes('--seed-half-2')) {
+    await seedHalfMarathonNoRest();
+    process.exit(0);
+  }
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
 
   app.useLogger(app.get(Logger));
   app.use(cookieParser());
-  // CORS enabled for local dev
 
   app.enableCors({
     origin: 'http://localhost:3000',

@@ -15,6 +15,8 @@ class TrainingDayScreen extends StatefulWidget {
   final int trainingDayId;
   final String trainingTitle;
   final String trainingDescription;
+  final int duration;
+  final double? tss;
 
   const TrainingDayScreen({
     super.key,
@@ -26,6 +28,8 @@ class TrainingDayScreen extends StatefulWidget {
     required this.trainingDayId,
     required this.trainingTitle,
     required this.trainingDescription,
+    required this.duration,
+    required this.tss,
   });
 
   @override
@@ -94,6 +98,11 @@ class _TrainingDayScreenState
       if (!mounted) return;
 
       setState(() => isCompleted = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("✅ Training marked as completed"),
+        ),
+      );
       Navigator.pop(context, true);
     } catch (e, stack) {
       print("❌ ERROR inside _markAsCompleted: $e");
@@ -111,7 +120,10 @@ class _TrainingDayScreenState
         rating: rpe.toInt(),
       );
 
-      setState(() => isEditing = false);
+      setState(() {
+        isCompleted = true;
+        isEditing = false;
+      });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -162,7 +174,7 @@ class _TrainingDayScreenState
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.shade50,
+        color: Colors.orange.shade200,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -176,38 +188,53 @@ class _TrainingDayScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Text("🏃 ", style: TextStyle(fontSize: 20)),
-              Text(
-                "5K Beginner Plan",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.directions_run, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.planName,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
+              if (widget.isCompleted)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    "Completed",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            "🧾 4-week plan for beginner runners aiming to complete a 5K race.",
+          Text(
+            widget.planDescription,
+            style: const TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 12),
-          Text("🗓️ Assigned: $dateStr"),
-          const SizedBox(height: 8),
           Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: Colors.green.shade600,
-                size: 20,
-              ),
+              const Icon(Icons.calendar_today, size: 16),
               const SizedBox(width: 6),
-              const Text(
-                "Completed",
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.w600,
-                ),
+              Text(
+                "Assigned: $dateStr",
+                style: const TextStyle(fontSize: 14),
               ),
             ],
           ),
@@ -222,12 +249,12 @@ class _TrainingDayScreenState
       margin: const EdgeInsets.symmetric(horizontal: 2),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.orange.shade100,
+        color: Colors.orange[200], // pojačana narandžasta
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.shade100,
-            blurRadius: 8,
+            color: Colors.orange.shade200.withOpacity(0.6),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -238,8 +265,8 @@ class _TrainingDayScreenState
           Text(
             widget.trainingTitle,
             style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
           ),
@@ -247,11 +274,49 @@ class _TrainingDayScreenState
           Text(
             widget.trainingDescription,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               color: Colors.black87,
               height: 1.5,
             ),
           ),
+          if ((widget.duration > 0) || widget.tss != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 14),
+              child: Wrap(
+                spacing: 24,
+                runSpacing: 8,
+                children: [
+                  if (widget.duration > 0)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Duration: ${widget.duration} min",
+                        ),
+                      ],
+                    ),
+                  if (widget.tss != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.show_chart,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "TSS: ${widget.tss!.toStringAsFixed(0)}",
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -263,27 +328,58 @@ class _TrainingDayScreenState
       children: [
         const Text(
           "💬 Feedback (optional):",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+          ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: _feedbackController,
           maxLines: 3,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: "How did the training feel?",
-            border: OutlineInputBorder(),
+            hintStyle: TextStyle(
+              color: Colors.grey.shade600,
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            contentPadding: const EdgeInsets.all(14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: themeColor.withOpacity(0.8),
+                width: 1.4,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 20),
-        const Text("💪 Rate the difficulty (RPE):"),
+        const Text(
+          "💪 Rate the difficulty (RPE):",
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         Slider(
           value: rpe,
           min: 1,
           max: 10,
           divisions: 9,
           label: rpe.toStringAsFixed(0),
-          activeColor: themeColor,
+          activeColor: themeColor.withOpacity(0.9),
+          inactiveColor: themeColor.withOpacity(0.3),
           onChanged: (value) => setState(() => rpe = value),
+        ),
+        Center(
+          child: Text(
+            "RPE: ${rpe.toStringAsFixed(0)} / 10",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade800,
+            ),
+          ),
         ),
         const SizedBox(height: 24),
         SizedBox(
@@ -292,10 +388,13 @@ class _TrainingDayScreenState
             icon: const Icon(Icons.check),
             label: const Text("Mark as Completed"),
             style: ElevatedButton.styleFrom(
-              backgroundColor: themeColor,
+              backgroundColor: themeColor.withOpacity(0.95),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
                 vertical: 16,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
             onPressed: _markAsCompleted,
@@ -306,46 +405,78 @@ class _TrainingDayScreenState
   }
 
   Widget _buildEditFeedback(Color themeColor) {
+    final Color buttonColor = Colors.orange.shade300;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("✏️ Edit Feedback:"),
-        const SizedBox(height: 8),
+        const Text(
+          "✏️ Edit Feedback",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 12),
         TextField(
           controller: _feedbackController,
           maxLines: 3,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: "Update your feedback",
-            border: OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            contentPadding: const EdgeInsets.all(12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 16),
-        const Text("Update RPE:"),
+        const SizedBox(height: 20),
+        const Text(
+          "💪 Update RPE (difficulty):",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         Slider(
           value: rpe,
           min: 1,
           max: 10,
           divisions: 9,
           label: rpe.toStringAsFixed(0),
-          activeColor: themeColor,
+          activeColor: buttonColor.withOpacity(0.9),
+          inactiveColor: buttonColor.withOpacity(0.3),
           onChanged: (value) => setState(() => rpe = value),
         ),
-        const SizedBox(height: 20),
+        Text("RPE: ${rpe.toStringAsFixed(0)} / 10"),
+        const SizedBox(height: 24),
         Row(
           children: [
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: _saveFeedbackChanges,
+              icon: const Icon(Icons.save),
+              label: const Text("Save"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: themeColor,
+                backgroundColor: buttonColor,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: const Text("💾 Save"),
             ),
             const SizedBox(width: 16),
             TextButton(
               onPressed:
                   () => setState(() => isEditing = false),
-              child: const Text("Cancel"),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.black54),
+              ),
             ),
           ],
         ),
@@ -371,14 +502,18 @@ class _TrainingDayScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
+              Tooltip(
+                message: "Training marked as done",
+                child: const Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 20,
+                ),
               ),
-              SizedBox(width: 8),
-              Text(
+              const SizedBox(width: 8),
+              const Text(
                 "Training completed",
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -386,34 +521,64 @@ class _TrainingDayScreenState
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
+          Text(
+            "RPE: ${rpe.toStringAsFixed(0)} / 10",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+          Text(
+            _feedbackController.text.isNotEmpty
+                ? _feedbackController.text
+                : "No feedback provided.",
+            style: const TextStyle(
+              fontSize: 15,
+              fontStyle: FontStyle.italic,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            "💪 RPE (effort rating):",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "✏️ ",
-                style: TextStyle(fontSize: 18),
+            children: List.generate(10, (index) {
+              final isFilled = index < rpe.round();
+              return Icon(
+                isFilled ? Icons.star : Icons.star_border,
+                size: 20,
+                color:
+                    isFilled
+                        ? themeColor
+                        : Colors.grey.shade300,
+              );
+            }),
+          ),
+          const SizedBox(height: 14),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed:
+                  () => setState(() => isEditing = true),
+              icon: Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: Colors.orange.shade400,
               ),
-              Expanded(
-                child: Text(
-                  _feedbackController.text.isNotEmpty
-                      ? _feedbackController.text
-                      : "No feedback provided.",
-                  style: const TextStyle(fontSize: 16),
+              label: Text(
+                "Edit Feedback",
+                style: TextStyle(
+                  color: Colors.orange.shade400,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text("💪 RPE: ${rpe.toStringAsFixed(0)}"),
-          const SizedBox(height: 14),
-          TextButton.icon(
-            onPressed:
-                () => setState(() => isEditing = true),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text("Edit Feedback"),
-            style: TextButton.styleFrom(
-              foregroundColor: themeColor,
             ),
           ),
         ],

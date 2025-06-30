@@ -7,10 +7,10 @@ class TrainingDayCard extends StatelessWidget {
   final VoidCallback? onMarkAsDone;
 
   const TrainingDayCard({
-    Key? key,
+    super.key,
     required this.trainingDay,
     this.onMarkAsDone,
-  }) : super(key: key);
+  });
 
   IconData _getStatusIcon(String status) {
     switch (status) {
@@ -38,7 +38,7 @@ class TrainingDayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final formattedDate = DateFormat(
-      'd MMM y',
+      'yyyy-MM-dd',
     ).format(trainingDay.date);
 
     return Container(
@@ -48,7 +48,7 @@ class TrainingDayCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF9F5FF), // light lavender
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -64,15 +64,15 @@ class TrainingDayCard extends StatelessWidget {
           Icon(
             _getStatusIcon(trainingDay.status),
             color: _getStatusColor(trainingDay.status),
-            size: 28,
+            size: 24,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  trainingDay.title,
+                  "Training: ${trainingDay.title}",
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -80,7 +80,7 @@ class TrainingDayCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  formattedDate,
+                  "Date: $formattedDate",
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,
@@ -92,9 +92,11 @@ class TrainingDayCard extends StatelessWidget {
           if (trainingDay.status != 'completed' &&
               onMarkAsDone != null)
             IconButton(
-              icon: const Icon(Icons.check_circle_outline),
+              icon: const Icon(
+                Icons.arrow_forward_ios_rounded,
+              ),
               color: theme.primaryColor,
-              tooltip: 'Mark as Done',
+              tooltip: 'Go to Training',
               onPressed: onMarkAsDone,
             ),
         ],

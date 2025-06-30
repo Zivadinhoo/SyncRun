@@ -1,3 +1,5 @@
+import 'package:frontend/features/models/training_day_feedback.dart';
+
 class TrainingDay {
   final int id;
   final DateTime date;
@@ -7,6 +9,7 @@ class TrainingDay {
   final double? tss;
   final bool isCompleted;
   final String status;
+  final TrainingDayFeedback? feedback;
 
   TrainingDay({
     required this.id,
@@ -17,6 +20,7 @@ class TrainingDay {
     this.tss,
     required this.isCompleted,
     required this.status,
+    this.feedback,
   });
 
   factory TrainingDay.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,12 @@ class TrainingDay {
       tss: json['tss']?.toDouble(),
       isCompleted: json['isCompleted'] ?? false,
       status: json['status'],
+      feedback:
+          json['feedback'] != null
+              ? TrainingDayFeedback.fromJson(
+                json['feedback'],
+              )
+              : null,
     );
   }
 }

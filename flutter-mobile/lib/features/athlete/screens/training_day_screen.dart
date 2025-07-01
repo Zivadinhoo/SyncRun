@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:frontend/features/athlete/services/assigned_plans_service.dart';
 import 'package:frontend/features/athlete/services/athlete_feedback_service.dart';
 import 'package:frontend/features/athlete/services/training_day_service.dart';
 import 'package:frontend/features/models/training_day_feedback.dart';
@@ -139,11 +137,12 @@ class _TrainingDayScreenState
     final dateStr = DateFormat(
       'd.M.y',
     ).format(widget.assignedAt);
-    final themeColor = Colors.orange.shade200;
+    final theme = Theme.of(context);
+    final themeColor = const Color(0xFFFFA726);
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: themeColor,
+        backgroundColor: themeColor.withOpacity(0.9),
         title: const Text("Training Day"),
       ),
       body: SafeArea(
@@ -152,16 +151,16 @@ class _TrainingDayScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildPlanInfo(dateStr, themeColor),
+              _buildPlanInfo(context, dateStr),
               const SizedBox(height: 20),
-              _buildTrainingCard(),
+              _buildTrainingCard(context),
               const SizedBox(height: 20),
               if (!isCompleted)
-                _buildFeedbackForm(themeColor)
+                _buildFeedbackForm(context, themeColor)
               else if (isEditing)
-                _buildEditFeedback(themeColor)
+                _buildEditFeedback(context, themeColor)
               else
-                _buildReadOnlyFeedback(themeColor),
+                _buildReadOnlyFeedback(context, themeColor),
             ],
           ),
         ),
@@ -169,34 +168,38 @@ class _TrainingDayScreenState
     );
   }
 
-  Widget _buildPlanInfo(String dateStr, Color themeColor) {
+  Widget _buildPlanInfo(
+    BuildContext context,
+    String dateStr,
+  ) {
+    final theme = Theme.of(context);
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: theme.dividerColor.withOpacity(0.2),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.directions_run,
                 size: 18,
-                color: Colors.deepOrange,
+                color: theme.colorScheme.primary,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   widget.planName,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ),
             ],
@@ -204,26 +207,19 @@ class _TrainingDayScreenState
           const SizedBox(height: 8),
           Text(
             widget.planDescription,
-            style: const TextStyle(
-              fontSize: 13.5,
+            style: theme.textTheme.bodyMedium?.copyWith(
               height: 1.4,
-              color: Colors.black54,
             ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(
-                Icons.calendar_today,
-                size: 14,
-                color: Colors.grey,
-              ),
+              const Icon(Icons.calendar_today, size: 14),
               const SizedBox(width: 6),
               Text(
                 "Assigned: $dateStr",
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.black45,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.hintColor,
                 ),
               ),
             ],
@@ -233,13 +229,13 @@ class _TrainingDayScreenState
     );
   }
 
-  Widget _buildTrainingCard() {
+  Widget _buildTrainingCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 2),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100, // neutralna podloga
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -254,16 +250,14 @@ class _TrainingDayScreenState
         children: [
           Text(
             widget.trainingTitle,
-            style: const TextStyle(
-              fontSize: 18,
+            style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 10),
           Text(
             widget.trainingDescription,
-            style: const TextStyle(
-              fontSize: 15,
+            style: theme.textTheme.bodyMedium?.copyWith(
               height: 1.5,
             ),
           ),
@@ -278,6 +272,14 @@ class _TrainingDayScreenState
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Text(
+                          "Duration:",
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(width: 6),
                         const Icon(
                           Icons.access_time,
                           size: 16,
@@ -290,13 +292,21 @@ class _TrainingDayScreenState
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Text(
+                          "TSS:",
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(width: 6),
                         const Icon(
                           Icons.show_chart,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          "TSS: ${widget.tss!.toStringAsFixed(0)}",
+                          "${widget.tss!.toStringAsFixed(0)}",
                         ),
                       ],
                     ),
@@ -308,15 +318,18 @@ class _TrainingDayScreenState
     );
   }
 
-  Widget _buildFeedbackForm(Color themeColor) {
+  Widget _buildFeedbackForm(
+    BuildContext context,
+    Color themeColor,
+  ) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "💬 Feedback (optional):",
-          style: TextStyle(
+          style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 17,
           ),
         ),
         const SizedBox(height: 8),
@@ -325,11 +338,8 @@ class _TrainingDayScreenState
           maxLines: 3,
           decoration: InputDecoration(
             hintText: "How did the training feel?",
-            hintStyle: TextStyle(
-              color: Colors.grey.shade600,
-            ),
             filled: true,
-            fillColor: Colors.grey.shade100,
+            fillColor: theme.cardColor.withOpacity(0.9),
             contentPadding: const EdgeInsets.all(14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -341,10 +351,9 @@ class _TrainingDayScreenState
           ),
         ),
         const SizedBox(height: 20),
-        const Text(
+        Text(
           "💪 Rate the difficulty (RPE):",
-          style: TextStyle(
-            fontSize: 17,
+          style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -361,10 +370,7 @@ class _TrainingDayScreenState
         Center(
           child: Text(
             "RPE: ${rpe.toStringAsFixed(0)} / 10",
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade800,
-            ),
+            style: theme.textTheme.bodyMedium,
           ),
         ),
         const SizedBox(height: 24),
@@ -374,7 +380,7 @@ class _TrainingDayScreenState
             icon: const Icon(Icons.check),
             label: const Text("Mark as Completed"),
             style: ElevatedButton.styleFrom(
-              backgroundColor: themeColor.withOpacity(0.95),
+              backgroundColor: themeColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
                 vertical: 16,
@@ -390,17 +396,20 @@ class _TrainingDayScreenState
     );
   }
 
-  Widget _buildEditFeedback(Color themeColor) {
-    final Color buttonColor = Colors.orange.shade300;
+  Widget _buildEditFeedback(
+    BuildContext context,
+    Color themeColor,
+  ) {
+    final theme = Theme.of(context);
+    final buttonColor = theme.colorScheme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "✏️ Edit Feedback",
-          style: TextStyle(
+          style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
         ),
         const SizedBox(height: 12),
@@ -410,20 +419,20 @@ class _TrainingDayScreenState
           decoration: InputDecoration(
             hintText: "Update your feedback",
             filled: true,
-            fillColor: Colors.grey.shade100,
+            fillColor: theme.cardColor,
             contentPadding: const EdgeInsets.all(12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Colors.grey.shade300,
+                color: theme.dividerColor.withOpacity(0.3),
               ),
             ),
           ),
         ),
         const SizedBox(height: 20),
-        const Text(
+        Text(
           "💪 Update RPE (difficulty):",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium,
         ),
         Slider(
           value: rpe,
@@ -459,9 +468,11 @@ class _TrainingDayScreenState
             TextButton(
               onPressed:
                   () => setState(() => isEditing = false),
-              child: const Text(
+              child: Text(
                 "Cancel",
-                style: TextStyle(color: Colors.black54),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.hintColor,
+                ),
               ),
             ),
           ],
@@ -470,16 +481,25 @@ class _TrainingDayScreenState
     );
   }
 
-  Widget _buildReadOnlyFeedback(Color themeColor) {
+  Widget _buildReadOnlyFeedback(
+    BuildContext context,
+    Color themeColor,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color:
+            isDark
+                ? const Color(0xFF173A2F)
+                : Colors.green.shade50,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.08),
+            color: Colors.green.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -490,48 +510,67 @@ class _TrainingDayScreenState
         children: [
           Row(
             children: [
-              Tooltip(
-                message: "Training marked as done",
-                child: const Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 20,
-                ),
+              const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 "Training completed",
-                style: TextStyle(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
+                  color:
+                      isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(
+                Icons.feedback_outlined,
+                size: 18,
+                color:
+                    isDark
+                        ? Colors.white70
+                        : Colors.black87,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "Feedback:",
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color:
+                      isDark
+                          ? Colors.white
+                          : Colors.black87,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            "RPE: ${rpe.toStringAsFixed(0)} / 10",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-          Text(
             _feedbackController.text.isNotEmpty
                 ? _feedbackController.text
                 : "No feedback provided.",
-            style: const TextStyle(
-              fontSize: 15,
+            style: theme.textTheme.bodyMedium?.copyWith(
               fontStyle: FontStyle.italic,
-              color: Colors.black87,
+              color:
+                  isDark ? Colors.white70 : Colors.black87,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "💪 RPE (effort rating):",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color:
+                  isDark
+                      ? Colors.orange.shade200
+                      : Colors.orange,
+            ),
           ),
           const SizedBox(height: 6),
           Row(
@@ -543,7 +582,10 @@ class _TrainingDayScreenState
                 color:
                     isFilled
                         ? themeColor
-                        : Colors.grey.shade300,
+                        : (isDark
+                            ? Colors.white30
+                            : theme.dividerColor
+                                .withOpacity(0.3)),
               );
             }),
           ),
@@ -556,12 +598,12 @@ class _TrainingDayScreenState
               icon: Icon(
                 Icons.edit_outlined,
                 size: 18,
-                color: Colors.orange.shade400,
+                color: themeColor,
               ),
               label: Text(
                 "Edit Feedback",
-                style: TextStyle(
-                  color: Colors.orange.shade400,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: themeColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),

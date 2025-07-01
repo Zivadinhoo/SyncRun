@@ -22,19 +22,23 @@ class AthleteDashboardScreen extends ConsumerWidget {
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(
+    String status,
+    BuildContext context,
+  ) {
     switch (status) {
       case 'completed':
         return Colors.green;
       case 'missed':
-        return Colors.red;
+        return Colors.redAccent;
       default:
-        return Colors.orange;
+        return Theme.of(context).colorScheme.primary;
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final activePlanAsync = ref.watch(activePlanIdProvider);
     final assignedPlansAsync = ref.watch(
       assignedPlansFutureProvider,
@@ -44,7 +48,8 @@ class AthleteDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text("Athlete Dashboard"),
         centerTitle: true,
-        backgroundColor: Colors.orange.shade100,
+        backgroundColor: theme.colorScheme.primary
+            .withOpacity(0.9),
       ),
       body: activePlanAsync.when(
         data: (planId) {
@@ -75,64 +80,64 @@ class AthleteDashboardScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 children: [
                   // ✨ Active Plan Card
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 12,
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(
+                        16,
+                      ),
+                      border: Border.all(
+                        color: theme.dividerColor
+                            .withOpacity(0.2),
+                      ),
                     ),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(
-                          16,
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.directions_run,
+                              color:
+                                  theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Your Active Plan",
+                              style: theme
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
+                                    fontWeight:
+                                        FontWeight.w500,
+                                    color:
+                                        theme
+                                            .colorScheme
+                                            .primary,
+                                  ),
+                            ),
+                          ],
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(
-                                Icons.directions_run,
-                                color: Colors.orange,
+                        const SizedBox(height: 8),
+                        Text(
+                          assignedPlan.trainingPlan.name,
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
-                              SizedBox(width: 8),
-                              Text(
-                                "Your Active Plan",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight:
-                                      FontWeight.w500,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            assignedPlan.trainingPlan.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            assignedPlan
-                                .trainingPlan
-                                .description,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          assignedPlan
+                              .trainingPlan
+                              .description,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
                     ),
                   ),
-
                   const SizedBox(height: 12),
                   if (days.isEmpty)
                     const Center(
@@ -201,7 +206,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
                               }
                             },
                             child: Card(
-                              color: Colors.grey.shade100,
+                              color: theme.cardColor,
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius:
@@ -224,6 +229,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                         color:
                                             _getStatusColor(
                                               day.status,
+                                              context,
                                             ).withOpacity(
                                               0.15,
                                             ),
@@ -241,6 +247,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                         color:
                                             _getStatusColor(
                                               day.status,
+                                              context,
                                             ),
                                         size: 20,
                                       ),
@@ -259,12 +266,13 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                               Flexible(
                                                 child: Text(
                                                   day.title,
-                                                  style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w600,
-                                                    fontSize:
-                                                        16,
-                                                  ),
+                                                  style: theme
+                                                      .textTheme
+                                                      .titleSmall
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                 ),
                                               ),
                                               if (isToday)
@@ -281,23 +289,27 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                                         2,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color:
-                                                        Colors.orange.shade100,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary
+                                                        .withOpacity(
+                                                          0.1,
+                                                        ),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           20,
                                                         ),
                                                   ),
                                                   child: Row(
-                                                    children: const [
+                                                    children: [
                                                       Icon(
                                                         Icons.today,
                                                         size:
                                                             14,
                                                         color:
-                                                            Colors.orange,
+                                                            theme.colorScheme.primary,
                                                       ),
-                                                      SizedBox(
+                                                      const SizedBox(
                                                         width:
                                                             4,
                                                       ),
@@ -307,7 +319,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                                           fontSize:
                                                               12,
                                                           color:
-                                                              Colors.orange,
+                                                              theme.colorScheme.primary,
                                                         ),
                                                       ),
                                                     ],
@@ -340,21 +352,26 @@ class AthleteDashboardScreen extends ConsumerWidget {
                                           ),
                                           Text(
                                             "Date: ${day.date.toIso8601String().split("T").first}",
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              color:
-                                                  Colors
-                                                      .black54,
-                                            ),
+                                            style: theme
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color:
+                                                      theme
+                                                          .hintColor,
+                                                ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const Icon(
+                                    Icon(
                                       Icons
                                           .arrow_forward_ios,
                                       size: 16,
-                                      color: Colors.orange,
+                                      color:
+                                          theme
+                                              .colorScheme
+                                              .primary,
                                     ),
                                   ],
                                 ),

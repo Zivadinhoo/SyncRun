@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/athlete/providers/assigned_plans_provider.dart';
+import 'package:frontend/features/common/screens/settings_screen.dart';
 import 'athlete_dashboard_screen.dart';
 
 class AthleteMainScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _AthleteMainScreenState
     const AthleteDashboardScreen(), // Home
     Center(child: Text("Activity Log")), // Placeholder
     Center(child: Text("Profile Settings")), // Placeholder
+    const SettingsScreen(),
   ];
 
   void _onTabTapped(int index) {
@@ -55,6 +57,10 @@ class _AthleteMainScreenState
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
       ),

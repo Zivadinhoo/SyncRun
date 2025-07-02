@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class AssignedPlansService {
   final _storage = const FlutterSecureStorage();
-  final String _baseUrl = 'http://192.168.0.45:3001';
+  final String _baseUrl = 'http://192.168.0.49:3001';
 
   Future<List<AssignedPlan>> fetchAssignedPlans() async {
     final token = await _storage.read(key: 'accessToken');

@@ -20,14 +20,18 @@ class RunWithCoachApp extends ConsumerWidget {
       title: 'RunWithCoach',
       themeMode: themeMode,
       theme: ThemeData(
-        primaryColor: Colors.orange,
+        primaryColor: const Color(
+          0xFFFFB74D,
+        ), // Blaža narandžasta
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
         colorScheme: const ColorScheme.light(
-          primary: Colors.orange,
-          secondary: Colors.orangeAccent,
+          primary: Color(0xFFFFB74D),
+          secondary: Color(0xFFFFCC80),
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: Color(
+            0xFFFFF3E0,
+          ), // Svetla pozadina za header
           elevation: 0,
           titleTextStyle: TextStyle(
             color: Colors.black,
@@ -38,12 +42,11 @@ class RunWithCoachApp extends ConsumerWidget {
         ),
       ),
       darkTheme: ThemeData.dark().copyWith(
-        primaryColor: Color(0xFFFFA726),
-        colorScheme: ColorScheme.light(
+        primaryColor: const Color(0xFFFFA726),
+        colorScheme: const ColorScheme.dark(
           primary: Color(0xFFFFA726),
           secondary: Color(0xFFFFCC80),
         ),
-
         scaffoldBackgroundColor: const Color(0xFF121212),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1E1E1E),

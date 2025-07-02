@@ -6,7 +6,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final _secureStorage = FlutterSecureStorage();
 
-/// Provider koji vraća listu jedinstvenih dodeljenih planova (po ID-u)
 final assignedPlansFutureProvider =
     FutureProvider.autoDispose<List<AssignedPlan>>((
       ref,
@@ -22,7 +21,7 @@ final assignedPlansFutureProvider =
 
       final response = await http.get(
         Uri.parse(
-          'http://192.168.0.45:3001/assigned-plan/mine',
+          'http://192.168.0.49:3001/assigned-plan/mine',
         ),
         headers: {
           'Authorization': 'Bearer $token',

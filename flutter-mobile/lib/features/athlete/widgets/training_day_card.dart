@@ -43,8 +43,9 @@ class TrainingDayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final formattedDate = DateFormat(
-      'yyyy-MM-dd',
+      'EEE · MMM d',
     ).format(trainingDay.date);
+    // Primer: Tue · Jul 1
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -53,9 +54,7 @@ class TrainingDayCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color:
-            theme
-                .cardColor, // 👈 koristi cardColor za tamni/svetli mod
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: theme.dividerColor.withOpacity(0.2),
@@ -92,16 +91,25 @@ class TrainingDayCard extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  formattedDate,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(
-                        color: theme
-                            .textTheme
-                            .bodySmall
-                            ?.color
-                            ?.withOpacity(0.7),
-                      ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formattedDate,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(
+                            color: theme
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withOpacity(0.7),
+                          ),
+                    ),
+                  ],
                 ),
               ],
             ),

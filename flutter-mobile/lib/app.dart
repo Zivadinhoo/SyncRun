@@ -7,11 +7,10 @@ class RunWithCoachApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Simulacija role za testiranje (ovo ćeš kasnije dobiti iz Auth servisa)
     final UserRole userRole = UserRole.coach;
 
     return MaterialApp(
-      title: 'RunWithCoach',
+      title: 'Syncrun',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.orange,

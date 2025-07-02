@@ -17,7 +17,7 @@ final activePlanIdProvider = FutureProvider<int?>((
   if (token == null) throw Exception("No token found");
 
   final response = await http.get(
-    Uri.parse('http://192.168.0.45:3001/users/me'),
+    Uri.parse('http://192.168.0.49:3001/users/me'),
     headers: {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ final setActivePlanProvider = Provider<
 
     final response = await http.post(
       Uri.parse(
-        'http://192.168.0.45:3001/users/set-active-plan',
+        'http://192.168.0.49:3001/users/set-active-plan',
       ),
       headers: {
         'Authorization': 'Bearer $token',

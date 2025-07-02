@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/athlete/services/athlete_feedback_service.dart';
 import 'package:frontend/features/athlete/services/training_day_service.dart';
-import 'package:frontend/features/models/training_day_feedback.dart';
 import 'package:intl/intl.dart';
 
 class TrainingDayScreen extends StatefulWidget {
@@ -137,7 +136,7 @@ class _TrainingDayScreenState
     final dateStr = DateFormat(
       'd.M.y',
     ).format(widget.assignedAt);
-    final theme = Theme.of(context);
+    Theme.of(context);
     final themeColor = const Color(0xFFFFA726);
 
     return Scaffold(

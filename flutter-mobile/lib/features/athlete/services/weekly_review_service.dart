@@ -5,7 +5,7 @@ import '../../models/weekly_review.dart';
 
 class WeeklyReviewService {
   final _storage = const FlutterSecureStorage();
-  final String _baseUrl = 'http://192.168.0.45:3001';
+  final String _baseUrl = 'http://192.168.0.49:3001';
 
   Future<WeeklyReview> fetchWeeklyReview({
     required int athleteId,

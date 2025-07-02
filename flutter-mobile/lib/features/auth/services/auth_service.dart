@@ -9,7 +9,7 @@ class AuthService {
 
   bool get isLoggedInMemory => _accessToken != null;
 
-  final String baseUrl = 'http://192.168.0.45:3001';
+  final String baseUrl = 'http://192.168.0.49:3001';
 
   Future<void> saveTokens(
     String accessToken,

@@ -23,7 +23,7 @@ final trainingDaysProviderFamily = FutureProvider.family<
   }
 
   final url =
-      'http://192.168.0.45:3001/training-days/by-assigned-plan/$assignedPlanId';
+      'http://192.168.0.49:3001/training-days/by-assigned-plan/$assignedPlanId';
 
   final response = await http.get(
     Uri.parse(url),

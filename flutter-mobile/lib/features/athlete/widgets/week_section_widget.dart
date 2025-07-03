@@ -1,97 +1,146 @@
-import 'package:flutter/material.dart';
-import 'package:frontend/features/models/training_day.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:frontend/features/athlete/providers/selected_week_provider.dart';
 
-class WeekSectionWidget extends StatelessWidget {
-  final int weekNumber;
-  final List<TrainingDay> days;
-  final Widget Function(TrainingDay) dayBuilder;
+// class WeekSectionWidget extends ConsumerStatefulWidget {
+//   final int currentWeek;
+//   final int totalWeeks;
 
-  const WeekSectionWidget({
-    super.key,
-    required this.weekNumber,
-    required this.days,
-    required this.dayBuilder,
-  });
+//   const WeekSectionWidget({
+//     super.key,
+//     required this.currentWeek,
+//     required this.totalWeeks,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    if (days.isEmpty) return const SizedBox();
+//   @override
+//   ConsumerState<WeekSectionWidget> createState() =>
+//       _WeekSectionWidgetState();
+// }
 
-    final DateTime start = days.first.date;
-    final DateTime end = days.last.date;
+// class _WeekSectionWidgetState
+//     extends ConsumerState<WeekSectionWidget> {
+//   late final PageController _pageController;
 
-    final String formattedRange =
-        "${_formatDate(start)} – ${_formatDate(end)}";
+//   @override
+//   void initState() {
+//     super.initState();
+//     _pageController = PageController(
+//       initialPage: widget.currentWeek,
+//     );
+//   }
 
-    // 👇 Dodato za progress
-    final int total = days.length;
-    final int completed =
-        days.where((d) => d.status == 'completed').length;
-    final double progress =
-        total == 0 ? 0 : completed / total;
+//   void _animateToWeek(int weekIndex) {
+//     _pageController.animateToPage(
+//       weekIndex,
+//       duration: const Duration(milliseconds: 300),
+//       curve: Curves.easeInOut,
+//     );
+//     ref.read(selectedWeekProvider.notifier).state =
+//         weekIndex;
+//   }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Week $weekNumber ($formattedRange)",
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
+//   @override
+//   void didUpdateWidget(
+//     covariant WeekSectionWidget oldWidget,
+//   ) {
+//     super.didUpdateWidget(oldWidget);
+//     if (oldWidget.currentWeek != widget.currentWeek) {
+//       _pageController.jumpToPage(widget.currentWeek);
+//     }
+//   }
 
-        // 👇 Progress bar po nedelji
-        Row(
-          children: [
-            Expanded(
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey.shade300,
-                color: Colors.green,
-                minHeight: 6,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              "$completed/$total",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
+//   @override
+//   Widget build(BuildContext context) {
+//     final isDark =
+//         Theme.of(context).brightness == Brightness.dark;
 
-        const SizedBox(height: 12),
-        ...days.map(dayBuilder).toList(),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//       children: [
+//         _ArrowButton(
+//           icon: Icons.chevron_left,
+//           onTap:
+//               widget.currentWeek > 0
+//                   ? () =>
+//                       _animateToWeek(widget.currentWeek - 1)
+//                   : null,
+//           isDark: isDark,
+//         ),
+//         Expanded(
+//           child: SizedBox(
+//             height: 32,
+//             child: PageView.builder(
+//               controller: _pageController,
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: widget.totalWeeks,
+//               itemBuilder: (context, index) {
+//                 return Center(
+//                   child: Text(
+//                     "Week ${index + 1} of ${widget.totalWeeks}",
+//                     style: Theme.of(
+//                       context,
+//                     ).textTheme.labelLarge?.copyWith(
+//                       fontWeight: FontWeight.w600,
+//                       letterSpacing: 0.5,
+//                       color:
+//                           isDark
+//                               ? Colors.grey[200]
+//                               : Colors.grey[800],
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//         ),
+//         _ArrowButton(
+//           icon: Icons.chevron_right,
+//           onTap:
+//               widget.currentWeek < widget.totalWeeks - 1
+//                   ? () =>
+//                       _animateToWeek(widget.currentWeek + 1)
+//                   : null,
+//           isDark: isDark,
+//         ),
+//       ],
+//     );
+//   }
+// }
 
-  String _formatDate(DateTime date) {
-    return "${_monthName(date.month)} ${date.day}";
-  }
+// class _ArrowButton extends StatelessWidget {
+//   final IconData icon;
+//   final VoidCallback? onTap;
+//   final bool isDark;
 
-  String _monthName(int month) {
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month];
-  }
-}
+//   const _ArrowButton({
+//     required this.icon,
+//     required this.onTap,
+//     required this.isDark,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//       onTap: onTap,
+//       borderRadius: BorderRadius.circular(20),
+//       child: Container(
+//         decoration: BoxDecoration(
+//           color:
+//               onTap != null
+//                   ? Colors.grey.withOpacity(0.15)
+//                   : Colors.transparent,
+//           shape: BoxShape.circle,
+//         ),
+//         padding: const EdgeInsets.all(8),
+//         child: Icon(
+//           icon,
+//           size: 24,
+//           color:
+//               onTap != null
+//                   ? (isDark ? Colors.white : Colors.black)
+//                   : Colors.grey[400],
+//         ),
+//       ),
+//     );
+//   }
+// }

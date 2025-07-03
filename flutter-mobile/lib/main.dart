@@ -25,7 +25,7 @@ class RunWithCoachApp extends ConsumerWidget {
         ), // Blaža narandžasta
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
         colorScheme: const ColorScheme.light(
-          primary: Color(0xFFFFB74D),
+          primary: Color(0xFFFFCC80),
           secondary: Color(0xFFFFCC80),
         ),
         appBarTheme: const AppBarTheme(

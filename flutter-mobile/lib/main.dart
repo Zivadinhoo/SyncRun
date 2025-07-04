@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/auth/screens/login.screen.dart';
 import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
 import 'package:frontend/features/athlete/screens/athlete_main_screen.dart';
-import 'package:frontend/features/common/screens/settings_screen.dart'; // 👈 Theme provider
+import 'package:frontend/features/common/screens/settings_screen.dart';
+import 'package:frontend/features/athlete/services/noftication_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.initialize(); // 👈 Inicijalizuj notifikacije
+
   runApp(const ProviderScope(child: RunWithCoachApp()));
 }
 
@@ -20,18 +24,14 @@ class RunWithCoachApp extends ConsumerWidget {
       title: 'RunWithCoach',
       themeMode: themeMode,
       theme: ThemeData(
-        primaryColor: const Color(
-          0xFFFFB74D,
-        ), // Blaža narandžasta
+        primaryColor: const Color(0xFFFFB74D),
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
         colorScheme: const ColorScheme.light(
-          primary: Color(0xFFFFB74D),
+          primary: Color(0xFFFFCC80),
           secondary: Color(0xFFFFCC80),
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(
-            0xFFFFF3E0,
-          ), // Svetla pozadina za header
+          backgroundColor: Color(0xFFFFF3E0),
           elevation: 0,
           titleTextStyle: TextStyle(
             color: Colors.black,

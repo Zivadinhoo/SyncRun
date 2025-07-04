@@ -9,7 +9,7 @@ Map<int, List<TrainingDay>> groupTrainingDaysByWeek(
 
   for (final day in days) {
     final int weekNumber =
-        ((day.date.difference(startDate).inDays) ~/ 7) + 1;
+        ((day.date.difference(startDate).inDays) ~/ 7);
     grouped.putIfAbsent(weekNumber, () => []);
     grouped[weekNumber]!.add(day);
   }

@@ -36,7 +36,7 @@ export default function LoginPage() {
     >
       <div className="bg-white rounded-xl shadow-2xl p-10 w-full max-w-lg animate-fade-in">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-1">
-          Sync<span className="text-blue-600">Run</span>
+          Sync<span className="text-yellow-500">Run</span>
         </h1>
 
         <p className="text-center text-base text-gray-500 mb-6">
@@ -65,7 +65,7 @@ export default function LoginPage() {
           <button
             type="submit"
             className={clsx(
-              "w-full bg-blue-500 text-white font-semibold py-2 rounded hover:bg-blue-500 transition",
+              "w-full bg-yellow-500 text-white font-semibold py-2 rounded hover:bg-blue-500 transition",
               shake && "animate-shake"
             )}
           >
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
         <div className="text-sm text-center mt-6 text-gray-500">
           Don’t have an account?{" "}
-          <a href="/signup" className="text-blue-500 hover:underline">
+          <a href="/signup" className="text-yellow-500 hover:underline">
             Sign up
           </a>
         </div>

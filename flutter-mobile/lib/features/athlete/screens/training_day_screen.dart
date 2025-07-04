@@ -172,8 +172,16 @@ class _TrainingDayScreenState
     String dateStr,
   ) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // 🧪 Za sad hardkodiramo da je ovo dan 10 od 67
+    const int currentDay = 10;
+    const int totalDays = 67;
+
     return Container(
+      width: double.infinity, // 👈 full width
       padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -184,44 +192,33 @@ class _TrainingDayScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.directions_run,
-                size: 18,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.planName,
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Text(
-            widget.planDescription,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              height: 1.4,
+            DateFormat(
+              'EEEE, MMMM d, y',
+            ).format(widget.assignedAt),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.calendar_today, size: 14),
-              const SizedBox(width: 6),
-              Text(
-                "Assigned: $dateStr",
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.hintColor,
-                ),
-              ),
-            ],
+          const SizedBox(height: 6),
+          Text(
+            "Training Day $currentDay of $totalDays",
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: theme.hintColor,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isCompleted ? '✅ Completed' : '⏳ Not Completed',
+            style: TextStyle(
+              fontSize: 13,
+              color:
+                  isCompleted
+                      ? Colors.green
+                      : Colors.orange,
+            ),
           ),
         ],
       ),
@@ -507,25 +504,6 @@ class _TrainingDayScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                "Training completed",
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color:
-                      isDark ? Colors.white : Colors.black,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Row(
             children: [
               Icon(

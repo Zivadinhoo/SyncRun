@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/athlete/providers/assigned_plans_provider.dart';
+import 'package:frontend/features/athlete/providers/active_plan_provider.dart';
+import 'package:frontend/features/athlete/providers/training_days_provider.dart';
 import 'package:frontend/features/common/screens/settings_screen.dart';
-import 'athlete_dashboard_screen.dart';
+import 'package:frontend/features/athlete/screens/athlete_dashboard_screen.dart';
+import 'package:frontend/features/athlete/services/noftication_service.dart';
 
 class AthleteMainScreen extends ConsumerStatefulWidget {
   const AthleteMainScreen({super.key});
@@ -30,6 +33,33 @@ class _AthleteMainScreenState
     if (index == 0) {
       ref.invalidate(assignedPlansFutureProvider);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() async {
+      final planId = ref
+          .read(activePlanIdProvider)
+          .maybeWhen(data: (id) => id, orElse: () => null);
+
+      if (planId == null) return;
+
+      try {
+        final trainingDays = await ref.read(
+          trainingDaysProviderFamily(planId).future,
+        );
+
+        if (trainingDays.isNotEmpty) {
+          await NotificationService.scheduleReminderIfTrainingToday(
+            trainingDays,
+          );
+        }
+      } catch (e) {
+        print('❌ Error scheduling notification: $e');
+      }
+    });
   }
 
   @override

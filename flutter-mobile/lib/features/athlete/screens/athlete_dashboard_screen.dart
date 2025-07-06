@@ -10,6 +10,7 @@ import 'package:frontend/features/athlete/providers/selected_week_provider.dart'
 import 'package:frontend/features/athlete/widgets/week_selector_widget.dart';
 import 'package:frontend/features/athlete/providers/weekly_completion_provider.dart';
 import 'package:frontend/features/athlete/screens/weekly_reward_screen.dart';
+import 'package:frontend/features/athlete/widgets/week_progress_widget.dart';
 
 class AthleteDashboardScreen extends ConsumerWidget {
   const AthleteDashboardScreen({super.key});
@@ -199,17 +200,24 @@ class AthleteDashboardScreen extends ConsumerWidget {
 
                   const SizedBox(height: 12),
 
+                  // WEEK PROGRESS 👇
+                  WeekProgressWidget(
+                    currentWeekDays: currentWeekDays,
+                  ),
+
+                  const SizedBox(height: 12),
+
                   // WEEK SECTION LIST
                   AnimatedSwitcher(
                     duration: const Duration(
                       milliseconds: 300,
                     ),
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
-                    },
+                    transitionBuilder:
+                        (child, animation) =>
+                            FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
                     switchInCurve: Curves.easeIn,
                     switchOutCurve: Curves.easeOut,
                     child: Column(

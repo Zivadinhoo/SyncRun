@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/features/auth/screens/login.screen.dart';
-import 'package:frontend/features/coach/screens/coach_dashboard_screen.dart';
-import 'package:frontend/features/athlete/screens/athlete_main_screen.dart';
-import 'package:frontend/features/common/screens/settings_screen.dart';
 import 'package:frontend/features/athlete/services/noftication_service.dart';
+import 'package:frontend/router.dart'; // 👈 dodaj svoj router fajl
+import 'package:frontend/features/common/screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,9 +18,11 @@ class RunWithCoachApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'RunWithCoach',
       themeMode: themeMode,
+      routerConfig: router, // 👈 koristiš GoRouter
+
       theme: ThemeData(
         primaryColor: const Color(0xFFFFB74D),
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
@@ -41,6 +41,7 @@ class RunWithCoachApp extends ConsumerWidget {
           iconTheme: IconThemeData(color: Colors.black),
         ),
       ),
+
       darkTheme: ThemeData.dark().copyWith(
         primaryColor: const Color(0xFFFFA726),
         colorScheme: const ColorScheme.dark(
@@ -59,14 +60,6 @@ class RunWithCoachApp extends ConsumerWidget {
           iconTheme: IconThemeData(color: Colors.white),
         ),
       ),
-      home: const LoginScreen(),
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/coach-dashboard':
-            (context) => const CoachDashboardScreen(),
-        '/athlete-dashboard':
-            (context) => const AthleteMainScreen(),
-      },
     );
   }
 }

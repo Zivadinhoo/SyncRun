@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
+import 'package:frontend/features/onboarding/service/ai_plan_service.dart';
+import 'package:frontend/features/athlete/screens/athlete_main_screen.dart';
 
 class GeneratePlanScreen extends ConsumerWidget {
   const GeneratePlanScreen({super.key});
@@ -48,7 +50,6 @@ class GeneratePlanScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 24),
-
               _summaryCard("🎯 Goal", answers.goal),
               _summaryCard(
                 "⏱️ Target Time",
@@ -80,22 +81,59 @@ class GeneratePlanScreen extends ConsumerWidget {
                 "📏 Units",
                 answers.units?.toUpperCase(),
               ),
-
               const SizedBox(height: 32),
-
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        "Plan is being generated...",
-                      ),
+                      content: Text("Generating plan..."),
                     ),
                   );
 
-                  // TODO: Pozovi API za generisanje plana
+                  try {
+                    final response =
+                        await AiPlanService.generatePlan(
+                          answers,
+                        );
+
+                    if (response.statusCode == 201) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(
+                        const SnackBar(
+                          content: Text("Plan created! 🚀"),
+                        ),
+                      );
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  const AthleteMainScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    } else {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "Failed: ${response.statusCode}",
+                          ),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(
+                      SnackBar(content: Text("Error: $e")),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),

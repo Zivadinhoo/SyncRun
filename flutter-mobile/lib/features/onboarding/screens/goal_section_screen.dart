@@ -58,7 +58,7 @@ class _GoalSelectionScreenState
                 ? Theme.of(context).scaffoldBackgroundColor
                 : const Color(0xFFFFF3E0),
         title: LinearProgressIndicator(
-          value: 0.0, // 👈 start progress bar at 10%
+          value: 0.0,
           minHeight: 4,
           backgroundColor: Colors.grey.shade300,
           valueColor: AlwaysStoppedAnimation<Color>(
@@ -67,7 +67,7 @@ class _GoalSelectionScreenState
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 16,
@@ -88,90 +88,89 @@ class _GoalSelectionScreenState
                 style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: goals.length,
-                  separatorBuilder:
-                      (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final goal = goals[index];
-                    final isSelected =
-                        selectedGoal == goal['title'];
+              ListView.separated(
+                itemCount: goals.length,
+                shrinkWrap: true,
+                physics:
+                    const NeverScrollableScrollPhysics(),
+                separatorBuilder:
+                    (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final goal = goals[index];
+                  final isSelected =
+                      selectedGoal == goal['title'];
 
-                    return GestureDetector(
-                      onTap:
-                          () => _onGoalSelected(
-                            goal['title']!,
-                          ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
+                  return GestureDetector(
+                    onTap:
+                        () =>
+                            _onGoalSelected(goal['title']!),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected
+                                ? const Color(0xFFFFF3E0)
+                                : Colors.white,
+                        borderRadius: BorderRadius.circular(
+                          12,
                         ),
-                        decoration: BoxDecoration(
+                        border: Border.all(
                           color:
                               isSelected
-                                  ? const Color(0xFFFFF3E0)
-                                  : Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(12),
-                          border: Border.all(
-                            color:
-                                isSelected
-                                    ? Theme.of(
-                                      context,
-                                    ).colorScheme.primary
-                                    : Colors.grey.shade300,
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment
-                                  .spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  goal['emoji']!,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Text(
-                                  goal['title']!,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight:
-                                        FontWeight.w500,
-                                    color:
-                                        isSelected
-                                            ? Theme.of(
-                                                  context,
-                                                )
-                                                .colorScheme
-                                                .primary
-                                            : Colors
-                                                .black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (isSelected)
-                              Icon(
-                                Icons.check_circle,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                              ),
-                          ],
+                                  ? Theme.of(
+                                    context,
+                                  ).colorScheme.primary
+                                  : Colors.grey.shade300,
+                          width: 1.2,
                         ),
                       ),
-                    );
-                  },
-                ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                goal['emoji']!,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Text(
+                                goal['title']!,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight:
+                                      FontWeight.w500,
+                                  color:
+                                      isSelected
+                                          ? Theme.of(
+                                                context,
+                                              )
+                                              .colorScheme
+                                              .primary
+                                          : Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (isSelected)
+                            Icon(
+                              Icons.check_circle,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(

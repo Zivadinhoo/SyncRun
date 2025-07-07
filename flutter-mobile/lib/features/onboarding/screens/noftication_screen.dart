@@ -8,20 +8,17 @@ class NotificationScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: true, // 👈 back dugme
+        automaticallyImplyLeading: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(
-          color:
-              isDark
-                  ? Colors.white
-                  : Colors.black, // boja back ikone
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
       body: Padding(
@@ -32,34 +29,34 @@ class NotificationScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 🛎️ Notification image placeholder
+            // 🔔 Suptilna ikona
             Container(
-              height: 300,
+              height: 100,
+              width: 100,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
                 color:
                     isDark
                         ? Colors.grey[900]
-                        : Colors.grey[200],
+                        : Colors.grey[100],
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Center(
+              child: const Center(
                 child: Icon(
                   Icons.notifications_active,
-                  size: 80,
-                  color:
-                      Theme.of(context).colorScheme.primary,
+                  size: 40,
+                  color: Color(0xFFFFC366),
                 ),
               ),
             ),
             const SizedBox(height: 32),
 
-            // 💬 Motivational text
+            // 🗣️ Tekst
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
                 text: "You're ",
-                style: TextStyle(
-                  fontSize: 20,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontSize: 18,
                   color:
                       isDark ? Colors.white : Colors.black,
                 ),
@@ -68,7 +65,7 @@ class NotificationScreen extends ConsumerWidget {
                     text: "3x more likely ",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                      color: Color(0xFFFFC366),
                     ),
                   ),
                   TextSpan(
@@ -78,7 +75,7 @@ class NotificationScreen extends ConsumerWidget {
                     text: "workout reminders",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                      color: Color(0xFFFFC366),
                     ),
                   ),
                 ],
@@ -89,39 +86,51 @@ class NotificationScreen extends ConsumerWidget {
               "Runners that opt into notifications are more likely to stick to their plan.",
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontSize: 14,
                 color:
                     isDark
                         ? Colors.grey[400]
                         : Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 36),
 
-            // 🔘 Switch toggle
+            // 🔘 Switch
             const NotificationToggle(),
 
-            const Spacer(),
+            const SizedBox(height: 24),
 
-            // ▶️ Continue button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const StartDateScreen(),
+            // ✅ Dugme odmah ispod switcha, elegantnije
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => const StartDateScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFC366),
+                  minimumSize: const Size.fromHeight(44),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Text(
+                  "Continue",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.95),
+                  ),
                 ),
               ),
-              child: const Text("Continue"),
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -160,10 +169,12 @@ class _NotificationToggleState
     return SwitchListTile(
       value: isEnabled,
       onChanged: _toggle,
+      contentPadding: EdgeInsets.zero,
       title: const Text("Enable notifications"),
       subtitle: const Text(
         "Get reminders for your training days",
       ),
+      activeColor: const Color(0xFFFFC366),
     );
   }
 }

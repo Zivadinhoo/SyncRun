@@ -104,10 +104,26 @@ class _PreferredDaysScreenState
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              "Select at least ${widget.requiredDays} days spread across the week to help us create your ideal plan.",
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
+            RichText(
+              text: TextSpan(
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+                children: [
+                  const TextSpan(text: "Select "),
+                  TextSpan(
+                    text:
+                        "at least ${widget.requiredDays} days",
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const TextSpan(
+                    text:
+                        " spread across the week to help us create your ideal plan.",
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -179,20 +195,7 @@ class _PreferredDaysScreenState
                 },
               ),
             ),
-            if (!isValidSelection)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Center(
-                  child: Text(
-                    "Please select at least ${widget.requiredDays} days.",
-                    style: const TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed:
                   isValidSelection ? _onContinue : null,

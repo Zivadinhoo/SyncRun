@@ -27,7 +27,7 @@ class _DaysPerWeekScreenState
       context,
       MaterialPageRoute(
         builder:
-            (context) => PreferredDaysScreen(
+            (_) => PreferredDaysScreen(
               requiredDays: selectedDays!,
             ),
       ),
@@ -48,7 +48,7 @@ class _DaysPerWeekScreenState
                 ? Theme.of(context).scaffoldBackgroundColor
                 : const Color(0xFFFFF3E0),
         title: LinearProgressIndicator(
-          value: 0.83, // korak 5/6 npr.
+          value: 0.83,
           minHeight: 4,
           backgroundColor: Colors.grey.shade300,
           valueColor: AlwaysStoppedAnimation<Color>(
@@ -56,34 +56,35 @@ class _DaysPerWeekScreenState
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "How many days per week would you like to run?",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "How many days per week would you like to run?",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Choose how many times per week you want to train. Don’t overcommit – recovery matters!",
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.separated(
-                itemCount: options.length,
-                separatorBuilder:
-                    (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final day = options[index];
-                  final isSelected = selectedDays == day;
-
-                  return GestureDetector(
+              const SizedBox(height: 8),
+              const Text(
+                "Choose how many times per week you want to train. Don’t overcommit – recovery matters!",
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              ...options.map((day) {
+                final isSelected = selectedDays == day;
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 12,
+                  ),
+                  child: GestureDetector(
                     onTap:
                         () => setState(
                           () => selectedDays = day,
@@ -146,23 +147,26 @@ class _DaysPerWeekScreenState
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed:
-                  selectedDays != null ? _onContinue : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed:
+                    selectedDays != null
+                        ? _onContinue
+                        : null,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                 ),
+                child: const Text("Continue"),
               ),
-              child: const Text("Continue"),
-            ),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

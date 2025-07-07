@@ -82,38 +82,36 @@ class _ExperienceScreenState
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "How would you rate your running experience?",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "How would you rate your running experience?",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Pick the level that best describes you. You can adjust this later.",
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.separated(
-                itemCount: experienceLevels.length,
-                separatorBuilder:
-                    (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final level = experienceLevels[index];
-                  final isSelected =
-                      selectedExperience == level['title'];
-
-                  return GestureDetector(
+              const SizedBox(height: 8),
+              const Text(
+                "Pick the level that best describes you. You can adjust this later.",
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              ...experienceLevels.map((level) {
+                final isSelected =
+                    selectedExperience == level['title'];
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 12,
+                  ),
+                  child: GestureDetector(
                     onTap:
                         () => _onExperienceSelected(
                           level['title']!,
@@ -198,25 +196,26 @@ class _ExperienceScreenState
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed:
-                  selectedExperience != null
-                      ? _onContinue
-                      : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed:
+                    selectedExperience != null
+                        ? _onContinue
+                        : null,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                 ),
+                child: const Text("Continue"),
               ),
-              child: const Text("Continue"),
-            ),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

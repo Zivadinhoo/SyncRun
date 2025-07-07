@@ -17,6 +17,7 @@ import { PlanTemplateModule } from './plan-template/plan-template.module';
 import { PlanTemplate } from './entities/plan-template.entity';
 import { PlanTemplateWeek } from './entities/plan-template-week.entity';
 import { PlanTemplateDay } from './entities/plan-template-day.entity';
+import { AiPlanModule } from './training-plan-ai/ai-plan.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { PlanTemplateDay } from './entities/plan-template-day.entity';
     AssignedPlanModule,
     TrainingDayFeedbackModule,
     PlanTemplateModule,
+    AiPlanModule,
   ],
 })
 export class AppModule {}

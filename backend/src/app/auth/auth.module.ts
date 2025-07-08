@@ -6,24 +6,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshJwtStrategy } from './strategies/refresh.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
-import { RoleAuthGuard } from './guards/role-auth.guard';
 import { PinoLogger } from 'nestjs-pino';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    JwtModule.register({}), // konfiguracija ide iz .env i `JwtService`
+    JwtModule.register({}), // ConfigService injectuje vrednosti iz .env
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    RefreshJwtStrategy,
-    LocalStrategy,
-    RoleAuthGuard,
-    PinoLogger,
-  ],
+  providers: [AuthService, JwtStrategy, RefreshJwtStrategy, PinoLogger],
 })
 export class AuthModule {}

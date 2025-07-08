@@ -5,7 +5,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { AiPlanService } from './ai.plan.service';
+import { AiPlanService } from './training-plan-ai.service';
 import { OnboardingAnswersDto } from './dto/onboarding-answers.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PinoLogger } from 'nestjs-pino';

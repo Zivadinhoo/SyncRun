@@ -6,9 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  JoinColumn,
 } from 'typeorm';
-import { TrainingPlan } from './training-plan.entity';
 import { AssignedPlan } from './assigned-plan.entity';
+import { TrainingPlanAi } from './training-plan-ai.entity';
+
+export type TrainingStatus = 'upcoming' | 'completed' | 'missed';
 
 @Entity()
 export class TrainingDay {
@@ -23,7 +26,7 @@ export class TrainingDay {
     enum: ['upcoming', 'completed', 'missed'],
     default: 'upcoming',
   })
-  status: 'upcoming' | 'completed' | 'missed';
+  status: TrainingStatus;
 
   @Column({ type: 'int', nullable: true })
   duration?: number; // in minutes
@@ -46,16 +49,24 @@ export class TrainingDay {
   @Column({ type: 'date' })
   date: string;
 
-  @ManyToOne(() => TrainingPlan, (plan) => plan.trainingDays, {
-    onDelete: 'CASCADE',
-  })
-  trainingPlan: TrainingPlan;
+  @Column()
+  assignedPlanId: number;
 
-  @ManyToOne(() => AssignedPlan, (assignedPlan) => assignedPlan.trainingDays, {
-    nullable: true,
+  @ManyToOne(() => AssignedPlan, (plan) => plan.trainingDays, {
     onDelete: 'CASCADE',
   })
-  assignedPlan?: AssignedPlan;
+  @JoinColumn({ name: 'assignedPlanId' })
+  assignedPlan: AssignedPlan;
+
+  @Column({ nullable: true })
+  aiTrainingPlanId?: number;
+
+  @ManyToOne(() => TrainingPlanAi, (plan) => plan.trainingDays, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'aiTrainingPlanId' })
+  aiTrainingPlan: TrainingPlanAi;
 
   @CreateDateColumn()
   createdAt: Date;

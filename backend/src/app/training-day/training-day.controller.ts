@@ -11,7 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { TrainingDayService } from './training-day.service';
-import { CreateTrainingDayDto } from './dto/create-training-day.dto';
 import { UpdateTrainingDayDto } from './dto/update-training-day.dto';
 import {
   ApiTags,
@@ -20,7 +19,6 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { CreateTrainingDayBulkDto } from './dto/create-training-day-bulk.dto';
 import { GetWeeklySummaryDto } from './dto/get-weekly-summary.dto';
 import { Logger } from 'nestjs-pino';
 
@@ -33,86 +31,41 @@ export class TrainingDayController {
     private readonly logger: Logger,
   ) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create a training day' })
-  async create(@Body() dto: CreateTrainingDayDto) {
-    const exists = await this.trainingDayService.existsByDayNumber(
-      dto.trainingPlanId,
-      dto.dayNumber,
-    );
-
-    if (exists) {
-      throw new BadRequestException(
-        `Day ${dto.dayNumber} already exists in this plan`,
-      );
-    }
-
-    return this.trainingDayService.create(dto);
-  }
-
   @Patch(':id/complete')
   @ApiOperation({ summary: 'Mark training day as completed' })
   @ApiParam({ name: 'id', type: Number })
   async complete(@Param('id', ParseIntPipe) id: number) {
-    try {
-      this.logger.log(`Marking training day ${id} as completed`);
-      const result = await this.trainingDayService.markAsCompleted(id);
-      this.logger.debug(`Training day ${id} marked as completed`);
-      return result;
-    } catch (error) {
-      this.logger.error(
-        `Failed to mark training day ${id} as completed: ${error.message}`,
-        error.stack,
-      );
-      throw error;
-    }
+    this.logger.log(`Marking training day ${id} as completed`);
+    return await this.trainingDayService.markAsCompleted(id);
   }
 
-  @Post('bulk')
-  @ApiOperation({ summary: 'Create multiple training days in bulk' })
-  async createBulk(@Body() dto: CreateTrainingDayBulkDto) {
-    return await this.trainingDayService.createBulk(dto);
+  @Post('generate')
+  @ApiOperation({
+    summary: 'Generate training days from AI plan into assigned plan',
+  })
+  @ApiQuery({ name: 'trainingPlanId', required: true, type: Number })
+  @ApiQuery({ name: 'assignedPlanId', required: true, type: Number })
+  async generateFromAiPlan(
+    @Query('trainingPlanId', ParseIntPipe) trainingPlanId: number,
+    @Query('assignedPlanId', ParseIntPipe) assignedPlanId: number,
+  ) {
+    return await this.trainingDayService.generateFromAiPlan(
+      trainingPlanId,
+      assignedPlanId,
+    );
   }
 
   @Get('weekly-summary')
-  @ApiQuery({
-    name: 'startDate',
-    required: true,
-    type: String,
-    example: '2025-06-10',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: true,
-    type: String,
-    example: '2025-06-16',
-  })
-  @ApiQuery({ name: 'athleteId', required: false, type: Number, example: 4 })
   @ApiOperation({ summary: 'Get weekly summary of training days for athlete' })
+  @ApiQuery({ name: 'startDate', required: true, type: String })
+  @ApiQuery({ name: 'endDate', required: true, type: String })
+  @ApiQuery({ name: 'athleteId', required: false, type: Number })
   async getWeeklySummary(@Query() dto: GetWeeklySummaryDto): Promise<any> {
-    try {
-      if (new Date(dto.startDate) > new Date(dto.endDate)) {
-        throw new BadRequestException('startDate must be before endDate');
-      }
-
-      this.logger.log(
-        `Fetching weekly summary for athleteId=${dto.athleteId ?? 'N/A'} from ${dto.startDate} to ${dto.endDate}`,
-      );
-
-      const summary = await this.trainingDayService.getWeeklySummary(dto);
-
-      this.logger.debug(
-        `Weekly summary result: ${JSON.stringify(summary, null, 2)}`,
-      );
-
-      return summary;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get weekly summary: ${error.message}`,
-        error.stack,
-      );
-      throw error;
+    if (new Date(dto.startDate) > new Date(dto.endDate)) {
+      throw new BadRequestException('startDate must be before endDate');
     }
+
+    return await this.trainingDayService.getWeeklySummary(dto);
   }
 
   @Get(':id')
@@ -128,28 +81,14 @@ export class TrainingDayController {
   async findByAssignedPlan(
     @Param('assignedPlanId', ParseIntPipe) assignedPlanId: number,
   ) {
-    try {
-      this.logger.log(
-        `Fetching training days for assignedPlanId=${assignedPlanId}`,
-      );
-      const result =
-        await this.trainingDayService.findByAssignedPlanId(assignedPlanId);
-      this.logger.debug(`Fetched ${result.length} training days`);
-      return result;
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch training days for assignedPlanId=${assignedPlanId}: ${error.message}`,
-        error.stack,
-      );
-      throw error;
-    }
+    return await this.trainingDayService.findByAssignedPlanId(assignedPlanId);
   }
 
-  @Get('/by-plan/:planId')
-  @ApiOperation({ summary: 'Get all training days for a plan' })
+  @Get('/by-ai-plan/:planId')
+  @ApiOperation({ summary: 'Get all training days for an AI plan' })
   @ApiParam({ name: 'planId', type: Number })
-  async findByPlan(@Param('planId', ParseIntPipe) planId: number) {
-    return await this.trainingDayService.findByTrainingPlanId(planId);
+  async findByAiPlan(@Param('planId', ParseIntPipe) planId: number) {
+    return await this.trainingDayService.findByAiPlanId(planId);
   }
 
   @Patch(':id')
@@ -159,7 +98,7 @@ export class TrainingDayController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTrainingDayDto,
   ) {
-    return await this.trainingDayService.update(id, dto);
+    return await this.trainingDayService.updateTrainingDay(id, dto);
   }
 
   @Delete(':id')

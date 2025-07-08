@@ -17,10 +17,13 @@ export class RefreshJwtStrategy extends PassportStrategy(
   }
 
   async validate(payload: any) {
-    if (!payload || !payload.sub) {
+    if (!payload?.sub || !payload?.email) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    return payload;
+    return {
+      userId: payload.sub,
+      email: payload.email,
+    };
   }
 }

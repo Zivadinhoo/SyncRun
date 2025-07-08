@@ -16,6 +16,9 @@ export class AuthService {
     this.logger.setContext(AuthService.name);
   }
 
+  /**
+   * Return full authentication response with tokens and user info.
+   */
   async authorize(user: User): Promise<AuthResponse> {
     const accessToken = await this.generateAccessToken(user);
     const refreshToken = await this.generateRefreshToken(user);
@@ -25,29 +28,41 @@ export class AuthService {
       refreshToken,
       userId: user.id,
       email: user.email,
-      role: user.role,
       fullName: `${user.firstName} ${user.lastName}`,
     };
   }
 
+  /**
+   * Hash plain password using bcrypt.
+   */
   async generateHashedPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 10);
+    return bcrypt.hash(password, 10);
   }
 
+  /**
+   * Check password validity using bcrypt.
+   */
   async isPasswordValid(
     password: string,
     hashedPassword: string,
   ): Promise<boolean> {
-    return await bcrypt.compare(password, hashedPassword);
+    return bcrypt.compare(password, hashedPassword);
   }
 
+  /**
+   * Generate access token with 1h expiration.
+   */
   private async generateAccessToken(user: User): Promise<string> {
-    const secret = this.configService.get<string>('JWT_SECRET') ?? '';
-    return await this.jwtService.signAsync(
+    const secret = this.configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      this.logger.error('❌ JWT_SECRET not set in config');
+      throw new Error('JWT_SECRET not configured');
+    }
+
+    return this.jwtService.signAsync(
       {
-        email: user.email,
-        role: user.role,
         sub: user.id,
+        email: user.email,
       },
       {
         secret,
@@ -56,13 +71,20 @@ export class AuthService {
     );
   }
 
+  /**
+   * Generate refresh token with 7d expiration.
+   */
   private async generateRefreshToken(user: User): Promise<string> {
-    const secret = this.configService.get<string>('JWT_REFRESH_SECRET') ?? '';
-    return await this.jwtService.signAsync(
+    const secret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    if (!secret) {
+      this.logger.error('❌ JWT_REFRESH_SECRET not set in config');
+      throw new Error('JWT_REFRESH_SECRET not configured');
+    }
+
+    return this.jwtService.signAsync(
       {
-        email: user.email,
-        role: user.role,
         sub: user.id,
+        email: user.email,
       },
       {
         secret,

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AiPlanController } from './ai-plan.controller';
-import { AiPlanService } from './ai.plan.service';
+import { AiPlanController } from './training-plan-ai.controller';
+import { AiPlanService } from './training-plan-ai.service';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({

@@ -5,19 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
-import { TrainingPlan } from './entities/training-plan.entity';
-import { TrainingPlanModule } from './training-plan/training-plan.module';
 import { TrainingDay } from './entities/training-day.entity';
 import { TrainingDayModule } from './training-day/training-day.module';
 import { AssignedPlan } from './entities/assigned-plan.entity';
 import { AssignedPlanModule } from './assigned-plan/assigned-plan.module';
 import { TrainingDayFeedback } from './entities/training-day-feedback.entity';
 import { TrainingDayFeedbackModule } from './training-day-feedback/training-day-feedback.module';
-import { PlanTemplateModule } from './plan-template/plan-template.module';
-import { PlanTemplate } from './entities/plan-template.entity';
-import { PlanTemplateWeek } from './entities/plan-template-week.entity';
-import { PlanTemplateDay } from './entities/plan-template-day.entity';
-import { AiPlanModule } from './training-plan-ai/ai-plan.module';
+import { AiPlanModule } from './training-plan-ai/training-plan-ai.module';
+import { TrainingPlanAi } from './entities/training-plan-ai.entity';
 
 @Module({
   imports: [
@@ -51,13 +46,10 @@ import { AiPlanModule } from './training-plan-ai/ai-plan.module';
         database: config.get('DATABASE_NAME'),
         entities: [
           User,
-          TrainingPlan,
           TrainingDay,
           AssignedPlan,
           TrainingDayFeedback,
-          PlanTemplate,
-          PlanTemplateWeek,
-          PlanTemplateDay,
+          TrainingPlanAi,
         ],
         synchronize: true,
         logging: true,
@@ -66,11 +58,9 @@ import { AiPlanModule } from './training-plan-ai/ai-plan.module';
 
     UsersModule,
     AuthModule,
-    TrainingPlanModule,
     TrainingDayModule,
     AssignedPlanModule,
     TrainingDayFeedbackModule,
-    PlanTemplateModule,
     AiPlanModule,
   ],
 })

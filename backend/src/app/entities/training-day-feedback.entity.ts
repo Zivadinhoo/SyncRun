@@ -1,5 +1,3 @@
-import { User } from './user.entity';
-import { TrainingDay } from './training-day.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from './user.entity';
+import { TrainingDay } from './training-day.entity';
 
 export enum Mood {
   GREAT = 'GREAT',
@@ -24,9 +24,15 @@ export class TrainingDayFeedback {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  userId: number;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @Column()
+  trainingDayId: number;
 
   @ManyToOne(() => TrainingDay, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'trainingDayId' })
@@ -42,10 +48,10 @@ export class TrainingDayFeedback {
   rpe?: number;
 
   @Column({ type: 'int', nullable: true })
-  duration?: number;
+  duration?: number; // in minutes
 
   @Column({ type: 'float', nullable: true })
-  distance?: number;
+  distance?: number; // in kilometers
 
   @Column({ type: 'float', nullable: true })
   tss?: number;

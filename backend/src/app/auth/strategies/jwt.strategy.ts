@@ -8,16 +8,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => {
-          const cookieToken = req?.cookies?.access_token;
-          const headerToken = req?.headers?.authorization;
-
-          console.log('📥 Cookie access_token:', cookieToken);
-          console.log('📥 Header Authorization:', headerToken);
-
-          return cookieToken;
-        },
+        // 👇 Prvo pokušaj preko Authorization headera
         ExtractJwt.fromAuthHeaderAsBearerToken(),
+
+        // 👇 Ako nema, pokušaj preko cookie-a (korisno za web)
+        (req) => req?.cookies?.access_token || null,
       ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET'),
@@ -25,6 +20,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: any) {
-    return { id: payload.sub, email: payload.email, role: payload.role };
+    if (!payload?.sub || !payload?.email) {
+      throw new Error('Invalid access token');
+    }
+
+    return {
+      userId: payload.sub,
+      email: payload.email,
+    };
   }
 }

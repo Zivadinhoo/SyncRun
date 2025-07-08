@@ -4,18 +4,12 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
   DeleteDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
-import { TrainingPlan } from './training-plan.entity';
 import { AssignedPlan } from './assigned-plan.entity';
-
-export enum UserRole {
-  COACH = 'coach',
-  ATHLETE = 'athlete',
-}
 
 @Entity()
 export class User {
@@ -34,21 +28,8 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.ATHLETE })
-  role: UserRole;
-
-  @OneToMany(() => TrainingPlan, (plan) => plan.coach)
-  trainingPlans: TrainingPlan[];
-
-  @ManyToOne(() => User, (coach) => coach.athletes, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'coachId' })
-  coach: User;
-
-  @OneToMany(() => User, (athlete) => athlete.coach)
-  athletes: User[];
+  @OneToMany(() => AssignedPlan, (plan) => plan.athlete)
+  assignedPlans: AssignedPlan[];
 
   @Column({ nullable: true })
   activeAssignedPlanId?: number;

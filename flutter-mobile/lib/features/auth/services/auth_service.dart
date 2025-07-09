@@ -7,10 +7,9 @@ class AuthService {
   final _storage = const FlutterSecureStorage();
   String? _accessToken;
 
-  bool get isLoggedInMemory => _accessToken != null;
-
   final String baseUrl = 'http://192.168.0.49:3001';
 
+  /// ✅ Save tokens locally
   Future<void> saveTokens(
     String accessToken,
     String refreshToken,
@@ -25,19 +24,45 @@ class AuthService {
       key: 'refreshToken',
       value: refreshToken,
     );
-    print('✅ Tokens saved to storage');
+
+    print('✅ Tokens saved to secure storage');
   }
 
-  Future<bool> isLoggedIn() async {
+  /// ✅ Get access token from memory or secure storage
+  Future<String?> getAccessToken() async {
+    if (_accessToken != null) return _accessToken;
     final token = await _storage.read(key: 'accessToken');
-    return token != null;
+    _accessToken = token;
+    return token;
   }
 
+  /// ✅ Check if user is logged in (with API validation)
+  Future<bool> isLoggedIn() async {
+    final token = await getAccessToken();
+    if (token == null || token.isEmpty) return false;
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/me'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('🔐 isLoggedIn check: ${response.statusCode}');
+      return response.statusCode == 200;
+    } catch (e) {
+      print('❌ Error checking login state: $e');
+      return false;
+    }
+  }
+
+  /// ✅ Clear all tokens
   Future<void> logout() async {
     _accessToken = null;
     await _storage.deleteAll();
+    print('🚪 User logged out');
   }
 
+  /// ✅ Login and save tokens
   Future<Map<String, dynamic>> login(
     String email,
     String password,
@@ -54,11 +79,8 @@ class AuthService {
         }),
       );
 
-      print('📥 Response status: ${response.statusCode}');
-      print('📥 RESPONSE BODY RAW: ${response.body}');
-
+      print('📥 Response: ${response.statusCode}');
       final data = jsonDecode(response.body);
-      print('🔵 RESPONSE BODY DECODED: $data');
 
       if (data['accessToken'] == null) {
         throw Exception(
@@ -72,56 +94,44 @@ class AuthService {
       );
       return data;
     } catch (e) {
-      print('🔥 CAUGHT ERROR IN LOGIN: $e');
+      print('🔥 Error during login: $e');
       rethrow;
     }
   }
 
-  Future<String?> getCurrentUser() async {
-    final token =
-        _accessToken ??
-        await _storage.read(key: 'accessToken');
-    print('📦 AccessToken loaded: $token');
-
-    if (token == null) {
-      return null;
-    }
+  /// ✅ Get current user info
+  Future<Map<String, dynamic>?> getCurrentUser() async {
+    final token = await getAccessToken();
+    if (token == null) return null;
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/auth/me'),
+        Uri.parse('$baseUrl/users/me'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      print('📥 Response status: ${response.statusCode}');
-      print('📥 Response body: ${response.body}');
-
+      print('👤 User data: ${response.body}');
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final firstName = data['firstName'] ?? '';
-        final lastName = data['lastName'] ?? '';
-        return '$firstName $lastName';
+        return jsonDecode(response.body);
       } else {
-        throw Exception(
-          'Failed to fetch current user: ${response.body}',
+        print(
+          '⚠️ Failed to fetch current user: ${response.statusCode}',
         );
+        return null;
       }
     } catch (e) {
       print('🔥 Exception during getCurrentUser: $e');
-      rethrow;
+      return null;
     }
   }
 
-  /// ✅ Koristi za GET pozive koji zahtevaju token
   Future<http.Response> authorizedGet(
     String endpoint,
   ) async {
-    final token =
-        _accessToken ??
-        await _storage.read(key: 'accessToken');
+    final token = await getAccessToken();
     if (token == null)
       throw Exception('❌ No access token found');
 

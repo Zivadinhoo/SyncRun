@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -11,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController(
-    text: 'elenakuckarka@gmail.com',
+    text: 'dusantrkac@gmail.com',
   );
   final _passwordController = TextEditingController(
     text: 'test123',
@@ -21,12 +22,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   void _togglePasswordVisibility() {
-    setState(() {
-      _obscurePassword = !_obscurePassword;
-    });
+    setState(() => _obscurePassword = !_obscurePassword);
   }
 
-  void _login() async {
+  Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -51,13 +50,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final accessToken = response['accessToken'];
       final refreshToken = response['refreshToken'];
-      final role = response['role'];
 
       if (accessToken != null && refreshToken != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("authToken", accessToken);
-        await prefs.setString("refreshToken", refreshToken);
-        await prefs.setString("userRole", role);
+        const storage = FlutterSecureStorage();
+        await storage.write(
+          key: 'accessToken',
+          value: accessToken,
+        );
+        await storage.write(
+          key: 'refreshToken',
+          value: refreshToken,
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -66,11 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(
-          role == 'coach'
-              ? '/coach-dashboard'
-              : '/athlete-dashboard',
-        );
+        context.go('/athlete/dashboard');
       } else {
         throw Exception(
           "No access token found in response",
@@ -100,22 +99,18 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(
               horizontal: 32,
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 80),
-                Image.asset(
-                  'assets/images/SyncRun.png',
-                  height: 150,
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 40),
                 const Text(
                   'Welcome to SyncRun!',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -216,6 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 40),
               ],
             ),
           ),

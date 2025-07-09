@@ -1,194 +1,250 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/features/onboarding/screens/experience_screen.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
+import 'package:go_router/go_router.dart';
 
-class GoalSelectionScreen extends ConsumerStatefulWidget {
-  const GoalSelectionScreen({super.key});
-
-  @override
-  ConsumerState<GoalSelectionScreen> createState() =>
-      _GoalSelectionScreenState();
-}
-
-class _GoalSelectionScreenState
-    extends ConsumerState<GoalSelectionScreen> {
-  String? selectedGoal;
-
-  final List<Map<String, String>> goals = [
-    {'emoji': '🐣', 'title': 'Run my first 5K'},
-    {'emoji': '🎯', 'title': 'Run my first 10K'},
-    {'emoji': '🛣️', 'title': 'Run a half marathon'},
-    {'emoji': '🏔️', 'title': 'Run a full marathon'},
-    {'emoji': '⚡', 'title': 'Get faster'},
-    {'emoji': '⚖️', 'title': 'Lose weight'},
-    {'emoji': '😄', 'title': 'Run for fun'},
-  ];
-
-  void _onGoalSelected(String goal) {
-    setState(() => selectedGoal = goal);
-  }
-
-  void _onContinue() {
-    if (selectedGoal == null) return;
-
-    ref.read(onboardingAnswersProvider.notifier).state = ref
-        .read(onboardingAnswersProvider)
-        .copyWith(goal: selectedGoal);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ExperienceScreen(),
-      ),
-    );
-  }
+class GoalSectionScreen extends ConsumerWidget {
+  const GoalSectionScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedGoal =
+        ref.watch(onboardingAnswersProvider).goal;
+
+    void selectGoal(String goal) {
+      ref
+          .read(onboardingAnswersProvider.notifier)
+          .setGoal(goal);
+    }
+
+    final goalOptions = [
+      {
+        'emoji': '🏁',
+        'title': 'Race',
+        'description':
+            'Booked a running race and want to train?',
+      },
+      {
+        'emoji': '🏔️',
+        'title': 'Run a specific distance',
+        'description':
+            'Choose your distance, from 5k to an ultramarathon',
+      },
+      {
+        'emoji': '🐣',
+        'title': 'Run a first 5k',
+        'description':
+            'Perfect for beginners starting their journey',
+      },
+      {
+        'emoji': '🌬️',
+        'title': '5k improvement plan',
+        'description':
+            'Want to run a faster or smoother 5k?',
+      },
+      {
+        'emoji': '❤️',
+        'title': 'General training',
+        'description':
+            'Maintain fitness without targeting a specific goal',
+      },
+      {
+        'emoji': '🌱',
+        'title': 'Parkrun improvement plan',
+        'description':
+            'Improve your weekend 5k performance',
+      },
+      {
+        'emoji': '👶',
+        'title': 'Postnatal plan',
+        'description':
+            'Designed for new mothers getting back into running',
+      },
+      {
+        'emoji': '⏱️',
+        'title': 'Time goal',
+        'description':
+            'Train for a specific time like sub-2h half',
+      },
+    ];
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        elevation: 0,
+        automaticallyImplyLeading: true,
         backgroundColor:
-            isDark
-                ? Theme.of(context).scaffoldBackgroundColor
-                : const Color(0xFFFFF3E0),
-        title: LinearProgressIndicator(
-          value: 0.0,
-          minHeight: 4,
-          backgroundColor: Colors.grey.shade300,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).colorScheme.primary,
+            Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text("What is your goal?"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed:
+                () =>
+                    context
+                        .pop(), // ili context.go('/') ako baš mora
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: LinearProgressIndicator(
+                value: 1 / 7,
+                minHeight: 4,
+                backgroundColor: Colors.grey.shade800,
+                valueColor: AlwaysStoppedAnimation(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
           ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "What’s your goal?",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              'Pick a goal that suits you best',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onBackground.withOpacity(0.6),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                "Choose your primary running goal:",
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              ListView.separated(
-                itemCount: goals.length,
-                shrinkWrap: true,
-                physics:
-                    const NeverScrollableScrollPhysics(),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: ListView.separated(
+                itemCount: goalOptions.length,
                 separatorBuilder:
-                    (_, __) => const SizedBox(height: 10),
+                    (_, __) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
-                  final goal = goals[index];
+                  final goal = goalOptions[index];
                   final isSelected =
                       selectedGoal == goal['title'];
-
-                  return GestureDetector(
-                    onTap:
-                        () =>
-                            _onGoalSelected(goal['title']!),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected
-                                ? const Color(0xFFFFF3E0)
-                                : Colors.white,
-                        borderRadius: BorderRadius.circular(
-                          12,
-                        ),
-                        border: Border.all(
-                          color:
-                              isSelected
-                                  ? Theme.of(
-                                    context,
-                                  ).colorScheme.primary
-                                  : Colors.grey.shade300,
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                goal['emoji']!,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Text(
-                                goal['title']!,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight:
-                                      FontWeight.w500,
-                                  color:
-                                      isSelected
-                                          ? Theme.of(
-                                                context,
-                                              )
-                                              .colorScheme
-                                              .primary
-                                          : Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check_circle,
-                              color:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
-                            ),
-                        ],
-                      ),
-                    ),
+                  return GoalCard(
+                    emoji: goal['emoji']!,
+                    title: goal['title']!,
+                    description: goal['description']!,
+                    selected: isSelected,
+                    onTap: () => selectGoal(goal['title']!),
                   );
                 },
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
                 onPressed:
-                    selectedGoal != null
-                        ? _onContinue
-                        : null,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                child: const Text("Continue"),
+                    selectedGoal == null
+                        ? null
+                        : () {
+                          final next =
+                              (selectedGoal ==
+                                      'Run a specific distance')
+                                  ? '/onboarding/target-time'
+                                  : '/onboarding/experience';
+                          context.push(
+                            next,
+                          ); // << izmenjeno
+                        },
+                child: const Text('Continue'),
               ),
-              const SizedBox(height: 12),
-            ],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GoalCard extends StatelessWidget {
+  final String emoji;
+  final String title;
+  final String description;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const GoalCard({
+    super.key,
+    required this.emoji,
+    required this.title,
+    required this.description,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final surface = Theme.of(context).colorScheme.surface;
+    final onSurface =
+        Theme.of(context).colorScheme.onSurface;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? primary : surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color:
+                selected ? primary : Colors.grey.shade800,
+            width: 2,
           ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(
+                      color:
+                          selected
+                              ? Colors.white
+                              : onSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(
+                      color:
+                          selected
+                              ? Colors.white70
+                              : onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

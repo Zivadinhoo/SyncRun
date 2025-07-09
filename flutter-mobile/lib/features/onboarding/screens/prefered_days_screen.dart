@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
-import 'package:frontend/features/onboarding/screens/noftication_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class PreferredDaysScreen extends ConsumerStatefulWidget {
-  final int requiredDays;
-
-  const PreferredDaysScreen({
-    super.key,
-    required this.requiredDays,
-  });
+  const PreferredDaysScreen({super.key});
 
   @override
   ConsumerState<PreferredDaysScreen> createState() =>
@@ -18,195 +13,157 @@ class PreferredDaysScreen extends ConsumerStatefulWidget {
 
 class _PreferredDaysScreenState
     extends ConsumerState<PreferredDaysScreen> {
-  final Map<String, bool> selectedDays = {
-    'Monday': false,
-    'Tuesday': false,
-    'Wednesday': false,
-    'Thursday': false,
-    'Friday': false,
-    'Saturday': false,
-    'Sunday': false,
-  };
+  final List<String> weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
 
-  bool get isValidSelection =>
-      selectedDays.values.where((v) => v).length >=
-      widget.requiredDays;
+  final Set<String> selectedDays = {};
 
-  void _onToggle(String day) {
+  void toggleDay(String day) {
     setState(() {
-      selectedDays[day] = !(selectedDays[day] ?? false);
+      if (selectedDays.contains(day)) {
+        selectedDays.remove(day);
+      } else {
+        selectedDays.add(day);
+      }
     });
   }
 
-  void _onContinue() {
-    final chosenDays =
-        selectedDays.entries
-            .where((entry) => entry.value)
-            .map((entry) => entry.key)
-            .toList();
-
-    ref.read(onboardingAnswersProvider.notifier).state = ref
-        .read(onboardingAnswersProvider)
-        .copyWith(
-          weeklyRuns: widget.requiredDays,
-          preferredDays: chosenDays,
-        );
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const NotificationScreen(),
-      ),
-    );
+  void _continue() {
+    final requiredDays =
+        ref.read(onboardingAnswersProvider).daysPerWeek;
+    if (selectedDays.length != requiredDays) return;
+    ref
+        .read(onboardingAnswersProvider.notifier)
+        .setPreferredDays(selectedDays.toList());
+    context.push('/onboarding/start-date');
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final requiredDays =
+        ref.watch(onboardingAnswersProvider).daysPerWeek;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor:
-            isDark
-                ? theme.scaffoldBackgroundColor
-                : const Color(0xFFFFF3E0),
-        title: const Text(
-          '',
-          style: TextStyle(color: Colors.transparent),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
         ),
-        leading: const BackButton(),
+        backgroundColor:
+            Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text("Preferred Days"),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: 0.80,
-            minHeight: 4,
-            backgroundColor: Colors.grey.shade300,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              theme.colorScheme.primary,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: LinearProgressIndicator(
+                value: 4 / 7,
+                minHeight: 4,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: AlwaysStoppedAnimation(
+                  colorScheme.primary,
+                ),
+              ),
             ),
           ),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 24,
+          horizontal: 24,
+          vertical: 16,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Which days of the week are you free to run on?",
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            RichText(
-              text: TextSpan(
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Please select $requiredDays days you prefer to train",
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onBackground
+                      .withOpacity(0.8),
                 ),
-                children: [
-                  const TextSpan(text: "Select "),
-                  TextSpan(
-                    text:
-                        "at least ${widget.requiredDays} days",
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const TextSpan(
-                    text:
-                        " spread across the week to help us create your ideal plan.",
-                  ),
-                ],
               ),
             ),
             const SizedBox(height: 24),
             Expanded(
               child: ListView.separated(
-                itemCount: selectedDays.length,
+                itemCount: weekdays.length,
                 separatorBuilder:
                     (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final day = selectedDays.keys.elementAt(
-                    index,
+                  final day = weekdays[index];
+                  final isSelected = selectedDays.contains(
+                    day,
                   );
-                  final isSelected =
-                      selectedDays[day] ?? false;
-
                   return GestureDetector(
-                    onTap: () => _onToggle(day),
+                    onTap: () => toggleDay(day),
                     child: AnimatedContainer(
                       duration: const Duration(
                         milliseconds: 200,
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 20,
-                      ),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
+                        color:
+                            isSelected
+                                ? colorScheme.primary
+                                : Theme.of(
+                                  context,
+                                ).cardColor,
                         borderRadius: BorderRadius.circular(
                           16,
                         ),
-                        color:
-                            isSelected
-                                ? theme.colorScheme.primary
-                                    .withOpacity(0.1)
-                                : theme.cardColor,
                         border: Border.all(
                           color:
                               isSelected
-                                  ? theme
-                                      .colorScheme
-                                      .primary
+                                  ? colorScheme.primary
                                   : Colors.grey.shade300,
-                          width: 1.4,
+                          width: 2,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isSelected
-                                ? Icons.check_circle
-                                : Icons
-                                    .radio_button_unchecked,
-                            color:
-                                isSelected
-                                    ? theme
-                                        .colorScheme
-                                        .primary
-                                    : Colors.grey,
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            day,
-                            style:
-                                theme.textTheme.bodyLarge,
-                          ),
-                        ],
+                      child: Text(
+                        day,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              isSelected
+                                  ? Colors.white
+                                  : colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed:
-                  isValidSelection ? _onContinue : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(26),
-                ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed:
+                    selectedDays.length == requiredDays
+                        ? _continue
+                        : null,
+                child: const Text("Continue"),
               ),
-              child: const Text("Continue"),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

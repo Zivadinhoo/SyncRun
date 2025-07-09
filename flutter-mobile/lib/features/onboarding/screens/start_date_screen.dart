@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
-import 'package:frontend/features/onboarding/screens/units_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class StartDateScreen extends ConsumerStatefulWidget {
   const StartDateScreen({super.key});
@@ -16,137 +16,147 @@ class _StartDateScreenState
     extends ConsumerState<StartDateScreen> {
   DateTime? selectedDate;
 
-  void _pickDate(BuildContext context) async {
-    final today = DateTime.now();
-    final initialDate = selectedDate ?? today;
-
+  void _pickDate() async {
+    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: initialDate,
-      firstDate: today,
-      lastDate: today.add(const Duration(days: 365)),
+      initialDate: selectedDate ?? now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
     );
 
     if (picked != null) {
       setState(() => selectedDate = picked);
-
-      // Save to provider
-      ref
-          .read(onboardingAnswersProvider.notifier)
-          .state = ref
-          .read(onboardingAnswersProvider)
-          .copyWith(startDate: picked);
     }
   }
 
-  void _onContinue() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const UnitsScreen(),
-      ),
-    );
+  void _continue() {
+    if (selectedDate != null) {
+      ref
+          .read(onboardingAnswersProvider.notifier)
+          .setStartDate(selectedDate!);
+      context.push('/onboarding/notifications');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final formattedDate =
+        selectedDate != null
+            ? DateFormat(
+              'MMMM d, yyyy',
+            ).format(selectedDate!)
+            : 'Select a date';
+
+    final isSelected = selectedDate != null;
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
-        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
         backgroundColor:
-            isDark
-                ? Theme.of(context).scaffoldBackgroundColor
-                : const Color(0xFFFFF3E0),
-        title: LinearProgressIndicator(
-          value: 0.9,
-          minHeight: 4,
-          backgroundColor: Colors.grey.shade300,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).colorScheme.primary,
+            Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text("Start Date"),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: LinearProgressIndicator(
+                value: 5 / 7,
+                minHeight: 4,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: AlwaysStoppedAnimation(
+                  colorScheme.primary,
+                ),
+              ),
+            ),
           ),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "When would you like to start your plan?",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "When would you like to start your training plan?",
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface.withAlpha(
+                    200,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              "Choose a date that suits your schedule. You can start today or any time within the next year.",
-              style: TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 24),
             GestureDetector(
-              onTap: () => _pickDate(context),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
+              onTap: _pickDate,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.all(16),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color:
+                      isSelected
+                          ? colorScheme.primary.withAlpha(
+                            20,
+                          )
+                          : Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
                     color:
-                        Theme.of(
-                          context,
-                        ).colorScheme.primary,
+                        isSelected
+                            ? colorScheme.primary
+                            : Colors.grey.shade300,
+                    width: 2,
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 20,
-                  ),
-                  child: Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        selectedDate != null
-                            ? DateFormat.yMMMMd().format(
-                              selectedDate!,
-                            )
-                            : "Select a date",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color:
-                              selectedDate != null
-                                  ? Colors.black
-                                  : Colors.grey,
-                        ),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Start Date",
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
                       ),
-                      Icon(
-                        Icons.calendar_today,
-                        color:
-                            Theme.of(
-                              context,
-                            ).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      formattedDate,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface
+                            .withAlpha(180),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
             const Spacer(),
-            ElevatedButton(
-              onPressed:
-                  selectedDate != null ? _onContinue : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isSelected ? _continue : null,
+                child: const Text("Continue"),
               ),
-              child: const Text("Continue"),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

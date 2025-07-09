@@ -1,180 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
-import 'package:frontend/features/onboarding/screens/start_date_screen.dart';
+import 'package:go_router/go_router.dart';
 
-class NotificationScreen extends ConsumerWidget {
+class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+  ConsumerState<NotificationScreen> createState() =>
+      _NotificationScreenState();
+}
+
+class _NotificationScreenState
+    extends ConsumerState<NotificationScreen> {
+  bool wantsNotifications = true;
+
+  void _continue() {
+    ref
+        .read(onboardingAnswersProvider.notifier)
+        .setWantsNotifications(wantsNotifications);
+    context.go('/onboarding/generate');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        backgroundColor:
+            Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black,
+        centerTitle: true,
+        title: const Text("Reminders"),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: LinearProgressIndicator(
+                value: 6 / 7,
+                minHeight: 4,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: AlwaysStoppedAnimation(
+                  colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 24,
-          vertical: 12,
+          vertical: 16,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 🔔 Suptilna ikona
-            Container(
-              height: 100,
-              width: 100,
-              decoration: BoxDecoration(
-                color:
-                    isDark
-                        ? Colors.grey[900]
-                        : Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.notifications_active,
-                  size: 40,
-                  color: Color(0xFFFFC366),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Would you like to receive workout reminders?",
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onBackground
+                      .withOpacity(0.8),
                 ),
               ),
             ),
-            const SizedBox(height: 32),
-
-            // 🗣️ Tekst
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                text: "You're ",
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontSize: 18,
-                  color:
-                      isDark ? Colors.white : Colors.black,
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Theme.of(context).cardColor,
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 2,
                 ),
-                children: const [
-                  TextSpan(
-                    text: "3x more likely ",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFFC366),
+              ),
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    wantsNotifications
+                        ? "Yes, remind me"
+                        : "No reminders",
+                    style: textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  TextSpan(
-                    text: "to finish your plan\nwith ",
-                  ),
-                  TextSpan(
-                    text: "workout reminders",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFFC366),
-                    ),
+                  Switch(
+                    value: wantsNotifications,
+                    activeColor: colorScheme.primary,
+                    onChanged:
+                        (val) => setState(
+                          () => wantsNotifications = val,
+                        ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              "Runners that opt into notifications are more likely to stick to their plan.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color:
-                    isDark
-                        ? Colors.grey[400]
-                        : Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 36),
-
-            // 🔘 Switch
-            const NotificationToggle(),
-
-            const SizedBox(height: 24),
-
-            // ✅ Dugme odmah ispod switcha, elegantnije
+            const Spacer(),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => const StartDateScreen(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFC366),
-                  minimumSize: const Size.fromHeight(44),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                ),
-                child: Text(
-                  "Continue",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withOpacity(0.95),
-                  ),
-                ),
+              child: FilledButton(
+                onPressed: _continue,
+                child: const Text("Continue"),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
-    );
-  }
-}
-
-class NotificationToggle extends ConsumerStatefulWidget {
-  const NotificationToggle({super.key});
-
-  @override
-  ConsumerState<NotificationToggle> createState() =>
-      _NotificationToggleState();
-}
-
-class _NotificationToggleState
-    extends ConsumerState<NotificationToggle> {
-  bool isEnabled = true;
-
-  @override
-  void initState() {
-    super.initState();
-    final onboarding = ref.read(onboardingAnswersProvider);
-    isEnabled = onboarding.notificationsEnabled ?? true;
-  }
-
-  void _toggle(bool value) {
-    setState(() => isEnabled = value);
-    ref.read(onboardingAnswersProvider.notifier).state = ref
-        .read(onboardingAnswersProvider)
-        .copyWith(notificationsEnabled: value);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      value: isEnabled,
-      onChanged: _toggle,
-      contentPadding: EdgeInsets.zero,
-      title: const Text("Enable notifications"),
-      subtitle: const Text(
-        "Get reminders for your training days",
-      ),
-      activeColor: const Color(0xFFFFC366),
     );
   }
 }

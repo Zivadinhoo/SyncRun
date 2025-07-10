@@ -8,6 +8,7 @@ class OnboardingAnswers {
   final List<String>? preferredDays;
   final DateTime? startDate;
   final bool wantsNotifications;
+  final String? units;
 
   const OnboardingAnswers({
     this.goal,
@@ -17,6 +18,7 @@ class OnboardingAnswers {
     this.preferredDays,
     this.startDate,
     this.wantsNotifications = true,
+    this.units,
   });
 
   OnboardingAnswers copyWith({
@@ -27,6 +29,7 @@ class OnboardingAnswers {
     List<String>? preferredDays,
     DateTime? startDate,
     bool? wantsNotifications,
+    String? units, // 👈 Dodato
   }) {
     return OnboardingAnswers(
       goal: goal ?? this.goal,
@@ -37,6 +40,7 @@ class OnboardingAnswers {
       startDate: startDate ?? this.startDate,
       wantsNotifications:
           wantsNotifications ?? this.wantsNotifications,
+      units: units ?? this.units, // 👈 Dodato
     );
   }
 
@@ -49,6 +53,7 @@ class OnboardingAnswers {
       'preferredDays': preferredDays,
       'startDate': startDate?.toIso8601String(),
       'wantsNotifications': wantsNotifications,
+      'units': units, // 👈 Dodato
     };
   }
 }
@@ -84,6 +89,10 @@ class OnboardingAnswersNotifier
 
   void setWantsNotifications(bool wants) {
     state = state.copyWith(wantsNotifications: wants);
+  }
+
+  void setUnits(String units) {
+    state = state.copyWith(units: units);
   }
 
   void reset() {

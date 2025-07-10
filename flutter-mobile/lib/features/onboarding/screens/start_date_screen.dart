@@ -35,7 +35,7 @@ class _StartDateScreenState
       ref
           .read(onboardingAnswersProvider.notifier)
           .setStartDate(selectedDate!);
-      context.push('/onboarding/notifications');
+      context.push('/onboarding/units');
     }
   }
 

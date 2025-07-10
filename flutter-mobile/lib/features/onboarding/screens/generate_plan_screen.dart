@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
 import 'package:frontend/features/onboarding/service/ai_plan_service.dart';
+import 'package:frontend/router.dart';
 import 'package:go_router/go_router.dart';
 
 class GeneratePlanScreen extends ConsumerStatefulWidget {
@@ -24,17 +26,29 @@ class _GeneratePlanScreenState
 
   Future<void> _generate() async {
     final answers = ref.read(onboardingAnswersProvider);
+
     try {
-      await AiPlanService.generateAiPlan(answers);
-      context.go(
-        '/athlete-dashboard',
-      ); // 👈 nakon uspešnog generisanja
+      // 🔁 Poziv AI-a
+      await AiPlanService.generateAiPlan(answers, ref);
+
+      // ✅ Snimi flag da je onboarding završen
+      await const FlutterSecureStorage().write(
+        key: 'hasFinishedOnboarding',
+        value: 'true',
+      );
+
+      ref.invalidate(hasFinishedOnboardingProvider);
+
+      // 🚀 Idi na dashboard
+      if (mounted) {
+        context.go('/athlete/dashboard');
+      }
     } catch (e) {
       print("❌ AI plan generation failed: $e");
       if (mounted) {
         setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
               "Failed to generate plan. Please try again.",
             ),
@@ -52,8 +66,8 @@ class _GeneratePlanScreenState
             isLoading
                 ? Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
+                  children: const [
+                    Text(
                       "🧠 Generating your personalized plan...",
                       style: TextStyle(
                         fontSize: 18,
@@ -61,10 +75,10 @@ class _GeneratePlanScreenState
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 24),
+                    Text(
                       "This may take a few seconds.\nHang tight!",
                       textAlign: TextAlign.center,
                       style: TextStyle(

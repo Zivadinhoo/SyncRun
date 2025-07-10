@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
+// Screens
 import 'package:frontend/features/auth/screens/login_screen.dart';
 import 'package:frontend/features/athlete/screens/athlete_dashboard_screen.dart';
 import 'package:frontend/features/onboarding/screens/goal_section_screen.dart';
@@ -12,49 +13,51 @@ import 'package:frontend/features/onboarding/screens/target_time_screen.dart';
 import 'package:frontend/features/onboarding/screens/experience_screen.dart';
 import 'package:frontend/features/onboarding/screens/days_per_week_screen.dart';
 import 'package:frontend/features/onboarding/screens/prefered_days_screen.dart';
-import 'package:frontend/features/onboarding/screens/pick_start_date_screen.dart';
+import 'package:frontend/features/onboarding/screens/start_date_screen.dart';
+import 'package:frontend/features/onboarding/screens/units_screen.dart';
 import 'package:frontend/features/onboarding/screens/noftication_screen.dart';
 import 'package:frontend/features/onboarding/screens/generate_plan_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-
 final storage = FlutterSecureStorage();
 
-final isLoggedInProvider = FutureProvider<bool>((
-  ref,
-) async {
-  final token = await storage.read(key: 'accessToken');
-  print('🪪 Access token: $token');
+/// ✅ Provajder za proveru da li je korisnik ulogovan
+final isLoggedInProvider = FutureProvider.autoDispose<bool>(
+  (ref) async {
+    final token = await storage.read(key: 'accessToken');
+    print('🪪 Access token: $token');
 
-  if (token == null || token.isEmpty) return false;
+    if (token == null || token.isEmpty) return false;
 
-  try {
-    final response = await http.get(
-      Uri.parse('http://192.168.0.49:3001/users/me'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.0.49:3001/users/me'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
-    print('✅ /users/me response: ${response.statusCode}');
-    if (response.statusCode == 200) return true;
+      print('✅ /users/me response: ${response.statusCode}');
+      if (response.statusCode == 200) return true;
 
-    await storage.deleteAll();
-    return false;
-  } catch (e) {
-    print('❌ Error in isLoggedInProvider: $e');
-    await storage.deleteAll();
-    return false;
-  }
-});
+      await storage.deleteAll();
+      return false;
+    } catch (e) {
+      print('❌ Error in isLoggedInProvider: $e');
+      await storage.deleteAll();
+      return false;
+    }
+  },
+);
 
-final hasFinishedOnboardingProvider = FutureProvider<bool>((
-  ref,
-) async {
-  final flag = await storage.read(
-    key: 'hasFinishedOnboarding',
-  );
-  return flag == 'true';
-});
+/// ✅ Provajder za proveru da li je korisnik završio onboarding
+final hasFinishedOnboardingProvider =
+    FutureProvider.autoDispose<bool>((ref) async {
+      final flag = await storage.read(
+        key: 'hasFinishedOnboarding',
+      );
+      return flag == 'true';
+    });
 
+/// ✅ Glavni router
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(isLoggedInProvider);
   final onboardingState = ref.watch(
@@ -63,11 +66,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/loading',
+    debugLogDiagnostics: true,
+    initialLocation: '/',
     redirect: (context, state) {
       if (authState is AsyncLoading ||
-          onboardingState is AsyncLoading) {
+          onboardingState is AsyncLoading)
         return null;
+
+      if (authState.hasError || onboardingState.hasError) {
+        return '/login';
       }
 
       final isLoggedIn = authState.value ?? false;
@@ -78,12 +85,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/onboarding',
       );
 
+      print('🚦 GoRouter redirect');
+      print('🔐 isLoggedIn: $isLoggedIn');
+      print(
+        '📋 hasFinishedOnboarding: $hasFinishedOnboarding',
+      );
+      print('📍 current path: ${state.uri.path}');
+
       if (!isLoggedIn && !isOnLogin) return '/login';
 
-      if (isLoggedIn &&
-          !hasFinishedOnboarding &&
-          !isOnOnboarding) {
-        return '/onboarding/goal';
+      if (isLoggedIn && !hasFinishedOnboarding) {
+        if (!isOnOnboarding) return '/onboarding/goal';
       }
 
       if (isLoggedIn &&
@@ -92,32 +104,38 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/athlete/dashboard';
       }
 
-      if (authState.hasError) return '/login';
-
       return null;
     },
     routes: [
+      /// Root -> redirect na loading
+      GoRoute(path: '/', redirect: (_, __) => '/loading'),
+
+      /// Login ekran
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
+
+      /// Dashboard
       GoRoute(
         path: '/athlete/dashboard',
         builder:
             (context, state) =>
                 const AthleteDashboardScreen(),
       ),
+
+      /// Splash screen dok proveravamo stanje
       GoRoute(
         path: '/loading',
         builder:
             (context, state) => const SplashLoadingScreen(),
       ),
 
-      /// 👇 ShellRoute for onboarding
+      /// Onboarding rute
       ShellRoute(
-        builder: (context, state, child) {
-          return Scaffold(body: child);
-        },
+        builder:
+            (context, state, child) =>
+                Scaffold(body: child),
         routes: [
           GoRoute(
             path: '/onboarding/goal',
@@ -155,6 +173,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 (context, state) => const StartDateScreen(),
           ),
           GoRoute(
+            path: '/onboarding/units',
+            builder:
+                (context, state) => const UnitsScreen(),
+          ),
+          GoRoute(
             path: '/onboarding/notifications',
             builder:
                 (context, state) =>
@@ -178,14 +201,29 @@ class SplashLoadingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(isLoggedInProvider);
+    final onboardingState = ref.watch(
+      hasFinishedOnboardingProvider,
+    );
 
-    return Scaffold(
-      body: Center(
-        child:
-            authState.isLoading
-                ? const CircularProgressIndicator()
-                : const Text("Loading..."),
-      ),
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final isLoggedIn = authState.value ?? false;
+      final hasFinishedOnboarding =
+          onboardingState.value ?? false;
+
+      if (!authState.isLoading &&
+          !onboardingState.isLoading) {
+        if (!isLoggedIn) {
+          context.go('/login');
+        } else if (!hasFinishedOnboarding) {
+          context.go('/onboarding/goal');
+        } else {
+          context.go('/athlete/dashboard');
+        }
+      }
+    });
+
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

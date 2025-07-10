@@ -55,11 +55,12 @@ class AuthService {
     }
   }
 
-  /// ✅ Clear all tokens
   Future<void> logout() async {
     _accessToken = null;
-    await _storage.deleteAll();
-    print('🚪 User logged out');
+    await _storage.delete(key: 'accessToken');
+    await _storage.delete(key: 'refreshToken');
+    await _storage.delete(key: 'hasFinishedOnboarding');
+    print('🚪 User logged out & all auth data cleared');
   }
 
   /// ✅ Login and save tokens
@@ -99,7 +100,6 @@ class AuthService {
     }
   }
 
-  /// ✅ Get current user info
   Future<Map<String, dynamic>?> getCurrentUser() async {
     final token = await getAccessToken();
     if (token == null) return null;

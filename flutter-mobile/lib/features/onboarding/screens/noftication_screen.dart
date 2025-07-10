@@ -19,7 +19,7 @@ class _NotificationScreenState
     ref
         .read(onboardingAnswersProvider.notifier)
         .setWantsNotifications(wantsNotifications);
-    context.go('/onboarding/generate');
+    context.go('/onboarding/generate-plan');
   }
 
   @override

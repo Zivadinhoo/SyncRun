@@ -8,63 +8,66 @@ class GoalSectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedGoal =
-        ref.watch(onboardingAnswersProvider).goal;
+    final onboardingAnswers = ref.watch(
+      onboardingAnswersProvider,
+    );
+    final selectedGoal = onboardingAnswers.goal;
+    final selectedGoalTag = onboardingAnswers.goalTag;
 
-    void selectGoal(String goal) {
+    void selectGoal(String title, String tag) {
       ref
           .read(onboardingAnswersProvider.notifier)
-          .setGoal(goal);
+          .setGoal(title, tag);
+    }
+
+    String getNextRoute(String? tag) {
+      switch (tag) {
+        case 'race':
+        case 'performance':
+          return '/onboarding/target-distance';
+        case 'beginner':
+        case 'health':
+        case 'postnatal':
+        default:
+          return '/onboarding/experience';
+      }
     }
 
     final goalOptions = [
       {
         'emoji': '🏁',
-        'title': 'Race',
+        'title': 'I’m training for a race',
         'description':
-            'Booked a running race and want to train?',
-      },
-      {
-        'emoji': '🏔️',
-        'title': 'Run a specific distance',
-        'description':
-            'Choose your distance, from 5k to an ultramarathon',
+            'You have a race coming up and want a plan that gets you ready.',
+        'tag': 'race',
       },
       {
         'emoji': '🐣',
-        'title': 'Run a first 5k',
+        'title': 'I’m new to running',
         'description':
-            'Perfect for beginners starting their journey',
-      },
-      {
-        'emoji': '🌬️',
-        'title': '5k improvement plan',
-        'description':
-            'Want to run a faster or smoother 5k?',
-      },
-      {
-        'emoji': '❤️',
-        'title': 'General training',
-        'description':
-            'Maintain fitness without targeting a specific goal',
-      },
-      {
-        'emoji': '🌱',
-        'title': 'Parkrun improvement plan',
-        'description':
-            'Improve your weekend 5k performance',
-      },
-      {
-        'emoji': '👶',
-        'title': 'Postnatal plan',
-        'description':
-            'Designed for new mothers getting back into running',
+            'You’re just getting started and want to build consistency.',
+        'tag': 'beginner',
       },
       {
         'emoji': '⏱️',
-        'title': 'Time goal',
+        'title': 'I want to run faster',
         'description':
-            'Train for a specific time like sub-2h half',
+            'Improve your time for 5k, 10k, half or full marathon.',
+        'tag': 'performance',
+      },
+      {
+        'emoji': '❤️',
+        'title': 'I want to stay fit',
+        'description':
+            'General structure and motivation to keep moving.',
+        'tag': 'health',
+      },
+      {
+        'emoji': '👶',
+        'title': 'I’m returning post-baby',
+        'description':
+            'A gentle return to running after pregnancy.',
+        'tag': 'postnatal',
       },
     ];
 
@@ -79,10 +82,7 @@ class GoalSectionScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.close),
-            onPressed:
-                () =>
-                    context
-                        .pop(), // ili context.go('/') ako baš mora
+            onPressed: () => context.pop(),
           ),
         ],
         bottom: PreferredSize(
@@ -135,7 +135,11 @@ class GoalSectionScreen extends ConsumerWidget {
                     title: goal['title']!,
                     description: goal['description']!,
                     selected: isSelected,
-                    onTap: () => selectGoal(goal['title']!),
+                    onTap:
+                        () => selectGoal(
+                          goal['title']!,
+                          goal['tag']!,
+                        ),
                   );
                 },
               ),
@@ -145,17 +149,12 @@ class GoalSectionScreen extends ConsumerWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed:
-                    selectedGoal == null
+                    selectedGoalTag == null
                         ? null
                         : () {
-                          final next =
-                              (selectedGoal ==
-                                      'Run a specific distance')
-                                  ? '/onboarding/target-time'
-                                  : '/onboarding/experience';
                           context.push(
-                            next,
-                          ); // << izmenjeno
+                            getNextRoute(selectedGoalTag),
+                          );
                         },
                 child: const Text('Continue'),
               ),
@@ -197,7 +196,8 @@ class GoalCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: selected ? primary : surface,
+          color:
+              selected ? primary.withOpacity(0.1) : surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color:
@@ -217,17 +217,29 @@ class GoalCard extends StatelessWidget {
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(
-                      color:
-                          selected
-                              ? Colors.white
-                              : onSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(
+                            color:
+                                selected
+                                    ? primary
+                                    : onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      if (selected)
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -237,7 +249,7 @@ class GoalCard extends StatelessWidget {
                     ).textTheme.bodySmall?.copyWith(
                       color:
                           selected
-                              ? Colors.white70
+                              ? primary.withOpacity(0.8)
                               : onSurface.withOpacity(0.6),
                     ),
                   ),

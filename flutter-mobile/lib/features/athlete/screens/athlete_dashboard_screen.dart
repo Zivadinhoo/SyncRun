@@ -95,12 +95,6 @@ class AthleteDashboardScreen extends ConsumerWidget {
   ) {
     final weeks = plan['weeks'] as List<dynamic>?;
 
-    final allDays =
-        weeks
-            ?.expand((w) => w['days'] as List<dynamic>)
-            .toList() ??
-        [];
-
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: AppBar(
@@ -109,33 +103,58 @@ class AthleteDashboardScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFFFFA94D),
         foregroundColor: Colors.black,
       ),
-      body: Column(
-        children: [
-          if (allDays.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text("Training plan is empty."),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
+      body:
+          weeks == null || weeks.isEmpty
+              ? const Center(
+                child: Text("Training plan is empty."),
+              )
+              : ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: allDays.length,
-                itemBuilder: (context, index) {
-                  final day = allDays[index];
-                  return AiDayCard(
-                    dayName: day['day'],
-                    type: day['type'],
-                    distance: day['distance'],
-                    pace: day['pace'],
+                itemCount: weeks.length,
+                itemBuilder: (context, weekIndex) {
+                  final week = weeks[weekIndex];
+                  final weekNumber =
+                      week['week'] ?? (weekIndex + 1);
+                  final days =
+                      week['days'] as List<dynamic>;
+
+                  return Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Week $weekNumber',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...days.map((day) {
+                        return Padding(
+                          padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 6,
+                              ),
+                          child: AiDayCard(
+                            dayName: day['day'],
+                            type: day['type'],
+                            distance: day['distance'],
+                            pace: day['pace'],
+                          ),
+                        );
+                      }).toList(),
+                      const SizedBox(height: 24),
+                    ],
                   );
                 },
               ),
-            ),
-          const SizedBox(height: 12),
-          _buildLogoutButton(context, ref),
-          const SizedBox(height: 24),
-        ],
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        child: _buildLogoutButton(context, ref),
       ),
     );
   }

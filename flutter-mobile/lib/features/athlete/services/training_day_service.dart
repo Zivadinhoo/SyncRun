@@ -1,11 +1,8 @@
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/core/constants.dart';
 import 'package:frontend/utils/http_headers.dart';
 import 'package:http/http.dart' as http;
 
 class TrainingDaysService {
-  final _storage = const FlutterSecureStorage();
   final _baseUrl = apiUrl;
 
   Future<void> markAsCompleted(int trainingDayId) async {

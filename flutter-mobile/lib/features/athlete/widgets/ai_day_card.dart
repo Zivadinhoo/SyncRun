@@ -20,48 +20,47 @@ class AiDayCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
+            color: Colors.orange.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                isRestDay ? "🛌" : "🏃‍♂️",
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  "$dayName – $type",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color:
-                        isRestDay
-                            ? Colors.grey
-                            : Colors.black,
-                  ),
-                ),
-              ),
-            ],
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ),
+        leading: CircleAvatar(
+          radius: 22,
+          backgroundColor:
+              isRestDay
+                  ? Colors.grey.shade300
+                  : Colors.orange.shade100,
+          child: Text(
+            isRestDay ? '🛌' : '🏃',
+            style: const TextStyle(fontSize: 20),
           ),
-          const SizedBox(height: 8),
-          Text(
+        ),
+        title: Text(
+          "$dayName – $type",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: isRestDay ? Colors.grey : Colors.black,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
             isRestDay
                 ? "Rest day"
-                : "$distance km at $pace",
+                : "$distance km at $pace min/km",
             style: TextStyle(
               fontSize: 14,
               color:
@@ -70,7 +69,7 @@ class AiDayCard extends StatelessWidget {
                       : Colors.black87,
             ),
           ),
-        ],
+        ),
       ),
     );
   }

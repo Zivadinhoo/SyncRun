@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/athlete/widgets/weeek_section_switcher.dart';
+import 'package:frontend/features/athlete/widgets/week_progress_widget.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:frontend/features/onboarding/providers/ai_generated_plan_provider.dart';
 import 'package:frontend/features/onboarding/providers/ai_plan_provider.dart';
 import 'package:frontend/features/athlete/widgets/ai_day_card.dart';
-import 'package:frontend/features/auth/services/auth_service.dart';
-import 'package:go_router/go_router.dart';
+
+final selectedWeekIndexProvider = StateProvider<int>(
+  (ref) => 0,
+);
 
 class AthleteDashboardScreen extends ConsumerWidget {
   const AthleteDashboardScreen({super.key});
@@ -17,7 +23,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
     return backendPlanAsync.when(
       data: (plan) {
         if (plan == null && localPlan == null) {
-          return _buildNoPlanView(context, ref);
+          return _buildNoPlanView(context);
         }
         return _buildPlanView(
           context,
@@ -45,7 +51,10 @@ class AthleteDashboardScreen extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
-                _buildLogoutButton(context, ref),
+                TextButton(
+                  onPressed: () => context.go('/login'),
+                  child: const Text("Go back to login"),
+                ),
               ],
             ),
           ),
@@ -54,12 +63,12 @@ class AthleteDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNoPlanView(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
+  Widget _buildNoPlanView(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1),
+      backgroundColor:
+          Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -76,12 +85,10 @@ class AthleteDashboardScreen extends ConsumerWidget {
               icon: const Icon(Icons.arrow_forward),
               label: const Text("Start onboarding"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFA94D),
-                foregroundColor: Colors.black,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
             ),
-            const SizedBox(height: 24),
-            _buildLogoutButton(context, ref),
           ],
         ),
       ),
@@ -93,87 +100,99 @@ class AthleteDashboardScreen extends ConsumerWidget {
     WidgetRef ref,
     Map<String, dynamic> plan,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     final weeks = plan['weeks'] as List<dynamic>?;
 
+    if (weeks == null || weeks.isEmpty) {
+      return const Scaffold(
+        body: Center(
+          child: Text("Training plan is empty."),
+        ),
+      );
+    }
+
+    final selectedWeekIndex = ref.watch(
+      selectedWeekIndexProvider,
+    );
+    final week = weeks[selectedWeekIndex];
+    final weekNumber =
+        week['week'] ?? (selectedWeekIndex + 1);
+    final days = week['days'] as List<dynamic>;
+
+    final total = days.length;
+    final completed =
+        days
+            .where((d) => d['status'] == 'completed')
+            .length;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1),
+      backgroundColor:
+          Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("🏃 Your AI Training Plan"),
         centerTitle: true,
-        backgroundColor: const Color(0xFFFFA94D),
-        foregroundColor: Colors.black,
+        backgroundColor: colorScheme.secondary,
+        foregroundColor: colorScheme.onSecondary,
+        elevation: 0,
       ),
-      body:
-          weeks == null || weeks.isEmpty
-              ? const Center(
-                child: Text("Training plan is empty."),
-              )
-              : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: weeks.length,
-                itemBuilder: (context, weekIndex) {
-                  final week = weeks[weekIndex];
-                  final weekNumber =
-                      week['week'] ?? (weekIndex + 1);
-                  final days =
-                      week['days'] as List<dynamic>;
-
-                  return Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Week $weekNumber',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...days.map((day) {
-                        return Padding(
-                          padding:
-                              const EdgeInsets.symmetric(
-                                vertical: 6,
-                              ),
-                          child: AiDayCard(
-                            dayName: day['day'],
-                            type: day['type'],
-                            distance: day['distance'],
-                            pace: day['pace'],
-                          ),
-                        );
-                      }).toList(),
-                      const SizedBox(height: 24),
-                    ],
-                  );
-                },
+      body: Column(
+        children: [
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
+            child: WeekSectionSwitcher(
+              currentWeek: weekNumber,
+              totalWeeks: weeks.length,
+              onPrevious: () {
+                if (selectedWeekIndex > 0) {
+                  ref
+                      .read(
+                        selectedWeekIndexProvider.notifier,
+                      )
+                      .state--;
+                }
+              },
+              onNext: () {
+                if (selectedWeekIndex < weeks.length - 1) {
+                  ref
+                      .read(
+                        selectedWeekIndexProvider.notifier,
+                      )
+                      .state++;
+                }
+              },
+            ),
+          ),
+          WeeklyProgressWidget(
+            completed: completed,
+            total: total,
+          ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
               ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        child: _buildLogoutButton(context, ref),
-      ),
-    );
-  }
-
-  Widget _buildLogoutButton(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
-    return ElevatedButton.icon(
-      onPressed: () async {
-        final auth = ref.read(authServiceProvider);
-        await auth.logout();
-        context.go('/login');
-      },
-      icon: const Icon(Icons.logout),
-      label: const Text("Logout"),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+              itemCount: days.length,
+              itemBuilder: (context, index) {
+                final day = days[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                  ),
+                  child: AiDayCard(
+                    dayName: day['day'],
+                    type: day['type'],
+                    distance: day['distance'],
+                    pace: day['pace'],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

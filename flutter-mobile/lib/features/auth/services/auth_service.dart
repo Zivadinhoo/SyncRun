@@ -7,7 +7,7 @@ class AuthService {
   final _storage = const FlutterSecureStorage();
   String? _accessToken;
 
-  final String baseUrl = 'http://192.168.0.49:3001';
+  final String baseUrl = 'http://192.168.0.53:3001';
 
   /// ✅ Save tokens locally
   Future<void> saveTokens(

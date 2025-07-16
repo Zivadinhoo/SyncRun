@@ -1,44 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/features/models/training_day.dart';
 
-class WeekProgressWidget extends StatelessWidget {
-  final List<TrainingDay> currentWeekDays;
+class WeeklyProgressWidget extends StatelessWidget {
+  final int completed;
+  final int total;
 
-  const WeekProgressWidget({
+  const WeeklyProgressWidget({
     super.key,
-    required this.currentWeekDays,
+    required this.completed,
+    required this.total,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Ispravljeno ovde 👇
-    final completed =
-        currentWeekDays
-            .where((td) => td.status == 'completed')
-            .length;
-    final total = currentWeekDays.length;
-    final percent =
-        total == 0
-            ? 0
-            : ((completed / total) * 100).round();
+    final percent = total == 0 ? 0.0 : completed / total;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 8,
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
       ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.track_changes,
-            size: 18,
-            color: Theme.of(context).colorScheme.primary,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 8),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.show_chart,
+                color: Colors.orange,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Weekly Progress',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: percent,
+            minHeight: 10,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Colors.orange,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          const SizedBox(height: 12),
           Text(
-            "$completed / $total Completed ($percent%)",
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w600),
+            '$completed of $total workouts completed (${(percent * 100).toStringAsFixed(0)}%)',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(
+              color: Colors.black.withOpacity(0.7),
+            ),
           ),
         ],
       ),

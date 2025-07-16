@@ -4,16 +4,16 @@ import 'package:intl/intl.dart';
 
 class TrainingDayCard extends StatelessWidget {
   final TrainingDay trainingDay;
-  final VoidCallback? onMarkAsDone;
+  final VoidCallback? onTap;
 
   const TrainingDayCard({
     super.key,
     required this.trainingDay,
-    this.onMarkAsDone,
+    this.onTap,
   });
 
   IconData _getStatusIcon(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'completed':
         return Icons.check_circle;
       case 'missed':
@@ -27,7 +27,7 @@ class TrainingDayCard extends StatelessWidget {
     BuildContext context,
     String status,
   ) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'completed':
         return Colors.green;
       case 'missed':
@@ -45,24 +45,26 @@ class TrainingDayCard extends StatelessWidget {
     final formattedDate = DateFormat(
       'EEE · MMM d',
     ).format(trainingDay.date);
-    // Primer: Tue · Jul 1
 
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
+        horizontal: 8,
+        vertical: 6,
       ),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: theme.dividerColor.withOpacity(0.2),
+          color: _getStatusColor(
+            context,
+            trainingDay.status,
+          ).withOpacity(0.3),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
+            blurRadius: 5,
             offset: const Offset(0, 2),
           ),
         ],
@@ -76,9 +78,9 @@ class TrainingDayCard extends StatelessWidget {
               context,
               trainingDay.status,
             ),
-            size: 24,
+            size: 28,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,9 +89,22 @@ class TrainingDayCard extends StatelessWidget {
                   trainingDay.title,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                 ),
+                const SizedBox(height: 4),
+                if (trainingDay.description.isNotEmpty)
+                  Text(
+                    trainingDay.description,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(
+                          color: theme
+                              .textTheme
+                              .bodySmall
+                              ?.color
+                              ?.withOpacity(0.7),
+                        ),
+                  ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -97,7 +112,7 @@ class TrainingDayCard extends StatelessWidget {
                       Icons.calendar_today,
                       size: 14,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Text(
                       formattedDate,
                       style: theme.textTheme.bodySmall
@@ -106,23 +121,46 @@ class TrainingDayCard extends StatelessWidget {
                                 .textTheme
                                 .bodySmall
                                 ?.color
-                                ?.withOpacity(0.7),
+                                ?.withOpacity(0.6),
                           ),
                     ),
+                    const SizedBox(width: 12),
+                    if (trainingDay.tss != null)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.bolt,
+                            size: 14,
+                            color: Colors.orange,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'TSS ${trainingDay.tss!.toStringAsFixed(0)}',
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(
+                                  color: theme
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color
+                                      ?.withOpacity(0.6),
+                                ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ],
             ),
           ),
-          if (trainingDay.status != 'completed' &&
-              onMarkAsDone != null)
+          if (!trainingDay.isCompleted && onTap != null)
             IconButton(
               icon: const Icon(
                 Icons.arrow_forward_ios_rounded,
+                size: 20,
               ),
-              color: theme.colorScheme.primary,
+              onPressed: onTap,
               tooltip: 'Go to Training',
-              onPressed: onMarkAsDone,
+              color: theme.colorScheme.primary,
             ),
         ],
       ),

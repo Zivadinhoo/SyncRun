@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:frontend/features/onboarding/screens/target_distance_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
 // Screens
 import 'package:frontend/features/auth/screens/login_screen.dart';
-import 'package:frontend/features/athlete/screens/athlete_dashboard_screen.dart';
+import 'package:frontend/features/athlete/screens/athlete_main_screen.dart';
 import 'package:frontend/features/onboarding/screens/goal_section_screen.dart';
+import 'package:frontend/features/onboarding/screens/target_distance_screen.dart';
 import 'package:frontend/features/onboarding/screens/experience_screen.dart';
 import 'package:frontend/features/onboarding/screens/days_per_week_screen.dart';
 import 'package:frontend/features/onboarding/screens/prefered_days_screen.dart';
@@ -21,7 +21,6 @@ import 'package:frontend/features/onboarding/screens/generate_plan_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final storage = FlutterSecureStorage();
 
-/// ✅ Provajder za proveru da li je korisnik ulogovan
 final isLoggedInProvider = FutureProvider.autoDispose<bool>(
   (ref) async {
     final token = await storage.read(key: 'accessToken');
@@ -31,7 +30,7 @@ final isLoggedInProvider = FutureProvider.autoDispose<bool>(
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.49:3001/users/me'),
+        Uri.parse('http://192.168.0.53:3001/users/me'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -48,7 +47,7 @@ final isLoggedInProvider = FutureProvider.autoDispose<bool>(
   },
 );
 
-/// ✅ Provajder za proveru da li je korisnik završio onboarding
+/// ✅ Provera da li je korisnik završio onboarding
 final hasFinishedOnboardingProvider =
     FutureProvider.autoDispose<bool>((ref) async {
       final flag = await storage.read(
@@ -107,31 +106,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      /// Root -> redirect na loading
       GoRoute(path: '/', redirect: (_, __) => '/loading'),
-
-      /// Login ekran
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-
-      /// Dashboard
       GoRoute(
         path: '/athlete/dashboard',
         builder:
             (context, state) =>
-                const AthleteDashboardScreen(),
+                const AthleteMainScreen(), // 🟠 Ovde sada ide MainScreen sa navbarom
       ),
-
-      /// Splash screen dok proveravamo stanje
       GoRoute(
         path: '/loading',
         builder:
             (context, state) => const SplashLoadingScreen(),
       ),
-
-      /// Onboarding rute
       ShellRoute(
         builder:
             (context, state, child) =>
@@ -195,6 +185,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// ✅ Splash screen dok proveravamo stanje
 class SplashLoadingScreen extends ConsumerWidget {
   const SplashLoadingScreen({super.key});
 
@@ -217,7 +208,9 @@ class SplashLoadingScreen extends ConsumerWidget {
         } else if (!hasFinishedOnboarding) {
           context.go('/onboarding/goal');
         } else {
-          context.go('/athlete/dashboard');
+          context.go(
+            '/athlete/dashboard',
+          ); // ✅ Ovo sada ide na AthleteMainScreen
         }
       }
     });

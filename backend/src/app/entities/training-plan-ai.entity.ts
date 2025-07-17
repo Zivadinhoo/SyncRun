@@ -6,9 +6,12 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { AssignedPlan } from './assigned-plan.entity';
 import { TrainingDay } from './training-day.entity';
+import { User } from './user.entity';
+import { GoalType } from '../common/enums/goal-type.enum'; // 👈 Dodaj import
 
 @Entity('training_plan_ai')
 export class TrainingPlanAi {
@@ -25,19 +28,35 @@ export class TrainingPlanAi {
   durationInWeeks?: number;
 
   @Column({ nullable: true })
-  goalRaceDistance?: string; // e.g. "5k", "10k", "Half Marathon", "Marathon"
+  goalRaceDistance?: string;
 
   @Column({ nullable: true })
-  generatedByModel?: string; // e.g. "gpt-4", "custom-ai", etc.
+  generatedByModel?: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  metadata?: any; // e.g. { basedOn: "previous plan", intensity: "moderate" }
+  metadata?: any;
 
+  // ✅ NOVA POLJA:
+  @Column({ type: 'enum', enum: GoalType })
+  goalTag: GoalType;
+
+  @Column()
+  goalText: string;
+
+  // Relationships
   @OneToMany(() => AssignedPlan, (assignedPlan) => assignedPlan.aiTrainingPlan)
   assignedPlans: AssignedPlan[];
 
   @OneToMany(() => TrainingDay, (day) => day.aiTrainingPlan)
   trainingDays: TrainingDay[];
+
+  @ManyToOne(() => User, (user) => user.aiTrainingPlans, {
+    onDelete: 'CASCADE',
+  })
+  user: User;
+
+  @Column()
+  userId: number;
 
   @CreateDateColumn()
   createdAt: Date;

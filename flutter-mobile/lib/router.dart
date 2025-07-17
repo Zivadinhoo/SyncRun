@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:frontend/features/athlete/screens/training_day_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
@@ -117,6 +118,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             (context, state) =>
                 const AthleteMainScreen(), // 🟠 Ovde sada ide MainScreen sa navbarom
       ),
+      GoRoute(
+        path: '/training-day/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return TrainingDayScreen(trainingDayId: id);
+        },
+      ),
+
       GoRoute(
         path: '/loading',
         builder:

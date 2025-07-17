@@ -1,19 +1,18 @@
-class TrainingPlan {
-  final int id;
-  final String name;
-  final String description;
+import 'package:frontend/features/models/training_week_model.dart';
 
-  TrainingPlan({
-    required this.id,
-    required this.name,
-    required this.description,
-  });
+class TrainingPlanModel {
+  final List<TrainingWeekModel> weeks;
 
-  factory TrainingPlan.fromJson(Map<String, dynamic> json) {
-    return TrainingPlan(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
+  TrainingPlanModel({required this.weeks});
+
+  factory TrainingPlanModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return TrainingPlanModel(
+      weeks:
+          (json['weeks'] as List<dynamic>)
+              .map((w) => TrainingWeekModel.fromJson(w))
+              .toList(),
     );
   }
 }

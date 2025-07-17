@@ -10,6 +10,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { AssignedPlan } from './assigned-plan.entity';
+import { TrainingPlanAi } from './training-plan-ai.entity';
 
 @Entity()
 export class User {
@@ -30,6 +31,9 @@ export class User {
 
   @OneToMany(() => AssignedPlan, (plan) => plan.athlete)
   assignedPlans: AssignedPlan[];
+
+  @OneToMany(() => TrainingPlanAi, (plan) => plan.user)
+  aiTrainingPlans: TrainingPlanAi[];
 
   @Column({ nullable: true })
   activeAssignedPlanId?: number;

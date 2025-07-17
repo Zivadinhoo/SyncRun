@@ -49,7 +49,8 @@ class AiPlanService {
       final decoded = jsonDecode(response.body);
       final plan = decoded['data'];
 
-      if (plan == null || plan['weeks'] == null) {
+      if (plan == null ||
+          plan['metadata']?['weeks'] == null) {
         throw Exception("AI response missing weeks");
       }
 
@@ -64,13 +65,7 @@ class AiPlanService {
     final url = Uri.parse("$_baseUrl/ai-plan/me");
     final headers = await getAuthorizedHeaders();
 
-    print("📥 Fetching AI plan from: $url");
-    print("📥 Headers: $headers");
-
     final response = await http.get(url, headers: headers);
-
-    print("📥 Response status: ${response.statusCode}");
-    print("📥 Response body: ${response.body}");
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -80,11 +75,12 @@ class AiPlanService {
 
     final decoded = jsonDecode(response.body);
 
-    if (decoded['data'] == null) {
-      print("⚠️ No plan data returned from API.");
+    if (decoded['data'] == null ||
+        decoded['data']['metadata'] == null) {
+      print("⚠️ No metadata in plan.");
       return null;
     }
 
-    return decoded['data'];
+    return decoded['data']['metadata'];
   }
 }

@@ -1,12 +1,13 @@
+// lib/features/athlete/screens/athlete_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/athlete/widgets/weeek_section_switcher.dart';
 import 'package:frontend/features/athlete/widgets/week_progress_widget.dart';
+import 'package:frontend/features/models/ai_training_plan.dart';
+import 'package:frontend/features/athlete/widgets/ai_day_card.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:frontend/features/onboarding/providers/ai_generated_plan_provider.dart';
 import 'package:frontend/features/onboarding/providers/ai_plan_provider.dart';
-import 'package:frontend/features/athlete/widgets/ai_day_card.dart';
 
 final selectedWeekIndexProvider = StateProvider<int>(
   (ref) => 0,
@@ -25,11 +26,24 @@ class AthleteDashboardScreen extends ConsumerWidget {
         if (plan == null && localPlan == null) {
           return _buildNoPlanView(context);
         }
-        return _buildPlanView(
-          context,
-          ref,
-          plan ?? localPlan!,
-        );
+
+        if (plan != null && plan is Map<String, dynamic>) {
+          return _buildPlanViewFromMap(
+            context,
+            ref,
+            plan as Map<String, dynamic>,
+          );
+        }
+
+        if (localPlan != null) {
+          return _buildPlanViewFromModel(
+            context,
+            ref,
+            localPlan,
+          );
+        }
+
+        return _buildNoPlanView(context);
       },
       loading:
           () => const Scaffold(
@@ -39,7 +53,11 @@ class AthleteDashboardScreen extends ConsumerWidget {
           ),
       error: (err, _) {
         if (localPlan != null) {
-          return _buildPlanView(context, ref, localPlan);
+          return _buildPlanViewFromModel(
+            context,
+            ref,
+            localPlan,
+          );
         }
         return Scaffold(
           body: Center(
@@ -65,7 +83,6 @@ class AthleteDashboardScreen extends ConsumerWidget {
 
   Widget _buildNoPlanView(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       backgroundColor:
           Theme.of(context).scaffoldBackgroundColor,
@@ -79,9 +96,8 @@ class AthleteDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () {
-                context.go('/onboarding/goal');
-              },
+              onPressed:
+                  () => context.go('/onboarding/goal'),
               icon: const Icon(Icons.arrow_forward),
               label: const Text("Start onboarding"),
               style: ElevatedButton.styleFrom(
@@ -95,15 +111,40 @@ class AthleteDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlanView(
+  Widget _buildPlanViewFromMap(
     BuildContext context,
     WidgetRef ref,
     Map<String, dynamic> plan,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final weeks = plan['weeks'] as List<dynamic>?;
+    final weeksJson =
+        plan['metadata']?['weeks'] as List<dynamic>? ?? [];
+    final weeks =
+        weeksJson
+            .map(
+              (w) => TrainingWeek.fromJson(
+                w as Map<String, dynamic>,
+              ),
+            )
+            .toList();
+    return _renderPlanUi(context, ref, weeks);
+  }
 
-    if (weeks == null || weeks.isEmpty) {
+  Widget _buildPlanViewFromModel(
+    BuildContext context,
+    WidgetRef ref,
+    AiTrainingPlan plan,
+  ) {
+    return _renderPlanUi(context, ref, plan.weeks);
+  }
+
+  Widget _renderPlanUi(
+    BuildContext context,
+    WidgetRef ref,
+    List<TrainingWeek> weeks,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (weeks.isEmpty) {
       return const Scaffold(
         body: Center(
           child: Text("Training plan is empty."),
@@ -115,14 +156,11 @@ class AthleteDashboardScreen extends ConsumerWidget {
       selectedWeekIndexProvider,
     );
     final week = weeks[selectedWeekIndex];
-    final weekNumber =
-        week['week'] ?? (selectedWeekIndex + 1);
-    final days = week['days'] as List<dynamic>;
-
-    final total = days.length;
+    final weekNumber = week.week;
+    final total = week.days.length;
     final completed =
-        days
-            .where((d) => d['status'] == 'completed')
+        week.days
+            .where((d) => d.status == 'completed')
             .length;
 
     return Scaffold(
@@ -175,18 +213,24 @@ class AthleteDashboardScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
               ),
-              itemCount: days.length,
+              itemCount: week.days.length,
               itemBuilder: (context, index) {
-                final day = days[index];
+                final day = week.days[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 6,
                   ),
-                  child: AiDayCard(
-                    dayName: day['day'],
-                    type: day['type'],
-                    distance: day['distance'],
-                    pace: day['pace'],
+                  child: InkWell(
+                    onTap:
+                        () => context.push(
+                          '/training-day/${day.id}',
+                        ),
+                    child: AiDayCard(
+                      dayName: day.day,
+                      type: day.type,
+                      distance: day.distance,
+                      pace: day.pace ?? '',
+                    ),
                   ),
                 );
               },

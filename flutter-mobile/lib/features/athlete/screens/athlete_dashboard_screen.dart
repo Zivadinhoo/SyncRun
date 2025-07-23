@@ -1,4 +1,3 @@
-// lib/features/athlete/screens/athlete_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/athlete/widgets/weeek_section_switcher.dart';
@@ -27,15 +26,18 @@ class AthleteDashboardScreen extends ConsumerWidget {
           return _buildNoPlanView(context);
         }
 
-        if (plan != null && plan is Map<String, dynamic>) {
-          return _buildPlanViewFromMap(
+        if (plan != null) {
+          print("✅ Plan loaded from backend: ${plan.name}");
+          print("✅ Weeks count: ${plan.weeks.length}");
+          return _buildPlanViewFromModel(
             context,
             ref,
-            plan as Map<String, dynamic>,
+            plan,
           );
         }
 
         if (localPlan != null) {
+          print("📋 Using localPlan: ${localPlan.name}");
           return _buildPlanViewFromModel(
             context,
             ref,
@@ -109,24 +111,6 @@ class AthleteDashboardScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Widget _buildPlanViewFromMap(
-    BuildContext context,
-    WidgetRef ref,
-    Map<String, dynamic> plan,
-  ) {
-    final weeksJson =
-        plan['metadata']?['weeks'] as List<dynamic>? ?? [];
-    final weeks =
-        weeksJson
-            .map(
-              (w) => TrainingWeek.fromJson(
-                w as Map<String, dynamic>,
-              ),
-            )
-            .toList();
-    return _renderPlanUi(context, ref, weeks);
   }
 
   Widget _buildPlanViewFromModel(

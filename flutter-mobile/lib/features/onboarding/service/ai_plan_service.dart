@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/onboarding/providers/ai_plan_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:frontend/features/models/ai_training_plan.dart';
 import 'package:frontend/features/onboarding/providers/ai_generated_plan_provider.dart';
 import 'package:frontend/features/onboarding/providers/onboarding_answers.provider.dart';
-import 'package:http/http.dart' as http;
 import 'package:frontend/utils/http_headers.dart';
 
 class AiPlanService {
@@ -12,7 +14,6 @@ class AiPlanService {
     OnboardingAnswers answers,
   ) async {
     final url = Uri.parse("$_baseUrl/ai-plan/generate");
-
     final headers = await getAuthorizedHeaders();
     final body = jsonEncode(answers.toJson());
 
@@ -54,8 +55,17 @@ class AiPlanService {
         throw Exception("AI response missing weeks");
       }
 
+      final parsedPlan = AiTrainingPlan.fromJson(plan);
+
+      // ✅ Setuj local state (ako koristiš)
       ref.read(aiGeneratedPlanProvider.notifier).state =
-          plan;
+          parsedPlan;
+
+      // ✅ Forsiraj refetch za provider koji koristi GET
+      ref.invalidate(aiPlanProvider);
+
+      // ✅ (Po želji) ažuriraj onboarding finished flag ako ga koristiš
+      // ref.read(onboardingFinishedProvider.notifier).state = true;
     } catch (e) {
       throw Exception("Failed to parse AI plan: $e");
     }
@@ -81,6 +91,6 @@ class AiPlanService {
       return null;
     }
 
-    return decoded['data']['metadata'];
+    return decoded['data']; // ✅ CELO telo plana, ne samo metadata
   }
 }

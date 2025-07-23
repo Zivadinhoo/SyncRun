@@ -5,7 +5,7 @@ import 'package:frontend/features/onboarding/service/ai_plan_service.dart';
 final aiPlanProvider = FutureProvider<AiTrainingPlan?>((
   ref,
 ) async {
-  final metadata = await AiPlanService.getMyPlan();
-  if (metadata == null) return null;
-  return AiTrainingPlan.fromJson(metadata);
+  final data = await AiPlanService.getMyPlan();
+  if (data == null) return null;
+  return AiTrainingPlan.fromJson(data);
 });

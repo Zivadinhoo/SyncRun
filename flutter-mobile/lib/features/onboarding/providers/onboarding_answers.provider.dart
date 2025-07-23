@@ -1,11 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OnboardingAnswers {
-  final String? goal; // Prikaz korisniku
-  final String?
-  goalTag; // Interno za AI (npr. race, health, etc.)
-  final String?
-  targetDistance; // 👈 Nova vrednost za distance: 5K, 10K...
+  final String? goal;
+  final String? goalTag;
+  final String? targetDistance;
   final String? targetTime;
   final String? experience;
   final int? daysPerWeek;
@@ -13,6 +11,7 @@ class OnboardingAnswers {
   final DateTime? startDate;
   final bool wantsNotifications;
   final String? units;
+  final int? durationInWeeks;
 
   const OnboardingAnswers({
     this.goal,
@@ -25,6 +24,7 @@ class OnboardingAnswers {
     this.startDate,
     this.wantsNotifications = true,
     this.units,
+    this.durationInWeeks,
   });
 
   OnboardingAnswers copyWith({
@@ -38,6 +38,7 @@ class OnboardingAnswers {
     DateTime? startDate,
     bool? wantsNotifications,
     String? units,
+    int? durationInWeeks,
   }) {
     return OnboardingAnswers(
       goal: goal ?? this.goal,
@@ -51,6 +52,8 @@ class OnboardingAnswers {
       wantsNotifications:
           wantsNotifications ?? this.wantsNotifications,
       units: units ?? this.units,
+      durationInWeeks:
+          durationInWeeks ?? this.durationInWeeks,
     );
   }
 
@@ -66,6 +69,7 @@ class OnboardingAnswers {
       'startDate': startDate?.toIso8601String(),
       'wantsNotifications': wantsNotifications,
       'units': units,
+      'durationInWeeks': durationInWeeks, // ✅ Dodato u JSON
     };
   }
 }
@@ -109,6 +113,10 @@ class OnboardingAnswersNotifier
 
   void setUnits(String units) {
     state = state.copyWith(units: units);
+  }
+
+  void setDurationInWeeks(int weeks) {
+    state = state.copyWith(durationInWeeks: weeks);
   }
 
   void reset() {

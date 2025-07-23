@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AiPlanService } from './training-plan-ai.service';
 import { OnboardingAnswersDto } from './dto/onboarding-answers.dto';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { PinoLogger } from 'nestjs-pino';
 import { RequestWithUser } from '../common/types/request-with-user';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -24,28 +24,35 @@ export class AiPlanController {
   ) {
     this.logger.setContext(AiPlanController.name);
   }
+
   @Post('generate')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Generate a training plan using ChatGPT' })
+  @ApiOperation({ summary: 'Generate a training plan using OpenAI (ChatGPT)' })
+  @ApiBody({ type: OnboardingAnswersDto })
   async generate(
     @Body() dto: OnboardingAnswersDto,
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user.id;
+
     this.logger.info(
       { userId, dto },
-      '🧠 Request to generate AI training plan',
+      '🧠 Received request to generate AI training plan',
     );
 
     try {
       const plan = await this.service.generatePlan(dto, userId);
-      this.logger.info({ plan }, '✅ Plan generated successfully');
-      return { success: true, data: plan };
+      this.logger.info({ userId, planId: plan.id }, '✅ Plan generated');
+      return {
+        success: true,
+        message: 'Plan generated successfully',
+        data: plan,
+      };
     } catch (error: any) {
       this.logger.error(
-        { error: error.message },
-        '❌ Failed to generate AI plan',
+        { userId, error: error.message },
+        '❌ Plan generation failed',
       );
       throw new HttpException(
         `Failed to generate training plan: ${error.message}`,
@@ -57,17 +64,24 @@ export class AiPlanController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get my AI training plan' })
+  @ApiOperation({ summary: 'Get AI training plan for the logged-in user' })
   async getMyPlan(@Req() req: RequestWithUser) {
     const userId = req.user.id;
 
     try {
       const plan = await this.service.getPlanForUser(userId);
-      return { success: true, data: plan };
+
+      return {
+        success: true,
+        message: plan
+          ? 'Plan retrieved successfully'
+          : 'No plan found for this user',
+        data: plan,
+      };
     } catch (error: any) {
       this.logger.error(
-        { error: error.message },
-        '❌ Failed to retrieve AI plan',
+        { userId, error: error.message },
+        '❌ Failed to fetch plan',
       );
       throw new HttpException(
         `Failed to get training plan: ${error.message}`,

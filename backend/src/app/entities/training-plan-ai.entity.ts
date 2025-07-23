@@ -36,7 +36,6 @@ export class TrainingPlanAi {
   @Column({ type: 'jsonb', nullable: true })
   metadata?: any;
 
-  // ✅ NOVA POLJA:
   @Column({ type: 'enum', enum: GoalType })
   goalTag: GoalType;
 

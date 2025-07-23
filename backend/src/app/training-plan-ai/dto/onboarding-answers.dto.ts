@@ -11,6 +11,7 @@ import {
   Max,
   IsISO8601,
   IsEnum,
+  IsInt,
 } from 'class-validator';
 import { GoalType } from 'src/app/common/enums/goal-type.enum';
 
@@ -29,6 +30,12 @@ export class OnboardingAnswersDto {
 
   @IsIn(['Beginner', 'Intermediate', 'Advanced'])
   experience: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(52)
+  durationInWeeks?: number;
 
   @IsNumber()
   @Min(1)

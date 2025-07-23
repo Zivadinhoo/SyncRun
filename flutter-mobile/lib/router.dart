@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/features/athlete/screens/training_day_screen.dart';
+import 'package:frontend/features/onboarding/screens/plan_duration_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
@@ -48,7 +49,6 @@ final isLoggedInProvider = FutureProvider.autoDispose<bool>(
   },
 );
 
-/// ✅ Provera da li je korisnik završio onboarding
 final hasFinishedOnboardingProvider =
     FutureProvider.autoDispose<bool>((ref) async {
       final flag = await storage.read(
@@ -57,7 +57,6 @@ final hasFinishedOnboardingProvider =
       return flag == 'true';
     });
 
-/// ✅ Glavni router
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(isLoggedInProvider);
   final onboardingState = ref.watch(
@@ -182,6 +181,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder:
                 (context, state) =>
                     const NotificationScreen(),
+          ),
+          GoRoute(
+            path: '/onboarding/plan-duration',
+            builder:
+                (context, state) =>
+                    const PlanDurationScreen(),
           ),
           GoRoute(
             path: '/onboarding/generate-plan',

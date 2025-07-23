@@ -1,12 +1,28 @@
 class AiTrainingPlan {
+  final int id;
+  final String name;
+  final String description;
+  final String? goalRaceDistance;
+  final String? generatedByModel;
+  final int durationInWeeks;
   final List<TrainingWeek> weeks;
 
-  AiTrainingPlan({required this.weeks});
+  AiTrainingPlan({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.goalRaceDistance,
+    required this.generatedByModel,
+    required this.durationInWeeks,
+    required this.weeks,
+  });
 
   factory AiTrainingPlan.fromJson(
     Map<String, dynamic> json,
   ) {
-    final weeksJson = json['weeks'] as List<dynamic>? ?? [];
+    final metadata = json['metadata'] ?? {};
+    final weeksJson =
+        metadata['weeks'] as List<dynamic>? ?? [];
     final weeks =
         weeksJson
             .map(
@@ -15,7 +31,17 @@ class AiTrainingPlan {
               ),
             )
             .toList();
-    return AiTrainingPlan(weeks: weeks);
+
+    return AiTrainingPlan(
+      id: json['id'] ?? -1,
+      name: json['name'] ?? 'Unnamed Plan',
+      description: json['description'] ?? '',
+      goalRaceDistance: json['goalRaceDistance'],
+      generatedByModel: json['generatedByModel'],
+      durationInWeeks:
+          json['durationInWeeks'] ?? weeks.length,
+      weeks: weeks,
+    );
   }
 }
 
@@ -46,7 +72,7 @@ class TrainingDay {
   final int id;
   final String day;
   final String type;
-  final dynamic distance; // može biti broj ili string
+  final dynamic distance;
   final String? pace;
   final String status;
 

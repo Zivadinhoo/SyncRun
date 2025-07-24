@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/router.dart';
-import 'package:frontend/theme/theme.dart'; // 👈 bitno
+import 'package:frontend/theme/theme.dart';
 
 class SyncRunApp extends ConsumerWidget {
   const SyncRunApp({super.key});

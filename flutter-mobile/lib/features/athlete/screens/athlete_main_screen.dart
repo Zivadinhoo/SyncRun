@@ -26,17 +26,11 @@ class _AthleteMainScreenState
     setState(() {
       _selectedIndex = index;
     });
-
-    // Ako je korisnik kliknuo na Home, možeš invalidirati plan providere ako želiš
-    // (opciono – ako želiš da se plan osvežava)
-    // if (index == 0) {
-    //   ref.invalidate(aiPlanProvider);
-    // }
   }
 
   @override
   Widget build(BuildContext context) {
-    print('🏁 AthleteMainScreen loaded');
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: IndexedStack(
@@ -46,8 +40,15 @@ class _AthleteMainScreenState
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onTabTapped,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor:
+            colorScheme.primary, // 🟡 Tvoja žuta (F6C144)
+        unselectedItemColor: colorScheme.onSurface
+            .withOpacity(0.5), // tamnija siva
+        backgroundColor:
+            Theme.of(
+              context,
+            ).scaffoldBackgroundColor, // ⚪️ bela pozadina
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

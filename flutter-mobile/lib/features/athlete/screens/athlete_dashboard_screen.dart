@@ -214,6 +214,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
                       type: day.type,
                       distance: day.distance,
                       pace: day.pace ?? '',
+                      status: day.status,
                     ),
                   ),
                 );

@@ -5,11 +5,13 @@ class AiDayCard extends StatelessWidget {
   final String type;
   final dynamic distance;
   final dynamic pace;
+  final String status; // NEW
 
   const AiDayCard({
     super.key,
     required this.dayName,
     required this.type,
+    required this.status, // NEW
     this.distance,
     this.pace,
   });
@@ -57,20 +59,42 @@ class AiDayCard extends StatelessWidget {
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            isRestDay
-                ? "Rest day"
-                : "$distance km at $pace min/km",
-            style: TextStyle(
-              fontSize: 14,
-              color:
-                  isRestDay
-                      ? Colors.grey.shade600
-                      : Colors.black87,
-            ),
+          child: Row(
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isRestDay
+                    ? "Rest day"
+                    : "$distance km at $pace",
+                style: TextStyle(
+                  fontSize: 14,
+                  color:
+                      isRestDay
+                          ? Colors.grey.shade600
+                          : Colors.black87,
+                ),
+              ),
+              if (!isRestDay)
+                Text(
+                  _getStatusEmoji(status),
+                  style: const TextStyle(fontSize: 16),
+                ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  String _getStatusEmoji(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return '✅';
+      case 'missed':
+        return '❌';
+      default:
+        return '⏳';
+    }
   }
 }

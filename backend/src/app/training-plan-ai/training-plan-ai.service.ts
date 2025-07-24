@@ -33,7 +33,7 @@ export class AiPlanService {
         relations: ['user'],
       });
     } catch (error) {
-      this.logger.error('Failed to fetch AI plan', error.stack);
+      this.logger.error('❌ Failed to fetch AI plan', error.stack);
       throw new InternalServerErrorException(
         `Failed to fetch AI plan: ${error.message}`,
       );
@@ -45,10 +45,11 @@ export class AiPlanService {
     userId: number,
   ): Promise<TrainingPlanAi> {
     const prompt = buildPromptFromDto(dto);
+    const resolvedGoalText = dto.goalText ?? 'Training';
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o', // 💡 koristi moćniji model
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -59,31 +60,50 @@ export class AiPlanService {
         temperature: 0.7,
       });
 
-      const response = completion.choices[0]?.message?.content;
+      const rawResponse = completion.choices[0]?.message?.content;
 
-      if (!response) {
+      if (!rawResponse) {
         throw new InternalServerErrorException('No response from OpenAI');
       }
 
-      let parsed;
+      // 🧼 Clean and sanitize response
+      let cleaned = rawResponse.trim();
+      if (cleaned.startsWith('```json')) {
+        cleaned = cleaned.replace(/```json|```/g, '').trim();
+      }
+
+      this.logger.debug({ rawResponse: cleaned }, '🧠 Raw OpenAI response');
+
+      let parsed: any;
       try {
-        parsed = JSON.parse(response);
+        parsed = JSON.parse(cleaned);
+
+        // 🔁 Normalize nested structure
+        if (parsed?.metadata?.weeks) {
+          parsed.weeks = parsed.metadata.weeks;
+          if (parsed.metadata.generatedByModel) {
+            parsed.generatedByModel = parsed.metadata.generatedByModel;
+          }
+          delete parsed.metadata;
+        }
       } catch (err) {
-        this.logger.error('Failed to parse OpenAI response', err);
+        this.logger.error(
+          { error: err, rawResponse },
+          '❌ Failed to parse OpenAI response',
+        );
         throw new InternalServerErrorException(
           'OpenAI response is not valid JSON',
         );
       }
 
-      // ✅ Validate OpenAI response structure
-      if (!isValidAiPlan(parsed, dto.daysPerWeek)) {
-        this.logger.warn('Parsed plan failed validation');
+      // ✅ Validate plan structure with new rules
+      if (!isValidAiPlan(parsed, dto.daysPerWeek, dto.durationInWeeks)) {
+        this.logger.warn('❌ Parsed plan failed validation');
         throw new InternalServerErrorException(
           'Generated plan is invalid or inconsistent',
         );
       }
 
-      // ✅ Fetch user
       const user = await this.aiPlanRepository.manager.findOne(User, {
         where: { id: userId },
       });
@@ -95,21 +115,22 @@ export class AiPlanService {
       const duration = parsed?.durationInWeeks ?? dto.durationInWeeks ?? 8;
 
       const plan = this.aiPlanRepository.create({
-        name: parsed?.name ?? `AI Plan (${dto.goalText})`,
+        name: parsed?.name ?? `AI Plan (${resolvedGoalText})`,
         description:
-          parsed?.description ?? `${duration}-week plan for ${dto.goalText}`,
+          parsed?.description ??
+          `${duration}-week plan for ${resolvedGoalText}`,
         durationInWeeks: duration,
         goalRaceDistance: parsed?.goalRaceDistance ?? dto.targetDistance,
         goalTag: dto.goalTag,
-        goalText: dto.goalText,
-        generatedByModel: 'gpt-4o',
+        goalText: resolvedGoalText,
+        generatedByModel: parsed?.generatedByModel ?? 'gpt-4o',
         metadata: parsed,
         user,
       });
 
       return await this.aiPlanRepository.save(plan);
     } catch (error) {
-      this.logger.error('Plan generation failed', error.stack);
+      this.logger.error('❌ Plan generation failed', error.stack);
       throw new InternalServerErrorException(
         `Failed to generate plan from OpenAI: ${error.message}`,
       );

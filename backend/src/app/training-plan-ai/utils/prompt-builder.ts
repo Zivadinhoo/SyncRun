@@ -1,5 +1,45 @@
 import { OnboardingAnswersDto } from '../dto/onboarding-answers.dto';
 
+function resolveTargetDistanceInKm(distance: string): number {
+  const lower = distance.toLowerCase();
+  if (lower === '5k' || lower === '5') return 5;
+  if (lower === '10k' || lower === '10') return 10;
+  if (lower === '21k' || lower === 'half marathon' || lower === '21') return 21;
+  if (lower === '42k' || lower === 'marathon' || lower === '42') return 42;
+  throw new Error(`Unsupported targetDistance: ${distance}`);
+}
+
+function getDistanceSpecificRules(
+  distanceInKm: number,
+  durationInWeeks: number,
+  uom: string,
+): string {
+  if (distanceInKm === 42) {
+    return `
+- Long runs must gradually build to at least 30–32 ${uom}
+- Final long run in week ${durationInWeeks - 1} should be 28–30 ${uom}
+- Include a 2–3 week taper phase before race day
+- Weekly volume must reflect realistic marathon prep
+- Training should build up total mileage gradually`;
+  } else if (distanceInKm === 21) {
+    return `
+- Long runs must gradually increase to at least 18–20 ${uom}
+- Include one tempo and one long run per week
+- Final week must taper the load`;
+  } else if (distanceInKm === 10) {
+    return `
+- Use interval sessions (400–1,000m), tempo runs, and strides
+- Long runs should reach 10–12 ${uom}
+- At least one rest or recovery day per week`;
+  } else if (distanceInKm === 5) {
+    return `
+- Focus on short intervals (200–800m), strides, and light tempo runs
+- Long run can be 6–8 ${uom}
+- 2 rest days per week are acceptable`;
+  }
+  return '';
+}
+
 export function buildPromptFromDto(dto: OnboardingAnswersDto): string {
   const {
     goalText,
@@ -11,53 +51,60 @@ export function buildPromptFromDto(dto: OnboardingAnswersDto): string {
     preferredDays,
     startDate,
     units,
-    durationInWeeks = 8, // fallback za starije DTO-e bez ovog polja
+    durationInWeeks,
   } = dto;
 
+  if (!durationInWeeks) {
+    throw new Error(
+      '❌ durationInWeeks is required to generate a training plan.',
+    );
+  }
+
   const uom = (units ?? 'km').toUpperCase();
-  const buffer: string[] = [];
+  const preferredDaysList = preferredDays.join(', ');
+  const distanceInKm = resolveTargetDistanceInKm(targetDistance);
 
-  // 🧠 Role
-  buffer.push('You are a professional running coach.');
-  buffer.push(
-    'Generate a structured running plan using the profile and rules below.',
+  const additionalRequirements = getDistanceSpecificRules(
+    distanceInKm,
+    durationInWeeks,
+    uom,
   );
 
-  // 🏃 Runner Profile
-  buffer.push('\n### Runner Profile');
-  buffer.push(`- Goal: ${goalText}`);
-  buffer.push(`- Goal type: ${goalTag}`);
-  buffer.push(`- Target distance: ${targetDistance}`);
-  buffer.push(`- Target time: ${targetTime}`);
-  buffer.push(`- Experience level: ${experience}`);
-  buffer.push(`- Days per week: ${daysPerWeek}`);
-  buffer.push(`- Preferred training days: ${preferredDays.join(', ')}`);
-  buffer.push(`- Start date: ${startDate}`);
-  buffer.push(`- Units: ${uom}`);
+  const prompt = `
+You are a professional running coach.
 
-  // 📋 Requirements
-  buffer.push('\n### Plan Requirements');
-  buffer.push(`- Duration: ${durationInWeeks} weeks`);
-  buffer.push(`- Max ${daysPerWeek} sessions per week`);
-  buffer.push(`- Match preferred days when possible`);
-  buffer.push(
-    '- Include variety: intervals, tempo runs, long runs, easy runs, and rest',
-  );
-  buffer.push('- Build gradually over time, no sudden jumps');
-  buffer.push('- Avoid exact duplicates in the same week');
-  buffer.push(
-    '- Make sure long run appears in most weeks, ideally on weekends',
-  );
-  buffer.push('- Distance must be realistic and aligned with experience');
-  buffer.push(
-    '- Each day should have: day name, type, distance, optional pace',
-  );
+Generate a detailed ${durationInWeeks}-week training plan for an ${experience.toLowerCase()} runner who is preparing for a ${targetDistance} race (${distanceInKm} ${uom}) and aiming to finish in approximately ${targetTime}.
 
-  // 🧱 Output Format
-  buffer.push('\n### Output format:');
-  buffer.push(`{
+---
+
+🏃‍♂️ Runner Profile:
+- Experience: ${experience}
+- Days per week available: ${daysPerWeek}
+- Preferred training days: ${preferredDaysList}
+- Start date: ${startDate}
+- Goal type: ${goalTag}
+- Goal text: ${goalText}
+- Units: ${uom}
+
+---
+
+📋 Plan Requirements:
+- Plan must have **exactly ${durationInWeeks} weeks**
+- No more than ${daysPerWeek} training days per week
+- Use only preferred days for training if possible
+- Include variety: easy runs, tempo runs, long runs, intervals, rest
+- Avoid sudden jumps in mileage
+- Each day must include: "day", "type", "distance", optionally "pace"
+${additionalRequirements}
+
+---
+
+🧾 Output Instructions:
+- Return only **valid JSON**, no markdown, no commentary, no formatting
+- JSON must follow this format:
+{
   "name": "AI ${targetDistance} Plan",
-  "description": "${durationInWeeks}-week ${experience.toLowerCase()} ${targetDistance} training plan for ${goalText}",
+  "description": "${durationInWeeks}-week ${experience.toLowerCase()} ${targetDistance} training plan to complete in ${targetTime}",
   "durationInWeeks": ${durationInWeeks},
   "goalRaceDistance": "${targetDistance}",
   "generatedByModel": "gpt-4o",
@@ -66,17 +113,18 @@ export function buildPromptFromDto(dto: OnboardingAnswersDto): string {
       {
         "week": 1,
         "days": [
-          { "day": "Tuesday", "type": "Easy Run", "distance": 5, "pace": "6:00 min/${uom}" },
-          { "day": "Thursday", "type": "Tempo Run", "distance": 6, "pace": "5:30 min/${uom}" },
-          { "day": "Sunday", "type": "Long Run", "distance": 10, "pace": "6:20 min/${uom}" }
+          {
+            "day": "Monday",
+            "type": "Easy Run",
+            "distance": 5,
+            "pace": "6:00 min/${uom}"
+          }
         ]
       }
     ]
   }
-}`);
+}
+`;
 
-  // 📢 Final instruction
-  buffer.push('\n✅ Respond ONLY with valid JSON. No text or explanations.');
-
-  return buffer.join('\n');
+  return prompt.trim();
 }

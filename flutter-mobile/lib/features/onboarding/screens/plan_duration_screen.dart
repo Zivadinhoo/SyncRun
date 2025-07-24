@@ -24,7 +24,6 @@ class _PlanDurationScreenState
         .read(onboardingAnswersProvider.notifier)
         .setDurationInWeeks(selectedWeeks!);
 
-    // ✅ Navigate to next screen
     context.push('/onboarding/units');
   }
 

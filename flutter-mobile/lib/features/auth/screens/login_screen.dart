@@ -46,7 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
         email,
         password,
       );
-      print('🔍 LOGIN RESPONSE: $response');
 
       final accessToken = response['accessToken'];
       final refreshToken = response['refreshToken'];
@@ -60,12 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.write(
           key: 'refreshToken',
           value: refreshToken,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful!'),
-          ),
         );
 
         if (!mounted) return;
@@ -94,8 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF6F1),
+      backgroundColor:
+          Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -106,25 +103,33 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // 👟 App logo or icon
                 const SizedBox(height: 40),
-                const Text(
-                  'Welcome to SyncRun!',
-                  style: TextStyle(
-                    fontSize: 26,
+                // Image.asset(
+                //   'assets/images/syncrun_logo.png', // Replace with your logo
+                //   height: 80,
+                // ),
+                const SizedBox(height: 24),
+                Text(
+                  'Welcome to Syncrun, your journey starts now 🏃‍♂️',
+                  style: textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Your journey starts here.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
+                Text(
+                  'Let’s sync your run journey.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface
+                        .withOpacity(0.6),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
+
+                // 📧 Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -141,6 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+
+                // 🔒 Password
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -164,24 +171,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 32),
+
+                // 🟨 Login button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(
-                        0xFFE67E22,
-                      ),
-                      foregroundColor: Colors.white,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor:
+                          colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(
                         vertical: 16,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                          20,
+                          24,
                         ),
                       ),
+                      elevation: 4,
                     ),
                     child:
                         _isLoading
@@ -189,23 +198,36 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white,
                               strokeWidth: 2,
                             )
-                            : const Text('Login'),
+                            : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+
+                // 🧾 Register link
                 Row(
                   mainAxisAlignment:
                       MainAxisAlignment.center,
                   children: [
-                    const Text("Don’t have an account?"),
+                    Text(
+                      "Don’t have an account?",
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface
+                            .withOpacity(0.7),
+                      ),
+                    ),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Navigate to register screen
-                      },
-                      child: const Text(
+                      onPressed:
+                          () => context.go('/register'),
+                      child: Text(
                         "Register",
                         style: TextStyle(
-                          color: Color(0xFFE67E22),
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

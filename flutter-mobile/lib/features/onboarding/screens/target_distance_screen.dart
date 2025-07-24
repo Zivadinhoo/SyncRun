@@ -22,7 +22,6 @@ class _TargetDistanceScreenState
     '10K',
     'Half Marathon',
     'Marathon',
-    'Ultramarathon',
   ];
 
   @override

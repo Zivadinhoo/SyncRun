@@ -10,7 +10,13 @@ import {
 } from '@nestjs/common';
 import { AiPlanService } from './training-plan-ai.service';
 import { OnboardingAnswersDto } from './dto/onboarding-answers.dto';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiBody,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { PinoLogger } from 'nestjs-pino';
 import { RequestWithUser } from '../common/types/request-with-user';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,30 +36,37 @@ export class AiPlanController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate a training plan using OpenAI (ChatGPT)' })
   @ApiBody({ type: OnboardingAnswersDto })
-  async generate(
+  @ApiResponse({
+    status: 201,
+    description: 'AI-generated training plan returned successfully',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Failed to generate training plan',
+  })
+  async generatePlan(
     @Body() dto: OnboardingAnswersDto,
     @Req() req: RequestWithUser,
-  ) {
+  ): Promise<any> {
     const userId = req.user.id;
 
-    this.logger.info(
-      { userId, dto },
-      '🧠 Received request to generate AI training plan',
-    );
+    this.logger.info('🧠 Received AI plan generation request', { userId, dto });
 
     try {
       const plan = await this.service.generatePlan(dto, userId);
-      this.logger.info({ userId, planId: plan.id }, '✅ Plan generated');
+      this.logger.info('✅ AI plan generated', { userId, planId: plan.id });
+
       return {
         success: true,
         message: 'Plan generated successfully',
         data: plan,
       };
     } catch (error: any) {
-      this.logger.error(
-        { userId, error: error.message },
-        '❌ Plan generation failed',
-      );
+      this.logger.error('❌ Failed to generate plan', {
+        userId,
+        error: error.message,
+      });
+
       throw new HttpException(
         `Failed to generate training plan: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -65,7 +78,15 @@ export class AiPlanController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get AI training plan for the logged-in user' })
-  async getMyPlan(@Req() req: RequestWithUser) {
+  @ApiResponse({
+    status: 200,
+    description: 'Fetched AI plan for the current user',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async getMyPlan(@Req() req: RequestWithUser): Promise<any> {
     const userId = req.user.id;
 
     try {
@@ -79,10 +100,11 @@ export class AiPlanController {
         data: plan,
       };
     } catch (error: any) {
-      this.logger.error(
-        { userId, error: error.message },
-        '❌ Failed to fetch plan',
-      );
+      this.logger.error('❌ Failed to fetch user plan', {
+        userId,
+        error: error.message,
+      });
+
       throw new HttpException(
         `Failed to get training plan: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

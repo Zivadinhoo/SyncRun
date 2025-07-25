@@ -18,8 +18,8 @@ export function isValidAiPlan(
     return false;
   }
 
-  // 📏 Minimum long run distance po tipu trke
-  const minLongRunByRace: Record<string, number> = {
+  // Expected peak long run by race type (only enforced in last 3–4 weeks)
+  const peakLongRunByRace: Record<string, number> = {
     '5k': 6,
     '10k': 10,
     '21k': 17,
@@ -27,19 +27,17 @@ export function isValidAiPlan(
     '42k': 28,
     marathon: 28,
   };
-
-  const minLongRunDistance = minLongRunByRace[target] ?? 6;
-
-  let foundAnyLongRun = false;
+  const minPeakLongRun = peakLongRunByRace[target] ?? 6;
 
   const standardPace = /^(\d+):(\d+)\smin\/km$/i;
   const intervalPattern =
     /^\d+x\d+m at \d{1,2}:\d{2} min\/km with \d+m recovery$/i;
   const descriptivePattern = /^[A-Za-z0-9\s\-:,@\/\.\(\)]+$/i;
 
+  let foundValidPeak = false;
+
   for (let i = 0; i < weeks.length; i++) {
     const week = weeks[i];
-
     if (!week.days || !Array.isArray(week.days)) {
       console.warn(`❌ Week ${week.week} is missing days array.`);
       return false;
@@ -80,39 +78,36 @@ export function isValidAiPlan(
         return false;
       }
 
-      // 🎯 Prepoznaj long run
-      if (
-        typeof day.type === 'string' &&
-        day.type.toLowerCase().includes('long')
-      ) {
+      // Long run detection
+      const isLongRun =
+        typeof day.type === 'string' && day.type.toLowerCase().includes('long');
+
+      if (isLongRun) {
         if (hasLongRun) {
-          console.warn(`❌ Multiple long runs in one week.`);
+          console.warn(`❌ Multiple long runs in week ${week.week}.`);
           return false;
         }
-        if (day.distance < minLongRunDistance) {
-          console.warn(
-            `❌ Long run in week ${week.week} is too short. Got ${day.distance}, expected >= ${minLongRunDistance}`,
-          );
-          return false;
+
+        // ✅ Enforce peak distance only in last 2–3 weeks (not week 1+)
+        const isPeakWeek = i >= weeks.length - 3;
+        if (isPeakWeek && day.distance >= minPeakLongRun) {
+          foundValidPeak = true;
         }
+
         hasLongRun = true;
       }
     }
 
-    const isLastWeek = i === weeks.length - 1;
-
-    if (!isLastWeek && week.days.length >= 3 && !hasLongRun) {
+    // All build weeks (not taper) with 3+ days should have *a* long run
+    const isTaperWeek = i >= weeks.length - 2;
+    if (!isTaperWeek && week.days.length >= 3 && !hasLongRun) {
       console.warn(`❌ No long run found in week ${week.week}.`);
       return false;
     }
-
-    if (hasLongRun) {
-      foundAnyLongRun = true;
-    }
   }
 
-  if (!foundAnyLongRun) {
-    console.warn('❌ No long run found in entire plan.');
+  if (!foundValidPeak) {
+    console.warn('❌ No valid peak long run found in final weeks.');
     return false;
   }
 

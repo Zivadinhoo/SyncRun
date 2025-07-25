@@ -21,10 +21,13 @@ class AiTrainingPlan {
     Map<String, dynamic> json,
   ) {
     final metadata = json['metadata'] ?? {};
+
+    // Fallback for weeks in case they're in the root or metadata
     final weeksJson =
-        metadata['weeks'] as List<dynamic>? ?? [];
+        metadata['weeks'] ?? json['weeks'] ?? [];
+
     final weeks =
-        weeksJson
+        (weeksJson as List<dynamic>)
             .map(
               (w) => TrainingWeek.fromJson(
                 w as Map<String, dynamic>,
@@ -34,12 +37,24 @@ class AiTrainingPlan {
 
     return AiTrainingPlan(
       id: json['id'] ?? -1,
-      name: json['name'] ?? 'Unnamed Plan',
-      description: json['description'] ?? '',
-      goalRaceDistance: json['goalRaceDistance'],
-      generatedByModel: json['generatedByModel'],
+      name:
+          json['name'] ??
+          metadata['name'] ??
+          'Unnamed Plan',
+      description:
+          json['description'] ??
+          metadata['description'] ??
+          '',
+      goalRaceDistance:
+          json['goalRaceDistance'] ??
+          metadata['goalRaceDistance'],
+      generatedByModel:
+          json['generatedByModel'] ??
+          metadata['generatedByModel'],
       durationInWeeks:
-          json['durationInWeeks'] ?? weeks.length,
+          json['durationInWeeks'] ??
+          metadata['durationInWeeks'] ??
+          weeks.length,
       weeks: weeks,
     );
   }
@@ -61,6 +76,7 @@ class TrainingWeek {
               ),
             )
             .toList();
+
     return TrainingWeek(
       week: json['week'] ?? 0,
       days: days,

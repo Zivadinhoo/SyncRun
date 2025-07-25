@@ -57,15 +57,10 @@ class AiPlanService {
 
       final parsedPlan = AiTrainingPlan.fromJson(plan);
 
-      // ✅ Setuj local state (ako koristiš)
       ref.read(aiGeneratedPlanProvider.notifier).state =
           parsedPlan;
 
-      // ✅ Forsiraj refetch za provider koji koristi GET
       ref.invalidate(aiPlanProvider);
-
-      // ✅ (Po želji) ažuriraj onboarding finished flag ako ga koristiš
-      // ref.read(onboardingFinishedProvider.notifier).state = true;
     } catch (e) {
       throw Exception("Failed to parse AI plan: $e");
     }
@@ -91,6 +86,6 @@ class AiPlanService {
       return null;
     }
 
-    return decoded['data']; // ✅ CELO telo plana, ne samo metadata
+    return decoded['data'];
   }
 }

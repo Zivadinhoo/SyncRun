@@ -5,13 +5,13 @@ class AiDayCard extends StatelessWidget {
   final String type;
   final dynamic distance;
   final dynamic pace;
-  final String status; // NEW
+  final String status;
 
   const AiDayCard({
     super.key,
     required this.dayName,
     required this.type,
-    required this.status, // NEW
+    required this.status,
     this.distance,
     this.pace,
   });

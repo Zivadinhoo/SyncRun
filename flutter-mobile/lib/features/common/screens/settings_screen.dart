@@ -8,10 +8,8 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     const storage = FlutterSecureStorage();
 
-    // Obriši access i refresh token
     await storage.deleteAll();
 
-    // Idi nazad na login ekran
     if (context.mounted) {
       context.go('/login');
     }

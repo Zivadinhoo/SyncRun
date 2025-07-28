@@ -37,6 +37,10 @@ class AiPlanService {
     OnboardingAnswers answers,
     WidgetRef ref,
   ) async {
+    // 🧼 Clear stale state before requesting new plan
+    ref.invalidate(aiPlanProvider);
+    ref.read(aiGeneratedPlanProvider.notifier).state = null;
+
     final response = await generatePlan(answers);
 
     if (response.statusCode != 201 &&
@@ -57,10 +61,9 @@ class AiPlanService {
 
       final parsedPlan = AiTrainingPlan.fromJson(plan);
 
+      // ✅ Save new plan in local state
       ref.read(aiGeneratedPlanProvider.notifier).state =
           parsedPlan;
-
-      ref.invalidate(aiPlanProvider);
     } catch (e) {
       throw Exception("Failed to parse AI plan: $e");
     }

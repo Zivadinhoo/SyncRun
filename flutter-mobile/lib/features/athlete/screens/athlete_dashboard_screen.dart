@@ -199,7 +199,9 @@ class AthleteDashboardScreen extends ConsumerWidget {
               ),
               itemCount: week.days.length,
               itemBuilder: (context, index) {
-                final day = week.days[index];
+                final day =
+                    week.days[index]; // ✅ Ovo je ispravno
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 6,
@@ -210,11 +212,13 @@ class AthleteDashboardScreen extends ConsumerWidget {
                           '/training-day/${day.id}',
                         ),
                     child: AiDayCard(
-                      dayName: day.day,
-                      type: day.type,
+                      dayName: day.name,
+                      type: day.description ?? '',
                       distance: day.distance,
-                      pace: day.pace ?? '',
-                      status: day.status,
+                      pace: day.pace, // Dodaj ako imaš pace
+                      status:
+                          day.status, // Dodaj ako koristiš status
+                      date: day.date,
                     ),
                   ),
                 );

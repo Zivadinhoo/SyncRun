@@ -27,7 +27,6 @@ class AuthService {
     print('✅ Tokens saved to secure storage');
   }
 
-  /// ✅ Get access token from memory or secure storage
   Future<String?> getAccessToken() async {
     if (_accessToken != null) return _accessToken;
     final token = await _storage.read(key: 'accessToken');
@@ -35,7 +34,6 @@ class AuthService {
     return token;
   }
 
-  /// ✅ Check if user is logged in (with API validation)
   Future<bool> isLoggedIn() async {
     final token = await getAccessToken();
     if (token == null || token.isEmpty) return false;

@@ -105,10 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // 👟 App logo or icon
                 const SizedBox(height: 40),
-                // Image.asset(
-                //   'assets/images/syncrun_logo.png', // Replace with your logo
-                //   height: 80,
-                // ),
+
                 const SizedBox(height: 24),
                 Text(
                   'Welcome to Syncrun, your journey starts now 🏃‍♂️',

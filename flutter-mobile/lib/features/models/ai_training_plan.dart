@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class AiTrainingPlan {
   final int id;
   final String name;
@@ -20,12 +22,27 @@ class AiTrainingPlan {
   factory AiTrainingPlan.fromJson(
     Map<String, dynamic> json,
   ) {
-    final metadata = json['metadata'] ?? {};
+    final rawMetadata = json['metadata'];
 
-    // Fallback for weeks in case they're in the root or metadata
+    // Check and decode metadata if needed
+    if (rawMetadata is String) {
+      print(
+        "❗️ WARNING: metadata is a String! Decoding...",
+      );
+    } else if (rawMetadata is Map<String, dynamic>) {
+      print("✅ Metadata is a proper map.");
+      print(
+        "✅ Metadata weeks count: ${rawMetadata['weeks']?.length}",
+      );
+    }
+
+    final metadata =
+        rawMetadata is String
+            ? jsonDecode(rawMetadata)
+            : rawMetadata ?? {};
+
     final weeksJson =
         metadata['weeks'] ?? json['weeks'] ?? [];
-
     final weeks =
         (weeksJson as List<dynamic>)
             .map(
@@ -35,7 +52,7 @@ class AiTrainingPlan {
             )
             .toList();
 
-    return AiTrainingPlan(
+    final plan = AiTrainingPlan(
       id: json['id'] ?? -1,
       name:
           json['name'] ??
@@ -57,6 +74,11 @@ class AiTrainingPlan {
           weeks.length,
       weeks: weeks,
     );
+
+    print(
+      "📦 Final weeks parsed into AiTrainingPlan: ${plan.weeks.length}",
+    );
+    return plan;
   }
 }
 
@@ -86,29 +108,47 @@ class TrainingWeek {
 
 class TrainingDay {
   final int id;
-  final String day;
-  final String type;
-  final dynamic distance;
+  final String name; // 🆕 e.g. "Day 1", "Monday"
+  final String day; // e.g. Monday
+  final String type; // e.g. Easy Run
+  final dynamic distance; // Can be number or string
   final String? pace;
   final String status;
+  final String? description;
+  final int? duration; // in minutes
+  final DateTime? date;
 
   TrainingDay({
     required this.id,
+    required this.name,
     required this.day,
     required this.type,
     required this.distance,
     this.pace,
     required this.status,
+    this.description,
+    this.duration,
+    this.date,
   });
 
   factory TrainingDay.fromJson(Map<String, dynamic> json) {
     return TrainingDay(
       id: json['id'] ?? -1,
+      name:
+          json['name'] ??
+          json['day'] ??
+          'Day', // Fallback to day if name not available
       day: json['day'] ?? 'Unknown',
       type: json['type'] ?? 'Unknown',
       distance: json['distance'] ?? 0,
       pace: json['pace'],
       status: json['status'] ?? 'pending',
+      description: json['description'],
+      duration: json['duration'] as int?,
+      date:
+          json['date'] != null
+              ? DateTime.tryParse(json['date'])
+              : null,
     );
   }
 }

@@ -1,94 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AiDayCard extends StatelessWidget {
   final String dayName;
-  final String type;
+  final String? type;
   final dynamic distance;
-  final dynamic pace;
-  final String status;
+  final String? pace;
+  final String? status;
+  final DateTime? date;
 
   const AiDayCard({
     super.key,
     required this.dayName,
-    required this.type,
-    required this.status,
+    this.type,
+    this.status,
     this.distance,
     this.pace,
+    this.date,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isRestDay = type.toLowerCase() == 'rest';
+    final isRestDay = (type ?? '').toLowerCase().contains(
+      'rest',
+    );
+    final formattedDate =
+        date != null ? DateFormat.MMMd().format(date!) : '';
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 6,
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 12,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        leading: CircleAvatar(
-          radius: 22,
-          backgroundColor:
-              isRestDay
-                  ? Colors.grey.shade300
-                  : Colors.orange.shade100,
-          child: Text(
-            isRestDay ? '🛌' : '🏃',
-            style: const TextStyle(fontSize: 20),
-          ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
         ),
-        title: Text(
-          "$dayName – $type",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: isRestDay ? Colors.grey : Colors.black,
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isRestDay
-                    ? "Rest day"
-                    : "$distance km at $pace",
-                style: TextStyle(
-                  fontSize: 14,
-                  color:
-                      isRestDay
-                          ? Colors.grey.shade600
-                          : Colors.black87,
-                ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Emoji avatar
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                shape: BoxShape.circle,
               ),
-              if (!isRestDay)
-                Text(
-                  _getStatusEmoji(status),
-                  style: const TextStyle(fontSize: 16),
-                ),
-            ],
-          ),
+              alignment: Alignment.center,
+              child: Text(
+                isRestDay ? '🛌' : '🏃',
+                style: const TextStyle(fontSize: 20),
+              ),
+            ),
+            const SizedBox(width: 16),
+
+            // Main content
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$dayName${type != null ? ' – $type' : ''}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isRestDay
+                        ? 'Rest day'
+                        : '${distance ?? '-'} km at ${pace ?? '-'}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  if (formattedDate.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 2,
+                      ),
+                      child: Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black45,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // Status emoji
+            Padding(
+              padding: const EdgeInsets.only(top: 2.0),
+              child: Text(
+                _getStatusEmoji(status),
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  String _getStatusEmoji(String status) {
-    switch (status.toLowerCase()) {
+  String _getStatusEmoji(String? status) {
+    switch ((status ?? '').toLowerCase()) {
       case 'completed':
         return '✅';
       case 'missed':

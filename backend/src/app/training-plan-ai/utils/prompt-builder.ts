@@ -1,50 +1,10 @@
 import { OnboardingAnswersDto } from '../dto/onboarding-answers.dto';
+import { getDistanceSpecificRules } from './distance-specific-rules';
+import { resolveTargetDistanceInKm } from './resolve-target-distance';
 
-function resolveTargetDistanceInKm(distance: string): number {
-  const lower = distance.toLowerCase();
-
-  if (lower === '5k' || lower === '5') return 5;
-  if (lower === '10k' || lower === '10') return 10;
-  if (lower === '21k' || lower === 'half marathon' || lower === '21') return 21;
-  if (lower === '42k' || lower === 'marathon' || lower === '42') return 42;
-
-  throw new Error(`Unsupported targetDistance: ${distance}`);
-}
-
-function getDistanceSpecificRules(
-  distanceInKm: number,
-  durationInWeeks: number,
-  uom: string,
+export function buildPromptWithRecoveryFromDto(
+  dto: OnboardingAnswersDto,
 ): string {
-  switch (distanceInKm) {
-    case 42:
-      return `
-- Long runs should gradually build from 12–16 ${uom} to a peak of ~30–32 ${uom} around 3–4 weeks before race day
-- Include a 2–3 week taper phase before the race
-- Never schedule more than one long run per week
-- Avoid sudden weekly volume spikes (>10%)
-- Mix in weekly easy runs, tempo efforts, intervals, strides, and full rest days`;
-    case 21:
-      return `
-- Long runs should progress from ~10–12 ${uom} to a peak of ~18–20 ${uom} 2–3 weeks before race day
-- Include at least one tempo session and one long run per week
-- Final week should reduce overall volume by 30–40% for tapering`;
-    case 10:
-      return `
-- Alternate interval sessions (e.g. 400–1000m repeats) with tempo runs and strides
-- Long runs should build up to 10–12 ${uom}, once weekly
-- Always include at least one full recovery or rest day per week`;
-    case 5:
-      return `
-- Prioritize short intervals (200–800m), strides, and light tempos
-- Long runs can reach 6–8 ${uom} at most, done once per week
-- 2 rest days per week are acceptable for recovery`;
-    default:
-      return '';
-  }
-}
-
-export function buildPromptFromDto(dto: OnboardingAnswersDto): string {
   const {
     goalText,
     goalTag,
@@ -73,43 +33,60 @@ export function buildPromptFromDto(dto: OnboardingAnswersDto): string {
     uom,
   );
 
-  const prompt = `
-You are a professional endurance running coach with experience training athletes for ${targetDistance} races.
+  return `
+You are a world-class endurance running coach with deep knowledge of physiology, training periodization, injury prevention, and performance optimization.
 
-Generate a realistic and safe ${durationInWeeks}-week training plan for an ${experience.toLowerCase()} runner who is training for a ${targetDistance} (${distanceInKm} ${uom}) and wants to finish in approximately ${targetTime}.
+Create a realistic, safe, and progressive ${durationInWeeks}-week training plan for an ${experience.toLowerCase()} runner preparing for a ${targetDistance} race (${distanceInKm} ${uom}). The runner wants to finish in approximately ${targetTime}.
 
 ---
 
-🏃‍♂️ Runner Profile:
+Runner Profile:
 - Experience: ${experience}
-- Weekly availability: ${daysPerWeek} sessions max
+- Weekly availability: max ${daysPerWeek} sessions
 - Preferred training days: ${preferredDaysList}
 - Start date: ${startDate}
 - Goal: ${goalText} (${goalTag})
-- Distance units: ${uom}
+- Units of measurement: ${uom}
 
 ---
 
-📋 Coaching Guidelines:
-- Plan must be **${durationInWeeks} full weeks**
-- Use only the runner’s preferred days for training
-- Do **not exceed ${daysPerWeek} training days per week**
-- Long runs must progress gradually and peak ~2–4 weeks before race day
-- Taper period: reduce volume in the final 1–3 weeks depending on race distance
-- Do not schedule hard sessions back-to-back
-- Weekly variety: easy runs, tempo runs, long runs, intervals, recovery days
-- Avoid unrealistic volume spikes (>10% jump from previous week)
+COACHING GUIDELINES:
+- Use only preferred training days for training sessions
+- Do not exceed ${daysPerWeek} training sessions per week
+- Each week must explicitly include all 7 days: Monday through Sunday
+- Non-training days must still be present (e.g., as Rest, Stretch, or Mobility)
+- Each week must include:
+  - At least 2 training days
+  - At most 6 training days
+  - At least 1 full Rest day (type: "Rest")
+  - At least 2 running-type sessions (e.g. Easy Run, Long Run, Tempo, Intervals, Fartlek)
+- Only classify sessions as training sessions if they involve running or structured workouts (e.g. Easy Run, Long Run, Tempo, Intervals, Fartlek)
+- Do not count Rest, Stretch, or Mobility as training sessions
+- Include weekly variety: easy runs, tempo, intervals, long runs, recovery, and optional stretch/mobility
+- Long runs must progress weekly and peak approximately 2–3 weeks before race day
+- The long run should be the longest and most important session of the week
+- Include at least one cutback week every 3–4 weeks to reduce fatigue
+- Include a taper phase in the final 1–3 weeks
+- Never place hard sessions back-to-back
+- Avoid sudden volume spikes (>10% week-to-week increase)
+- Prioritize quality over quantity
+- Final week must include a Race Day (type: "Race") on the final preferred training day
+- Ensure the plan respects basic recovery principles and allows for sustainable progress
+
 ${distanceRules}
 
 ---
 
-🧾 Output Format:
-- Return only **strict JSON** (no markdown, no explanations)
-- JSON should follow this format:
+Output Rules:
+- Return only strict valid JSON
+- Do not include markdown, comments, code blocks, or explanations
+- The response must match this structure:
+- You must return a complete training plan with exactly ${durationInWeeks} full weeks in the "weeks" array
+- Do not include only the first week as an example – generate and return the full plan
 
 {
   "name": "AI ${targetDistance} Plan",
-  "description": "${durationInWeeks}-week ${experience.toLowerCase()} ${targetDistance} training plan to complete in ${targetTime}",
+  "description": "${durationInWeeks}-week ${experience.toLowerCase()} ${targetDistance} training plan targeting ${targetTime}",
   "durationInWeeks": ${durationInWeeks},
   "goalRaceDistance": "${targetDistance}",
   "generatedByModel": "gpt-4o",
@@ -123,13 +100,41 @@ ${distanceRules}
             "type": "Easy Run",
             "distance": 5,
             "pace": "6:00 min/${uom}"
+          },
+          {
+            "day": "Tuesday",
+            "type": "Rest"
+          },
+          {
+            "day": "Wednesday",
+            "type": "Intervals",
+            "distance": 6,
+            "pace": "4:30 min/${uom}"
+          },
+          {
+            "day": "Thursday",
+            "type": "Stretch"
+          },
+          {
+            "day": "Friday",
+            "type": "Easy Run",
+            "distance": 5,
+            "pace": "6:10 min/${uom}"
+          },
+          {
+            "day": "Saturday",
+            "type": "Rest"
+          },
+          {
+            "day": "Sunday",
+            "type": "Long Run",
+            "distance": 12,
+            "pace": "5:45 min/${uom}"
           }
         ]
       }
     ]
   }
 }
-`;
-
-  return prompt.trim();
+`.trim();
 }

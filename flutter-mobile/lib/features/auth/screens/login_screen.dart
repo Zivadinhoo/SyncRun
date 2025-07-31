@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/features/auth/services/auth_service.dart';
+import 'package:frontend/utils/plan_checker.dart';
 import 'package:go_router/go_router.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() =>
+      _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController(
     text: 'dusantrkac@gmail.com',
   );
@@ -62,7 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (!mounted) return;
-        context.go('/athlete/dashboard');
+
+        // ✅ Proveri da li korisnik ima plan i redirektuj ga
+        await checkPlanAndRedirect(context, ref);
       } else {
         throw Exception(
           "No access token found in response",

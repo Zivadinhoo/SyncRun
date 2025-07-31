@@ -8,7 +8,7 @@ import 'package:frontend/features/onboarding/providers/onboarding_answers.provid
 import 'package:frontend/utils/http_headers.dart';
 
 class AiPlanService {
-  static const _baseUrl = "http://192.168.0.53:3001";
+  static const _baseUrl = "http://192.168.0.57:3001";
 
   static Future<http.Response> generatePlan(
     OnboardingAnswers answers,

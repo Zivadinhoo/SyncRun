@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:frontend/utils/running_type.dart';
 
 class AiDayCard extends StatelessWidget {
   final String dayName;
   final String? type;
-  final dynamic distance;
+  final double? distance;
   final String? pace;
   final String? status;
   final DateTime? date;
@@ -21,11 +22,11 @@ class AiDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRestDay = (type ?? '').toLowerCase().contains(
-      'rest',
-    );
+    final typeText = type ?? '';
     final formattedDate =
         date != null ? DateFormat.MMMd().format(date!) : '';
+
+    final isRunDay = !_isPassiveDay(typeText);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -51,17 +52,17 @@ class AiDayCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Emoji avatar
+            // Emoji avatar with dynamic color
             Container(
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: Colors.orange.shade100,
+                color: getTypeColor(typeText),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
               child: Text(
-                isRestDay ? '🛌' : '🏃',
+                getTypeEmoji(typeText),
                 style: const TextStyle(fontSize: 20),
               ),
             ),
@@ -82,9 +83,9 @@ class AiDayCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isRestDay
-                        ? 'Rest day'
-                        : '${distance ?? '-'} km at ${pace ?? '-'}',
+                    isRunDay
+                        ? '${distance?.toStringAsFixed(0) ?? '-'} km at ${pace ?? '-'}'
+                        : 'Rest day',
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.black54,
@@ -107,14 +108,15 @@ class AiDayCard extends StatelessWidget {
               ),
             ),
 
-            // Status emoji
-            Padding(
-              padding: const EdgeInsets.only(top: 2.0),
-              child: Text(
-                _getStatusEmoji(status),
-                style: const TextStyle(fontSize: 18),
+            // Status emoji – only for active run days
+            if (isRunDay)
+              Padding(
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Text(
+                  _getStatusEmoji(status),
+                  style: const TextStyle(fontSize: 18),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -130,5 +132,10 @@ class AiDayCard extends StatelessWidget {
       default:
         return '⏳';
     }
+  }
+
+  bool _isPassiveDay(String type) {
+    final t = type.toLowerCase();
+    return t.contains('rest') || t.contains('stretch');
   }
 }

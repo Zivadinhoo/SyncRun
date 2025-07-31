@@ -31,7 +31,7 @@ final isLoggedInProvider = FutureProvider.autoDispose<bool>(
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.53:3001/users/me'),
+        Uri.parse('http://192.168.0.57:3001/users/me'),
         headers: {'Authorization': 'Bearer $token'},
       );
 

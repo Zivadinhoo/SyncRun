@@ -10,9 +10,9 @@ import OpenAI from 'openai';
 import { OnboardingAnswersDto } from './dto/onboarding-answers.dto';
 import { TrainingPlanAi } from '../entities/training-plan-ai.entity';
 import { User } from '../entities/user.entity';
-
-import { buildPromptFromDto } from './utils/prompt-builder';
+import { buildPromptWithRecoveryFromDto } from './utils/prompt-builder';
 import { isValidAiPlan } from './utils/ai-plan.validator';
+import { resolvePlanName } from './utils/resolve-plan-name';
 
 @Injectable()
 export class AiPlanService {
@@ -29,6 +29,7 @@ export class AiPlanService {
       return await this.aiPlanRepository.findOne({
         where: { userId },
         relations: ['user'],
+        order: { createdAt: 'DESC' },
       });
     } catch (error) {
       this.logger.error('❌ Failed to fetch AI plan', error.stack);
@@ -42,20 +43,40 @@ export class AiPlanService {
     dto: OnboardingAnswersDto,
     userId: number,
   ): Promise<TrainingPlanAi> {
-    const prompt = buildPromptFromDto(dto);
+    const prompt = buildPromptWithRecoveryFromDto(dto);
     const resolvedGoalText = dto.goalText ?? 'Training';
     let rawResponse = '';
     let parsedResponse: any;
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-3.5-turbo',
         temperature: 0.7,
+
         messages: [
           {
             role: 'system',
-            content: 'You are a world-class running coach assistant.',
+            content: `
+You are a world-class endurance running coach AI.
+
+Your job is to generate structured, safe, and realistic training plans for runners training for races like 5K, 10K, half marathons, and marathons.
+
+You always:
+- Follow modern training principles: periodization, progressive overload, tapering, and recovery
+- Ensure a gradual build-up in weekly volume and long runs
+- Include a taper in the last 1–3 weeks depending on the race
+- Avoid placing hard sessions back-to-back
+- Always include at least one full rest day per week
+- Limit volume spikes (no more than 10% increase week-to-week)
+- Only train on the user’s preferred days and respect their max days/week
+- End the plan with a Race Day
+
+You return **only strict JSON**. Never return markdown, explanations, or code blocks.
+
+If the plan cannot be generated for any reason, return a JSON object with an "error" key and message.
+`,
           },
+
           {
             role: 'user',
             content: prompt,
@@ -124,7 +145,9 @@ export class AiPlanService {
         parsedResponse?.durationInWeeks ?? dto.durationInWeeks ?? 8;
 
       const plan = this.aiPlanRepository.create({
-        name: parsedResponse?.name ?? `AI Plan (${resolvedGoalText})`,
+        name:
+          parsedResponse?.name ??
+          resolvePlanName(dto.targetDistance, dto.experience),
         description:
           parsedResponse?.description ??
           `${duration}-week plan for ${resolvedGoalText}`,
@@ -133,7 +156,7 @@ export class AiPlanService {
           parsedResponse?.goalRaceDistance ?? dto.targetDistance,
         goalTag: dto.goalTag,
         goalText: resolvedGoalText,
-        generatedByModel: parsedResponse?.generatedByModel ?? 'gpt-4o',
+        generatedByModel: parsedResponse?.generatedByModel ?? 'gpt4o',
         metadata: parsedResponse,
         user,
       });

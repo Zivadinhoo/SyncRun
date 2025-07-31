@@ -17,7 +17,7 @@ final weeklyReviewProvider = FutureProvider.family.autoDispose<
   }
 
   final uri = Uri.parse(
-    'http://192.168.0.49:3001/training-days/weekly-summary',
+    'http://192.168.0.53:3001/training-days/weekly-summary',
   ).replace(
     queryParameters: {
       'planId': params.assignedPlanId.toString(),

@@ -21,17 +21,19 @@ class _GeneratePlanScreenState
   @override
   void initState() {
     super.initState();
-    _generate();
+
+    // ✅ Safe way to call provider logic after widget is fully mounted
+    Future.microtask(() => _generate());
   }
 
   Future<void> _generate() async {
     final answers = ref.read(onboardingAnswersProvider);
 
     try {
-      // 🔁 Poziv AI-a
+      // 🔁 Call AI plan service
       await AiPlanService.generateAiPlan(answers, ref);
 
-      // ✅ Snimi flag da je onboarding završen
+      // ✅ Mark onboarding as completed
       await const FlutterSecureStorage().write(
         key: 'hasFinishedOnboarding',
         value: 'true',
@@ -39,7 +41,7 @@ class _GeneratePlanScreenState
 
       ref.invalidate(hasFinishedOnboardingProvider);
 
-      // 🚀 Idi na dashboard
+      // 🚀 Navigate to dashboard
       if (mounted) {
         context.go('/athlete/dashboard');
       }

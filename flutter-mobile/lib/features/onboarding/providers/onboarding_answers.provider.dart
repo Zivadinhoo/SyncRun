@@ -69,7 +69,7 @@ class OnboardingAnswers {
       'startDate': startDate?.toIso8601String(),
       'wantsNotifications': wantsNotifications,
       'units': units,
-      'durationInWeeks': durationInWeeks, // ✅ Dodato u JSON
+      'durationInWeeks': durationInWeeks,
     };
   }
 }

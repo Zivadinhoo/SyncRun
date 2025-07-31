@@ -7,7 +7,7 @@ class AuthService {
   final _storage = const FlutterSecureStorage();
   String? _accessToken;
 
-  final String baseUrl = 'http://192.168.0.53:3001';
+  final String baseUrl = 'http://192.168.0.57:3001';
 
   Future<void> saveTokens(
     String accessToken,
@@ -27,7 +27,6 @@ class AuthService {
     print('✅ Tokens saved to secure storage');
   }
 
-  /// ✅ Get access token from memory or secure storage
   Future<String?> getAccessToken() async {
     if (_accessToken != null) return _accessToken;
     final token = await _storage.read(key: 'accessToken');
@@ -35,7 +34,6 @@ class AuthService {
     return token;
   }
 
-  /// ✅ Check if user is logged in (with API validation)
   Future<bool> isLoggedIn() async {
     final token = await getAccessToken();
     if (token == null || token.isEmpty) return false;

@@ -51,6 +51,8 @@ class WeeklyProgressWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+
+          // Progress bar
           LinearProgressIndicator(
             value: percent,
             minHeight: 10,
@@ -61,8 +63,12 @@ class WeeklyProgressWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           const SizedBox(height: 12),
+
+          // Bottom text
           Text(
-            '$completed of $total workouts completed (${(percent * 100).toStringAsFixed(0)}%)',
+            total == 0
+                ? 'No workouts scheduled this week'
+                : '$completed of $total workouts completed (${(percent * 100).toStringAsFixed(0)}%)',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(

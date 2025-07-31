@@ -4,6 +4,8 @@ import 'package:frontend/features/athlete/widgets/weeek_section_switcher.dart';
 import 'package:frontend/features/athlete/widgets/week_progress_widget.dart';
 import 'package:frontend/features/models/ai_training_plan.dart';
 import 'package:frontend/features/athlete/widgets/ai_day_card.dart';
+import 'package:frontend/features/models/training_week.dart';
+import 'package:frontend/utils/normalize_week.dart';
 import 'package:go_router/go_router.dart';
 import 'package:frontend/features/onboarding/providers/ai_generated_plan_provider.dart';
 import 'package:frontend/features/onboarding/providers/ai_plan_provider.dart';
@@ -26,26 +28,11 @@ class AthleteDashboardScreen extends ConsumerWidget {
           return _buildNoPlanView(context);
         }
 
-        if (plan != null) {
-          print("✅ Plan loaded from backend: ${plan.name}");
-          print("✅ Weeks count: ${plan.weeks.length}");
-          return _buildPlanViewFromModel(
-            context,
-            ref,
-            plan,
-          );
-        }
-
-        if (localPlan != null) {
-          print("📋 Using localPlan: ${localPlan.name}");
-          return _buildPlanViewFromModel(
-            context,
-            ref,
-            localPlan,
-          );
-        }
-
-        return _buildNoPlanView(context);
+        return _buildPlanViewFromModel(
+          context,
+          ref,
+          plan ?? localPlan!,
+        );
       },
       loading:
           () => const Scaffold(
@@ -118,13 +105,19 @@ class AthleteDashboardScreen extends ConsumerWidget {
     WidgetRef ref,
     AiTrainingPlan plan,
   ) {
-    return _renderPlanUi(context, ref, plan.weeks);
+    return _renderPlanUi(
+      context,
+      ref,
+      plan.weeks,
+      plan.name,
+    );
   }
 
   Widget _renderPlanUi(
     BuildContext context,
     WidgetRef ref,
     List<TrainingWeek> weeks,
+    String planName,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -139,11 +132,22 @@ class AthleteDashboardScreen extends ConsumerWidget {
     final selectedWeekIndex = ref.watch(
       selectedWeekIndexProvider,
     );
-    final week = weeks[selectedWeekIndex];
+    final week = normalizeWeekWithAllDays(
+      weeks[selectedWeekIndex],
+    );
     final weekNumber = week.week;
-    final total = week.days.length;
+
+    final activeDays =
+        week.days.where((d) {
+          final type = d.type.toLowerCase();
+          return !(type.contains('rest') ||
+              type.contains('stretch') ||
+              type.contains('mobility'));
+        }).toList();
+
+    final total = activeDays.length;
     final completed =
-        week.days
+        activeDays
             .where((d) => d.status == 'completed')
             .length;
 
@@ -151,7 +155,7 @@ class AthleteDashboardScreen extends ConsumerWidget {
       backgroundColor:
           Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("🏃 Your AI Training Plan"),
+        title: Text("🏃 $planName"),
         centerTitle: true,
         backgroundColor: colorScheme.secondary,
         foregroundColor: colorScheme.onSecondary,
@@ -213,8 +217,9 @@ class AthleteDashboardScreen extends ConsumerWidget {
                       dayName: day.day,
                       type: day.type,
                       distance: day.distance,
-                      pace: day.pace ?? '',
+                      pace: day.pace,
                       status: day.status,
+                      date: day.date,
                     ),
                   ),
                 );

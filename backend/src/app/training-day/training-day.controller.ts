@@ -3,15 +3,13 @@ import {
   Get,
   Post,
   Patch,
-  Delete,
   Param,
   Body,
   ParseIntPipe,
-  BadRequestException,
   Query,
 } from '@nestjs/common';
 import { TrainingDayService } from './training-day.service';
-import { UpdateTrainingDayDto } from './dto/update-training-day.dto';
+
 import {
   ApiTags,
   ApiBearerAuth,
@@ -19,8 +17,8 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { GetWeeklySummaryDto } from './dto/get-weekly-summary.dto';
 import { Logger } from 'nestjs-pino';
+import { UpdateTrainingDayDto } from './dto/update-training-day.dto';
 
 @ApiTags('Training Days')
 @ApiBearerAuth('access-token')
@@ -31,17 +29,11 @@ export class TrainingDayController {
     private readonly logger: Logger,
   ) {}
 
-  @Patch(':id/complete')
-  @ApiOperation({ summary: 'Mark training day as completed' })
-  @ApiParam({ name: 'id', type: Number })
-  async complete(@Param('id', ParseIntPipe) id: number) {
-    this.logger.log(`Marking training day ${id} as completed`);
-    return await this.trainingDayService.markAsCompleted(id);
-  }
-
   @Post('generate')
   @ApiOperation({
     summary: 'Generate training days from AI plan into assigned plan',
+    description:
+      'Takes a generated AI plan and maps it to an assigned plan by creating associated training days.',
   })
   @ApiQuery({ name: 'trainingPlanId', required: true, type: Number })
   @ApiQuery({ name: 'assignedPlanId', required: true, type: Number })
@@ -49,30 +41,21 @@ export class TrainingDayController {
     @Query('trainingPlanId', ParseIntPipe) trainingPlanId: number,
     @Query('assignedPlanId', ParseIntPipe) assignedPlanId: number,
   ) {
-    return await this.trainingDayService.generateFromAiPlan(
+    this.logger.log(
+      `Generating training days from AI plan ${trainingPlanId} → assigned plan ${assignedPlanId}`,
+    );
+    return this.trainingDayService.generateFromAiPlan(
       trainingPlanId,
       assignedPlanId,
     );
-  }
-
-  @Get('weekly-summary')
-  @ApiOperation({ summary: 'Get weekly summary of training days for athlete' })
-  @ApiQuery({ name: 'startDate', required: true, type: String })
-  @ApiQuery({ name: 'endDate', required: true, type: String })
-  @ApiQuery({ name: 'athleteId', required: false, type: Number })
-  async getWeeklySummary(@Query() dto: GetWeeklySummaryDto): Promise<any> {
-    if (new Date(dto.startDate) > new Date(dto.endDate)) {
-      throw new BadRequestException('startDate must be before endDate');
-    }
-
-    return await this.trainingDayService.getWeeklySummary(dto);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get training day by ID' })
   @ApiParam({ name: 'id', type: Number })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return await this.trainingDayService.findOne(id);
+    this.logger.log(`Fetching training day ${id}`);
+    return this.trainingDayService.findOne(id);
   }
 
   @Get('/by-assigned-plan/:assignedPlanId')
@@ -81,30 +64,36 @@ export class TrainingDayController {
   async findByAssignedPlan(
     @Param('assignedPlanId', ParseIntPipe) assignedPlanId: number,
   ) {
-    return await this.trainingDayService.findByAssignedPlanId(assignedPlanId);
-  }
-
-  @Get('/by-ai-plan/:planId')
-  @ApiOperation({ summary: 'Get all training days for an AI plan' })
-  @ApiParam({ name: 'planId', type: Number })
-  async findByAiPlan(@Param('planId', ParseIntPipe) planId: number) {
-    return await this.trainingDayService.findByAiPlanId(planId);
+    this.logger.log(
+      `Fetching training days for assigned plan ${assignedPlanId}`,
+    );
+    return this.trainingDayService.findByAssignedPlanId(assignedPlanId);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a training day by ID' })
+  @ApiOperation({
+    summary: 'Update a training day (status, RPE, feedback)',
+    description:
+      'Allows the athlete to update the status (e.g. completed), RPE, and feedback for a specific training day.',
+  })
   @ApiParam({ name: 'id', type: Number })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTrainingDayDto,
   ) {
-    return await this.trainingDayService.updateTrainingDay(id, dto);
+    this.logger.log(`Updating training day ${id}`);
+    return this.trainingDayService.updateTrainingDay(id, dto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete (soft) training day by ID' })
+  @Patch(':id/complete')
+  @ApiOperation({
+    summary: 'Mark training day as completed (helper)',
+    description:
+      'Quick helper route to mark a day as completed without feedback.',
+  })
   @ApiParam({ name: 'id', type: Number })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return await this.trainingDayService.softDelete(id);
+  async complete(@Param('id', ParseIntPipe) id: number) {
+    this.logger.log(`Marking training day ${id} as completed`);
+    return this.trainingDayService.markAsCompleted(id);
   }
 }

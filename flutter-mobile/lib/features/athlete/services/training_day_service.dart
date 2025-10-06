@@ -1,28 +1,57 @@
-import 'package:frontend/core/constants.dart';
-import 'package:frontend/utils/http_headers.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:frontend/features/models/training_day.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class TrainingDaysService {
-  final _baseUrl = apiUrl;
+class TrainingDayService {
+  static const String baseUrl =
+      'http://localhost:3001'; // PROMENI AKO IDE NA CLOUD
 
-  Future<void> markAsCompleted(int trainingDayId) async {
-    try {
-      final headers = await getAuthorizedHeaders();
+  static final _storage = const FlutterSecureStorage();
 
-      final response = await http.patch(
-        Uri.parse(
-          '$_baseUrl/training-days/$trainingDayId/complete',
-        ),
-        headers: headers,
-      );
+  static Future<String?> _getAccessToken() async {
+    return await _storage.read(key: 'access_token');
+  }
 
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Failed to mark training day as completed: ${response.statusCode} ${response.body}',
-        );
-      }
-    } catch (e) {
-      rethrow;
+  static Future<TrainingDay> getTrainingDay(int id) async {
+    final token = await _getAccessToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/training-days/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('❌ Failed to fetch training day');
+    }
+
+    final data = jsonDecode(response.body);
+    return TrainingDay.fromJson(data);
+  }
+
+  static Future<void> updateTrainingDay({
+    required int id,
+    required int rpe,
+    required String feedback,
+  }) async {
+    final token = await _getAccessToken();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/training-days/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'rpe': rpe,
+        'feedback': feedback,
+        'status': 'completed',
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('❌ Failed to update training day');
     }
   }
 }

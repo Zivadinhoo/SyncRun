@@ -1,26 +1,22 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { User } from './entities/user.entity';
-import { TrainingDay } from './entities/training-day.entity';
 import { TrainingDayModule } from './training-day/training-day.module';
-import { AssignedPlan } from './entities/assigned-plan.entity';
-import { AssignedPlanModule } from './assigned-plan/assigned-plan.module';
-import { TrainingDayFeedback } from './entities/training-day-feedback.entity';
 import { TrainingDayFeedbackModule } from './training-day-feedback/training-day-feedback.module';
-import { AiPlanModule } from './training-plan-ai/training-plan-ai.module';
-import { TrainingPlanAi } from './entities/training-plan-ai.entity';
 
 @Module({
   imports: [
+    // 🔹 Globalni Config za .env
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
     }),
 
+    // 🔹 Lepši logovi (pino-pretty)
     LoggerModule.forRoot({
       pinoHttp: {
         transport: {
@@ -34,24 +30,17 @@ import { TrainingPlanAi } from './entities/training-plan-ai.entity';
       },
     }),
 
+    // 🔹 TypeORM konekcija na Supabase (pooler)
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get('DATABASE_HOST'),
-        port: config.get<number>('DATABASE_PORT'),
-        username: config.get('DATABASE_USER'),
-        password: config.get('DATABASE_PASSWORD'),
-        database: config.get('DATABASE_NAME'),
-        entities: [
-          User,
-          TrainingDay,
-          AssignedPlan,
-          TrainingDayFeedback,
-          TrainingPlanAi,
-        ],
-        synchronize: true,
+        url: config.get<string>('DATABASE_URL')!,
+        ssl: { rejectUnauthorized: false },
+        extra: { prepareThreshold: 0 }, // bitno za pooler
+        autoLoadEntities: true, // automatski učitava sve entitete iz modula
+        synchronize: true, // za razvoj; kasnije prebaci na false
         logging: true,
       }),
     }),
@@ -59,9 +48,7 @@ import { TrainingPlanAi } from './entities/training-plan-ai.entity';
     UsersModule,
     AuthModule,
     TrainingDayModule,
-    AssignedPlanModule,
     TrainingDayFeedbackModule,
-    AiPlanModule,
   ],
 })
 export class AppModule {}

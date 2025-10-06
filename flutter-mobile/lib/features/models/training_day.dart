@@ -1,12 +1,12 @@
 class TrainingDay {
-  final String day; // e.g. "Monday"
-  final String type; // e.g. "Easy Run"
-  final double distance; // in km
-  final String? pace; // e.g. "5:30 min/KM"
-  final String status; // "pending", "completed"
+  final int? id;
+  final String day;
+  final String type;
+  final double distance;
+  final String? pace;
+  final String status;
   final String? description;
   final DateTime? date;
-  final int? id;
 
   TrainingDay({
     required this.day,
@@ -25,9 +25,7 @@ class TrainingDay {
       day: json['day'] ?? 'Unknown',
       type: json['type'] ?? 'Unknown',
       distance:
-          (json['distance'] is num)
-              ? (json['distance'] as num).toDouble()
-              : 0.0,
+          (json['distance'] as num?)?.toDouble() ?? 0.0,
       pace: json['pace'] ?? '-',
       status: json['status'] ?? 'pending',
       description: json['description'],

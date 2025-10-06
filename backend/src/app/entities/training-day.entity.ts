@@ -10,16 +10,15 @@ import {
 } from 'typeorm';
 import { AssignedPlan } from './assigned-plan.entity';
 import { TrainingPlanAi } from './training-plan-ai.entity';
-
-export type TrainingStatus = 'upcoming' | 'completed' | 'missed';
+import { TrainingStatus } from '../common/types/training-status.type';
 
 @Entity()
 export class TrainingDay {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  dayNumber: number;
+  @Column({ nullable: true })
+  dayNumber?: number; // može ostati ako ga koristiš za sortiranje
 
   @Column({
     type: 'enum',
@@ -28,14 +27,8 @@ export class TrainingDay {
   })
   status: TrainingStatus;
 
-  @Column({ type: 'int', nullable: true })
-  duration?: number; // in minutes
-
   @Column({ type: 'float', nullable: true })
-  distance?: number; // in kilometers
-
-  @Column({ type: 'int', nullable: true })
-  tss?: number;
+  distance?: number;
 
   @Column({ type: 'int', nullable: true })
   rpe?: number;

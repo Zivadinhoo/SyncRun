@@ -1,4 +1,15 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateTrainingDayDto } from './create-training-day.dto';
+import { IsInt, IsOptional, IsString, IsIn } from 'class-validator';
 
-export class UpdateTrainingDayDto extends PartialType(CreateTrainingDayDto) {}
+export class UpdateTrainingDayDto {
+  @IsOptional()
+  @IsIn(['completed', 'upcoming'])
+  status?: 'completed' | 'upcoming';
+
+  @IsOptional()
+  @IsInt()
+  rpe?: number;
+
+  @IsOptional()
+  @IsString()
+  feedback?: string;
+}

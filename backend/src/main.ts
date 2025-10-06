@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { Logger } from 'nestjs-pino';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -10,12 +9,14 @@ async function bootstrap() {
   });
 
   app.useLogger(app.get(Logger));
-  app.use(cookieParser());
+  // app.use(cookieParser());
 
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,
   });
+
+  // 👇 Dodaj ovo odmah posle app kreiranja!
 
   const config = new DocumentBuilder()
     .setTitle('RunWithCoach API')
@@ -38,4 +39,4 @@ async function bootstrap() {
 
   await app.listen(3001, '0.0.0.0');
 }
-bootstrap();
+void bootstrap();

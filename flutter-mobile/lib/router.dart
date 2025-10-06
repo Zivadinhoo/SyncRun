@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/features/onboarding/screens/plan_duration_screen.dart';
+import 'package:frontend/features/athlete/screens/training_day_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
@@ -25,8 +26,6 @@ final storage = FlutterSecureStorage();
 final isLoggedInProvider = FutureProvider.autoDispose<bool>(
   (ref) async {
     final token = await storage.read(key: 'accessToken');
-    print('🪪 Access token: $token');
-
     if (token == null || token.isEmpty) return false;
 
     try {
@@ -35,13 +34,10 @@ final isLoggedInProvider = FutureProvider.autoDispose<bool>(
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print('✅ /users/me response: ${response.statusCode}');
       if (response.statusCode == 200) return true;
-
       await storage.deleteAll();
       return false;
     } catch (e) {
-      print('❌ Error in isLoggedInProvider: $e');
       await storage.deleteAll();
       return false;
     }
@@ -68,8 +64,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     redirect: (context, state) {
       if (authState is AsyncLoading ||
-          onboardingState is AsyncLoading)
+          onboardingState is AsyncLoading) {
         return null;
+      }
 
       if (authState.hasError || onboardingState.hasError) {
         return '/login';
@@ -83,17 +80,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/onboarding',
       );
 
-      print('🚦 GoRouter redirect');
-      print('🔐 isLoggedIn: $isLoggedIn');
-      print(
-        '📋 hasFinishedOnboarding: $hasFinishedOnboarding',
-      );
-      print('📍 current path: ${state.uri.path}');
-
       if (!isLoggedIn && !isOnLogin) return '/login';
 
-      if (isLoggedIn && !hasFinishedOnboarding) {
-        if (!isOnOnboarding) return '/onboarding/goal';
+      if (isLoggedIn &&
+          !hasFinishedOnboarding &&
+          !isOnOnboarding) {
+        return '/onboarding/goal';
       }
 
       if (isLoggedIn &&
@@ -111,16 +103,33 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: '/athlete/dashboard',
-        builder:
-            (context, state) =>
-                const AthleteMainScreen(), // 🟠 Ovde sada ide MainScreen sa navbarom
-      ),
-
-      GoRoute(
         path: '/loading',
         builder:
             (context, state) => const SplashLoadingScreen(),
+      ),
+      GoRoute(
+        path: '/athlete/dashboard',
+        builder:
+            (context, state) => const AthleteMainScreen(),
+      ),
+      GoRoute(
+        path: '/training-day/:id',
+        builder: (context, state) {
+          final idParam = state.pathParameters['id'];
+          final trainingDayId = int.tryParse(idParam ?? '');
+
+          if (trainingDayId == null) {
+            return const Scaffold(
+              body: Center(
+                child: Text('❌ Invalid training day ID'),
+              ),
+            );
+          }
+
+          return TrainingDayScreen(
+            trainingDayId: trainingDayId,
+          );
+        },
       ),
       ShellRoute(
         builder:
@@ -191,7 +200,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// ✅ Splash screen dok proveravamo stanje
 class SplashLoadingScreen extends ConsumerWidget {
   const SplashLoadingScreen({super.key});
 
@@ -214,9 +222,7 @@ class SplashLoadingScreen extends ConsumerWidget {
         } else if (!hasFinishedOnboarding) {
           context.go('/onboarding/goal');
         } else {
-          context.go(
-            '/athlete/dashboard',
-          ); // ✅ Ovo sada ide na AthleteMainScreen
+          context.go('/athlete/dashboard');
         }
       }
     });
